@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kiro Reinvent Labs</title>
+<meta name="description" content="Hands-on labs for building end-to-end, production-grade solutions with Kiro IDE, Kiro CLI, Kiro Crew, AWS MCP servers, Strands Agents and Amazon Bedrock AgentCore.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%236b4cf6'/><text x='16' y='22' font-size='17' font-family='Arial' font-weight='700' fill='white' text-anchor='middle'>K</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body data-page="home">
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <a class="banner" href="doc.html?doc=landscape"><b>NEW</b> Kiro Crew bots, CLI V3 harness, AgentCore Policy &amp; Evaluations — see the landscape →</a>
+      <h1>Learn Kiro by building<br>real things with it.</h1>
+      <p class="lede">Hands-on labs that take you from your first spec to governed, production agents on AWS — using Kiro IDE &amp; CLI, Kiro Crew, AWS MCP servers, Strands Agents and Amazon Bedrock AgentCore.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="lab.html?id=01-kiro-cli-quickstart">Start the 15-minute quick start →</a>
+        <a class="btn btn-ghost" href="labs.html" id="browse-all">Browse all labs</a>
+      </div>
+      <div class="stats" id="stats">
+        <div class="stat"><b data-stat="labs">—</b><span>Labs</span></div>
+        <div class="stat"><b data-stat="paths">—</b><span>Learning paths</span></div>
+        <div class="stat"><b data-stat="hours">—</b><span>Hands-on time</span></div>
+        <div class="stat"><b data-stat="e2e">—</b><span>End-to-end builds</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="map">
+    <div class="wrap">
+      <div class="section-head">
+        <div><div class="eyebrow">The stack</div><h2>Everything you can build with</h2></div>
+        <p>Pick any piece to open the lab that teaches it. Labs compose: the end-to-end builds wire these pieces together.</p>
+      </div>
+      <div class="capmap" id="capmap"></div>
+    </div>
+  </section>
+
+  <section id="start">
+    <div class="wrap quick">
+      <div>
+        <div class="eyebrow">Start here · 15 minutes</div>
+        <h2>Your first spec-driven change from the terminal</h2>
+        <ol>
+          <li><b>Install</b> the Kiro CLI and sign in.</li>
+          <li><b>Ground</b> it: generate steering files that describe your product, stack and structure.</li>
+          <li><b>Plan</b> with the plan agent, then let Kiro implement and verify.</li>
+        </ol>
+        <a class="btn btn-ghost" href="lab.html?id=01-kiro-cli-quickstart">Open Lab 01 →</a>
+      </div>
+      <div class="terminal" aria-label="Example terminal session">
+        <div class="bar"><i></i><i></i><i></i></div>
+<pre><span class="c"># 1 · install (macOS / Linux)</span>
+<span class="p">$</span> curl -fsSL https://cli.kiro.dev/install | bash
+<span class="p">$</span> kiro-cli login
+
+<span class="c"># 2 · open your project and chat</span>
+<span class="p">$</span> cd my-service &amp;&amp; kiro-cli
+<span class="o">&gt;</span> Generate steering docs for this repo
+<span class="o">&gt;</span> /plan Add rate limiting to the public API
+
+<span class="c"># 3 · or run it headless in CI</span>
+<span class="p">$</span> kiro-cli chat --no-interactive \
+    --trust-tools=read,grep "Review this diff for risky changes"</pre>
+      </div>
+    </div>
+  </section>
+
+  <section id="tracks">
+    <div class="wrap">
+      <div class="section-head">
+        <div><div class="eyebrow">How you learn</div><h2>Every lab, four ways in</h2></div>
+        <p>Each lab says which surfaces it supports. Configuration is shared, so what you build in one carries to the others.</p>
+      </div>
+      <div class="grid grid-4">
+        <div class="card track"><div class="ico">IDE</div><h3>Kiro IDE</h3><p>Specs, hooks and steering with visual review of every diff.</p></div>
+        <div class="card track"><div class="ico">&gt;_</div><h3>Kiro CLI</h3><p>Same harness in the terminal, headless in CI, or behind any ACP editor.</p></div>
+        <div class="card track"><div class="ico">⟳</div><h3>Crew &amp; autonomous</h3><p>Long-running bots and background agents that work while you don't.</p></div>
+        <div class="card track"><div class="ico">{ }</div><h3>Code &amp; IaC</h3><p>Python / TypeScript agents and CDK / Terraform you can deploy and tear down.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="paths">
+    <div class="wrap">
+      <div class="section-head">
+        <div><div class="eyebrow">Learning paths</div><h2>Follow a path for your role</h2></div>
+        <p>Ordered sequences of labs. Open a path to see the labs filtered in the catalog.</p>
+      </div>
+      <div class="grid grid-3" id="paths-grid"></div>
+    </div>
+  </section>
+
+  <section id="use-cases">
+    <div class="wrap">
+      <div class="section-head">
+        <div><div class="eyebrow">Use cases</div><h2>What teams use this stack for</h2></div>
+        <p>Every use case maps to a lab you can run today.</p>
+      </div>
+      <h3 class="muted" style="font-size:15px;text-transform:uppercase;letter-spacing:.06em">Core</h3>
+      <div class="grid grid-4" id="uc-core"></div>
+      <h3 class="muted" style="font-size:15px;text-transform:uppercase;letter-spacing:.06em;margin-top:32px">Emerging</h3>
+      <div class="grid grid-4" id="uc-emerging"></div>
+    </div>
+  </section>
+
+  <section id="catalog">
+    <div class="wrap">
+      <div class="section-head">
+        <div><div class="eyebrow">Catalog</div><h2>Explore by topic</h2></div>
+        <a class="btn btn-ghost" href="labs.html">All labs →</a>
+      </div>
+      <div class="grid grid-4" id="cat-grid"></div>
+    </div>
+  </section>
+
+  <section id="popular">
+    <div class="wrap">
+      <div class="section-head">
+        <div><div class="eyebrow">Popular</div><h2>Start with these</h2></div>
+      </div>
+      <div class="grid grid-3" id="popular-grid"></div>
+    </div>
+  </section>
+
+  <section id="inside">
+    <div class="wrap">
+      <div class="section-head">
+        <div><div class="eyebrow">Inside every lab</div><h2>Same shape, every time</h2></div>
+        <p>Labs are plain folders in the repo — a README with front matter plus runnable assets (.kiro configs, agent code, IaC).</p>
+      </div>
+      <div class="steps">
+        <div class="step"><h3>Scenario &amp; architecture</h3><p>The problem, who has it, and a diagram of what you'll build.</p></div>
+        <div class="step"><h3>How it works</h3><p>The concepts and config surface — file paths, fields, commands.</p></div>
+        <div class="step"><h3>Build it step by step</h3><p>Copy-ready snippets and prompts for Kiro, plus the assets in the lab folder.</p></div>
+        <div class="step"><h3>Verify &amp; clean up</h3><p>Checks that prove it worked, teardown, and links to official docs.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="resources">
+    <div class="wrap">
+      <div class="section-head"><div><div class="eyebrow">Resources</div><h2>Official documentation</h2></div></div>
+      <div class="grid grid-4">
+        <a class="card" href="https://kiro.dev/docs/"><h3>Kiro docs</h3><p>IDE, CLI, Web, specs, hooks, steering, powers, skills.</p></a>
+        <a class="card" href="https://github.com/kirodotdev/KiroCrew"><h3>Kiro Crew</h3><p>Open-source agent workspace driving kiro-cli over ACP.</p></a>
+        <a class="card" href="https://strandsagents.com/"><h3>Strands Agents</h3><p>Model-driven agent SDK for Python and TypeScript.</p></a>
+        <a class="card" href="https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html"><h3>Bedrock AgentCore</h3><p>Runtime, Gateway, Memory, Identity, Policy, Evaluations…</p></a>
+        <a class="card" href="https://awslabs.github.io/mcp/"><h3>AWS MCP servers</h3><p>Open-source and managed MCP servers for AWS.</p></a>
+        <a class="card" href="https://github.com/awslabs/agentcore-samples"><h3>AgentCore samples</h3><p>Official tutorials and reference solutions.</p></a>
+        <a class="card" href="https://github.com/kirodotdev/powers"><h3>Kiro powers</h3><p>Curated powers bundling MCP, skills and steering.</p></a>
+        <a class="card" href="doc.html?doc=landscape"><h3>Our landscape report</h3><p>Deep research on how all of the pieces fit together.</p></a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="assets/site.js"></script>
+<script>
+(function () {
+  var K = window.KRL, esc = K.esc;
+  function mins(d) {
+    var m = 0, h = /(\d+)\s*h/.exec(d), mm = /(\d+)\s*min/.exec(d);
+    if (h) m += 60 * +h[1]; if (mm) m += +mm[1]; return m;
+  }
+  function fmt(m) { var h = Math.floor(m / 60), r = m % 60; return h ? h + " h" + (r ? " " + r + " min" : "") : r + " min"; }
+
+  Promise.all([K.getJSON("data/labs.json"), K.getJSON("data/catalog.json")]).then(function (res) {
+    var data = res[0], cat = res[1], labs = data.labs, byId = {};
+    labs.forEach(function (l) { byId[l.id] = l; });
+    var total = labs.reduce(function (s, l) { return s + mins(l.duration); }, 0);
+    var set = function (k, v) { document.querySelector('[data-stat="' + k + '"]').textContent = v; };
+    set("labs", labs.length); set("paths", cat.paths.length); set("hours", Math.round(total / 60) + " h");
+    set("e2e", labs.filter(function (l) { return l.category === "End-to-end solutions"; }).length);
+    document.getElementById("browse-all").textContent = "Browse all " + labs.length + " labs";
+
+    document.getElementById("capmap").innerHTML = cat.capabilities.map(function (g) {
+      return '<div class="capgroup"><h4>' + esc(g.group) + '</h4><div class="captiles">' + g.items.map(function (it) {
+        var l = byId[it.lab]; if (!l) return "";
+        return '<a class="captile" href="' + K.labHref(l) + '" title="Lab ' + l.id + ": " + esc(l.title) + '">' + esc(it.label) + "<small>" + l.id + "</small></a>";
+      }).join("") + "</div></div>";
+    }).join("");
+
+    document.getElementById("paths-grid").innerHTML = cat.paths.map(function (p) {
+      var ls = p.labs.map(function (id) { return byId[id]; }).filter(Boolean);
+      var t = ls.reduce(function (s, l) { return s + mins(l.duration); }, 0);
+      return '<div class="card path-card"><span class="chip accent" style="align-self:flex-start">' + esc(p.role) + "</span>" +
+        "<h3>" + esc(p.title) + "</h3><p>" + esc(p.blurb) + "</p><ol>" + ls.map(function (l) {
+          return '<li><a href="' + K.labHref(l) + "&path=" + p.id + '"><span class="n">' + l.id + "</span>" + esc(l.title) + "</a></li>";
+        }).join("") + '</ol><div class="meta"><span class="chip">' + ls.length + ' labs</span><span class="chip">⏱ ' + fmt(t) +
+        '</span><a class="btn btn-ghost" style="margin-left:auto;padding:6px 12px;font-size:14px" href="labs.html?path=' + p.id + '">Start path →</a></div></div>';
+    }).join("");
+
+    function uc(list) {
+      return list.map(function (u) {
+        var l = byId[u.lab];
+        return '<div class="card usecase"><h3 style="font-size:17px">' + esc(u.title) + "</h3><p>" + esc(u.text) + "</p>" +
+          (l ? '<a class="lablink" href="' + K.labHref(l) + '">Lab ' + l.id + " · " + esc(l.title) + " →</a>" : "") + "</div>";
+      }).join("");
+    }
+    document.getElementById("uc-core").innerHTML = uc(cat.useCases.core);
+    document.getElementById("uc-emerging").innerHTML = uc(cat.useCases.emerging);
+
+    var blurbs = {
+      "Kiro foundations": "Install, steering, specs and hooks — the core loop.",
+      "Customize Kiro": "Custom agents, subagents, skills, powers and MCP.",
+      "Automate & scale": "Headless CI, ACP, Kiro Crew bots and the autonomous agent.",
+      "AWS MCP servers": "Drive AWS — IaC, serverless, cost, ops, data — through MCP.",
+      "Strands Agents": "Build model-driven agents, tools, multi-agent systems and evals.",
+      "AgentCore": "Run agents in production: runtime, gateway, memory, identity, policy.",
+      "End-to-end solutions": "Complete builds that combine everything, start to finish."
+    };
+    document.getElementById("cat-grid").innerHTML = data.categories.map(function (c) {
+      var n = labs.filter(function (l) { return l.category === c; }).length;
+      return '<a class="card" href="labs.html?category=' + encodeURIComponent(c) + '"><h3>' + esc(c) + "</h3><p>" + esc(blurbs[c] || "") +
+        '</p><div class="meta"><span class="chip accent">' + n + " labs</span></div></a>";
+    }).join("") + '<a class="card" href="labs.html" style="background:var(--accent-soft)"><h3>Everything</h3><p>Search and filter the full catalog.</p><div class="meta"><span class="chip">' + labs.length + " labs</span></div></a>";
+
+    document.getElementById("popular-grid").innerHTML = labs.filter(function (l) { return l.popular; }).slice(0, 6).map(function (l) {
+      return '<a class="card" href="' + K.labHref(l) + '"><div class="big-num">' + l.id + '</div><span class="lab-num">' + esc(l.category) + "</span><h3>" +
+        esc(l.title) + "</h3><p>" + esc(l.summary) + '</p><div class="meta">' + K.levelChip(l.level) + '<span class="chip">⏱ ' + esc(l.duration) + "</span></div></a>";
+    }).join("");
+  }).catch(function (e) {
+    document.getElementById("capmap").innerHTML = '<div class="empty">Could not load lab data (' + esc(e.message) + "). Build the site with <code>python scripts/build_site.py</code>.</div>";
+  });
+})();
+</script>
+</body>
+</html>

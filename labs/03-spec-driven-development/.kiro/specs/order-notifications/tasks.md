@@ -1,0 +1,21 @@
+# Implementation Plan
+
+- [ ] 1. Infrastructure
+  - [ ] 1.1 CDK stack with EventBridge rule, SQS queue + DLQ (maxReceiveCount 3)
+    - _Requirements: 1.1, 1.3_
+  - [ ] 1.2 DynamoDB `preferences` and `idempotency` (TTL) tables
+    - _Requirements: 1.4, 2.1_
+- [ ] 2. Notifier Lambda
+  - [ ] 2.1 Preference filtering + suppression record
+    - _Requirements: 2.1, 2.2_
+  - [ ] 2.2 Idempotent send per channel (conditional put)
+    - _Requirements: 1.2, 1.4_
+  - [ ] 2.3 Partial batch failure handling
+    - _Requirements: 1.3_
+- [ ] 3. Observability
+  - [ ] 3.1 Embedded-metric-format metrics per channel
+  - [ ] 3.2 DLQ depth alarm
+    - _Requirements: 3.1, 3.2_
+- [ ] 4. Tests
+  - [ ] 4.1 Unit tests for 2.1–2.3
+  - [ ] 4.2 Property-based test for at-most-once delivery

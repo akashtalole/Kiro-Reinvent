@@ -1,0 +1,14 @@
+{
+  "name": "ci-reviewer",
+  "description": "Non-interactive PR reviewer for CI. Read-only; may run tests and linters.",
+  "prompt": "You review pull requests in CI. Be precise, cite file:line, never invent findings. Prefer fewer, high-confidence findings over many speculative ones.",
+  "tools": ["read", "shell"],
+  "permissions": {
+    "rules": [
+      { "capability": "shell", "match": ["git diff*", "git log*", "git show*", "npm test*", "npx eslint*", "cat *"], "effect": "allow" },
+      { "capability": "shell", "match": ["*"], "effect": "deny" },
+      { "capability": "fs_write", "match": ["**"], "effect": "deny" }
+    ]
+  },
+  "resources": ["file://.kiro/steering/**/*.md", "skill://.kiro/skills/*/SKILL.md"]
+}

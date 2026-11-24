@@ -1,0 +1,46 @@
+# Copy to .github/workflows/kiro-pr-review.yml in your repo.
+# Requires repository secret KIRO_API_KEY (Kiro paid tier; create it in your Kiro account settings).
+name: Kiro PR review
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: kiro-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Kiro CLI
+        run: |
+          curl -fsSL https://cli.kiro.dev/install | bash
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Review the diff (read-only agent)
+        env:
+          KIRO_API_KEY: ${{ secrets.KIRO_API_KEY }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git diff "$BASE"...HEAD > /tmp/pr.diff
+          kiro-cli chat --no-interactive --agent ci-reviewer \
+            "Review the change in /tmp/pr.diff (base $BASE). Output GitHub-flavoured markdown only:
+             a summary, then a findings table (severity | file:line | issue | fix), then 'Verdict: approve' or 'Verdict: changes requested'." \
+            > review.md
+
+      - name: Post review comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh pr comment ${{ github.event.pull_request.number }} --body-file review.md --edit-last || gh pr comment ${{ github.event.pull_request.number }} --body-file review.md

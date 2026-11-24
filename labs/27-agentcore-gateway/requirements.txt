@@ -1,0 +1,3 @@
+boto3>=1.40
+requests>=2.32
+strands-agents>=1.60

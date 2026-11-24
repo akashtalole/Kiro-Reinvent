@@ -1,0 +1,23 @@
+{
+  "name": "reviewer",
+  "description": "Read-only code reviewer: security, correctness, tests. Never edits files.",
+  "prompt": "file://../prompts/reviewer.md",
+  "tools": ["read", "shell", "@git"],
+  "excludedTools": ["write"],
+  "permissions": {
+    "rules": [
+      { "capability": "shell", "match": ["git diff *", "git log *", "npm test*", "npx eslint *"], "effect": "allow" },
+      { "capability": "shell", "match": ["*"], "effect": "deny" },
+      { "capability": "fs_write", "match": ["**"], "effect": "deny" }
+    ]
+  },
+  "resources": [
+    "file://.kiro/steering/**/*.md",
+    "file://AGENTS.md",
+    "skill://.kiro/skills/*/SKILL.md"
+  ],
+  "mcpServers": {
+    "git": { "command": "uvx", "args": ["mcp-server-git", "--repository", "."] }
+  },
+  "welcomeMessage": "Paste a PR number, a branch, or say 'review my diff'."
+}

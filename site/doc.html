@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Docs · Kiro Reinvent</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%236b4cf6'/><text x='16' y='22' font-size='17' font-family='Arial' font-weight='700' fill='white' text-anchor='middle'>K</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<main class="wrap">
+  <div class="lab-layout">
+    <article class="md" id="content"><p class="muted">Loading…</p></article>
+    <aside class="lab-aside" id="aside"></aside>
+  </div>
+</main>
+<script>
+  // mark the nav item before site.js builds the header
+  (function () {
+    var d = new URLSearchParams(location.search).get("doc") || "landscape";
+    document.body.setAttribute("data-page", d === "architecture-patterns" ? "patterns" : d);
+  })();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="assets/site.js"></script>
+<script src="assets/render.js"></script>
+<script>
+(function () {
+  var K = window.KRL, esc = K.esc;
+  var doc = (new URLSearchParams(location.search).get("doc") || "landscape").replace(/[^a-z0-9-]/gi, "");
+  var content = document.getElementById("content"), aside = document.getElementById("aside");
+  fetch("docs/" + doc + ".md").then(function (r) {
+    if (!r.ok) throw new Error("not found");
+    return r.text();
+  }).then(function (md) {
+    window.KRLRender.markdown(content, md, "docs/");
+    var h1 = content.querySelector("h1");
+    if (h1) document.title = h1.textContent + " · Kiro Reinvent";
+    var toc = Array.prototype.map.call(content.querySelectorAll("h2, h3"), function (h) {
+      return '<li class="' + h.tagName.toLowerCase() + '"><a href="#' + h.id + '">' + esc(h.textContent) + "</a></li>";
+    }).join("");
+    aside.innerHTML = (toc ? '<div class="aside-box"><h4>On this page</h4><ul class="toc">' + toc + "</ul></div>" : "") +
+      '<div class="aside-box"><a href="' + K.REPO + "/blob/main/docs/" + doc + '.md">View source on GitHub →</a></div>';
+    if (location.hash) { var t = document.getElementById(location.hash.slice(1)); if (t) t.scrollIntoView(); }
+  }).catch(function () {
+    content.innerHTML = '<h1>Page not found</h1><p><a href="index.html">Back to home</a></p>';
+  });
+})();
+</script>
+</body>
+</html>

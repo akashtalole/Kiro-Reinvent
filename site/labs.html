@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>All Labs · Kiro Reinvent</title>
+<meta name="description" content="Search and filter every Kiro Reinvent lab by topic, level and learning path.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%236b4cf6'/><text x='16' y='22' font-size='17' font-family='Arial' font-weight='700' fill='white' text-anchor='middle'>K</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body data-page="labs">
+<main>
+  <section style="padding-top:40px">
+    <div class="wrap">
+      <div class="eyebrow">Catalog</div>
+      <h1 style="font-size:clamp(30px,4vw,44px)">All labs</h1>
+      <p class="lede" id="count">Loading…</p>
+      <div id="path-banner"></div>
+      <div class="toolbar">
+        <input class="searchbox" id="q" type="search" placeholder="Filter by title, service or tag — e.g. “memory”, “Cedar”, “CDK”" aria-label="Filter labs">
+        <div class="filter-row" id="cat-row"><span class="lbl">Topic</span></div>
+        <div class="filter-row" id="lvl-row"><span class="lbl">Level</span></div>
+      </div>
+      <div class="grid grid-3" id="results"></div>
+    </div>
+  </section>
+</main>
+<script src="assets/site.js"></script>
+<script>
+(function () {
+  var K = window.KRL, esc = K.esc;
+  var params = new URLSearchParams(location.search);
+  var state = { q: params.get("q") || "", category: params.get("category") || "", level: params.get("level") || "", path: params.get("path") || "" };
+  var qEl = document.getElementById("q");
+  qEl.value = state.q;
+
+  Promise.all([K.getJSON("data/labs.json"), K.getJSON("data/catalog.json")]).then(function (res) {
+    var data = res[0], cat = res[1], labs = data.labs;
+    var path = cat.paths.filter(function (p) { return p.id === state.path; })[0];
+
+    function chipRow(el, values, key) {
+      var html = '<button class="chip" data-v="">All</button>' + values.map(function (v) {
+        return '<button class="chip" data-v="' + esc(v) + '">' + esc(v) + "</button>";
+      }).join("");
+      el.insertAdjacentHTML("beforeend", html);
+      el.addEventListener("click", function (e) {
+        var b = e.target.closest("button"); if (!b) return;
+        state[key] = b.getAttribute("data-v"); update();
+      });
+    }
+    chipRow(document.getElementById("cat-row"), data.categories, "category");
+    chipRow(document.getElementById("lvl-row"), data.levels, "level");
+
+    function update() {
+      ["cat-row", "lvl-row"].forEach(function (id) {
+        var key = id === "cat-row" ? "category" : "level";
+        document.querySelectorAll("#" + id + " button").forEach(function (b) {
+          b.setAttribute("aria-pressed", String(b.getAttribute("data-v") === state[key]));
+        });
+      });
+      var pb = document.getElementById("path-banner");
+      pb.innerHTML = path ? '<div class="path-banner"><b>Learning path: ' + esc(path.title) + "</b> — " + esc(path.blurb) +
+        ' <a href="labs.html" style="margin-left:6px">Clear path ×</a></div>' : "";
+      var terms = state.q.toLowerCase().split(/\s+/).filter(Boolean);
+      var list = path ? path.labs.map(function (id) { return labs.filter(function (l) { return l.id === id; })[0]; }).filter(Boolean) : labs;
+      var hits = list.filter(function (l) {
+        if (state.category && l.category !== state.category) return false;
+        if (state.level && l.level !== state.level) return false;
+        var hay = [l.id, l.title, l.summary, l.category].concat(l.services || [], l.tags || []).join(" ").toLowerCase();
+        return terms.every(function (t) { return hay.indexOf(t) !== -1; });
+      });
+      document.getElementById("count").textContent = hits.length + " of " + labs.length + " labs";
+      document.getElementById("results").innerHTML = hits.length ? hits.map(function (l) {
+        var card = K.labCard(l);
+        return path ? card.replace('href="' + K.labHref(l) + '"', 'href="' + K.labHref(l) + "&path=" + path.id + '"') : card;
+      }).join("") : '<div class="empty" style="grid-column:1/-1">No labs match those filters.</div>';
+      var p = new URLSearchParams();
+      Object.keys(state).forEach(function (k) { if (state[k]) p.set(k, state[k]); });
+      history.replaceState(null, "", "labs.html" + (p.toString() ? "?" + p : ""));
+    }
+    qEl.addEventListener("input", function () { state.q = qEl.value; update(); });
+    update();
+  });
+})();
+</script>
+</body>
+</html>

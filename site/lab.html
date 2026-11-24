@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab · Kiro Reinvent</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%236b4cf6'/><text x='16' y='22' font-size='17' font-family='Arial' font-weight='700' fill='white' text-anchor='middle'>K</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body data-page="lab">
+<main class="wrap">
+  <div class="lab-layout">
+    <article class="md" id="content"><p class="muted">Loading lab…</p></article>
+    <aside class="lab-aside" id="aside"></aside>
+  </div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="assets/site.js"></script>
+<script src="assets/render.js"></script>
+<script>
+(function () {
+  var K = window.KRL, esc = K.esc;
+  var params = new URLSearchParams(location.search);
+  var slug = params.get("id") || "", pathId = params.get("path") || "";
+  var content = document.getElementById("content"), aside = document.getElementById("aside");
+
+  Promise.all([K.getJSON("data/labs.json"), K.getJSON("data/catalog.json")]).then(function (res) {
+    var labs = res[0].labs, cat = res[1];
+    var lab = labs.filter(function (l) { return l.slug === slug || l.id === slug; })[0];
+    if (!lab) { content.innerHTML = '<h1>Lab not found</h1><p><a href="labs.html">Browse all labs →</a></p>'; return; }
+    document.title = "Lab " + lab.id + " · " + lab.title;
+    var path = cat.paths.filter(function (p) { return p.id === pathId; })[0];
+    var seq = path ? path.labs.map(function (id) { return labs.filter(function (l) { return l.id === id; })[0]; }).filter(Boolean) : labs;
+    var idx = seq.indexOf(lab), prev = idx > 0 ? seq[idx - 1] : null, next = idx >= 0 && idx < seq.length - 1 ? seq[idx + 1] : null;
+    var base = "labs/" + lab.slug + "/";
+
+    return fetch(base + "README.md").then(function (r) { return r.text(); }).then(function (md) {
+      var crumbs = '<div class="crumbs"><a href="labs.html">Labs</a> / <a href="labs.html?category=' + encodeURIComponent(lab.category) + '">' +
+        esc(lab.category) + "</a>" + (path ? ' / <a href="labs.html?path=' + path.id + '">' + esc(path.title) + "</a>" : "") + "</div>";
+      content.innerHTML = crumbs + '<div id="md-body"></div>';
+      var body = document.getElementById("md-body");
+      window.KRLRender.markdown(body, md, base);
+
+      var link = function (l, cls, label) {
+        return l ? '<a class="' + cls + '" href="' + K.labHref(l) + (path ? "&path=" + path.id : "") + '"><small>' + label + "</small>Lab " + l.id + " · " + esc(l.title) + "</a>" : "";
+      };
+      content.insertAdjacentHTML("beforeend", '<nav class="pager">' + link(prev, "prev", "← Previous") + link(next, "next", "Next →") + "</nav>");
+
+      var toc = Array.prototype.map.call(body.querySelectorAll("h2, h3"), function (h) {
+        return '<li class="' + h.tagName.toLowerCase() + '"><a href="#' + h.id + '">' + esc(h.textContent) + "</a></li>";
+      }).join("");
+      var files = (lab.files || []).filter(function (f) { return f.indexOf("/.") === -1 || f.indexOf(".kiro") !== -1; });
+      aside.innerHTML =
+        '<div class="aside-box"><h4>Lab ' + lab.id + '</h4><dl class="kv"><dt>Level</dt><dd>' + K.levelChip(lab.level) +
+        "</dd><dt>Time</dt><dd>" + esc(lab.duration) + "</dd><dt>Topic</dt><dd>" + esc(lab.category) + "</dd></dl>" +
+        ((lab.services || []).length ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px">' + lab.services.map(function (s) { return '<span class="chip">' + esc(s) + "</span>"; }).join("") + "</div>" : "") +
+        "</div>" +
+        (toc ? '<div class="aside-box"><h4>On this page</h4><ul class="toc">' + toc + "</ul></div>" : "") +
+        (files.length ? '<div class="aside-box"><h4>Lab files</h4><ul>' + files.map(function (f) {
+          return '<li><a href="' + K.REPO + "/blob/main/labs/" + lab.slug + "/" + f + '"><code style="font-size:12.5px">' + esc(f) + "</code></a></li>";
+        }).join("") + "</ul></div>" : "") +
+        '<div class="aside-box"><a href="' + K.REPO + "/tree/main/labs/" + lab.slug + '">Open lab folder on GitHub →</a><br>' +
+        '<a href="' + K.REPO + "/edit/main/labs/" + lab.slug + '/README.md">Suggest an edit</a></div>';
+      if (location.hash) { var t = document.getElementById(location.hash.slice(1)); if (t) t.scrollIntoView(); }
+    });
+  }).catch(function (e) { content.innerHTML = '<div class="empty">Could not load this lab: ' + esc(e.message) + "</div>"; });
+})();
+</script>
+</body>
+</html>

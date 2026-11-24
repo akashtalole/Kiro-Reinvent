@@ -1,0 +1,10 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "power-aws-cost-guard",
+  "version": "1.0.0",
+  "description": "Estimate AWS cost before you build and explain the bill after you ship. Bundles the AWS Pricing and Billing & Cost Management MCP servers with two skills.",
+  "author": { "name": "Kiro Reinvent Labs" },
+  "keywords": ["aws cost", "pricing", "estimate", "budget", "bill", "finops", "cost explorer", "savings plans"],
+  "license": "MIT",
+  "repository": "https://github.com/akashtalole/Kiro-Reinvent"
+}

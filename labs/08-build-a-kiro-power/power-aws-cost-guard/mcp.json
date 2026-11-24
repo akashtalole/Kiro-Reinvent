@@ -1,0 +1,17 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "aws-pricing": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["awslabs.aws-pricing-mcp-server@latest"],
+      "env": { "AWS_PROFILE": "${AWS_PROFILE}", "AWS_REGION": "us-east-1", "FASTMCP_LOG_LEVEL": "ERROR" }
+    },
+    "aws-billing": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["awslabs.billing-cost-management-mcp-server@latest"],
+      "env": { "AWS_PROFILE": "${AWS_PROFILE}", "AWS_REGION": "us-east-1", "FASTMCP_LOG_LEVEL": "ERROR" }
+    }
+  }
+}
