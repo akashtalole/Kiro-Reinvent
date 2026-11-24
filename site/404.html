@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Page Not Found · Kiro Reinvent Labs</title>
+<meta name="robots" content="noindex">
+<style>
+  :root { --bg:#fbfaf8; --fg:#17151c; --muted:#5b5766; --border:#e4e1da; --accent:#6b4cf6; --soft:#efebff; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0f0e13; --fg:#eeecf3; --muted:#aaa6b8; --border:#2b2934; --accent:#9b85ff; --soft:#241d42; } }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.6 Inter, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 56px 16px; }
+  a { color: var(--accent); }
+  .mark { display:inline-grid; place-items:center; width:32px; height:32px; border-radius:9px; color:#fff; font-weight:800;
+          background: linear-gradient(135deg, #6b4cf6, #d9720b); margin-right:8px; vertical-align: middle; }
+  h1 { font-size: clamp(26px, 4vw, 38px); margin: 18px 0 6px; letter-spacing: -0.02em; }
+  .muted { color: var(--muted); }
+  input { width:100%; box-sizing:border-box; padding:12px 14px; border-radius:12px; border:1px solid var(--border); background:transparent; color:var(--fg); font:inherit; margin: 16px 0 8px; }
+  ul { list-style:none; padding:0; margin: 8px 0 24px; }
+  li a { display:block; padding:10px 12px; border-radius:10px; text-decoration:none; color:var(--fg); border:1px solid transparent; }
+  li a:hover { background: var(--soft); border-color: var(--accent); }
+  li small { color: var(--muted); display:block; font-size: 13px; }
+  .links a { margin-right: 14px; }
+  code { background: var(--soft); padding: 1px 6px; border-radius: 6px; }
+</style>
+</head>
+<body>
+<main>
+  <div><span class="mark">K</span><b>Kiro Reinvent Labs</b></div>
+  <h1 id="title">Finding that page…</h1>
+  <p class="muted" id="msg">Looking for the closest match.</p>
+  <div id="ui" hidden>
+    <input id="q" type="search" placeholder="Search labs and scenarios" aria-label="Search labs and scenarios">
+    <ul id="results"></ul>
+    <p class="links"><a id="home">Home</a><a id="all">All labs</a><a id="scen">Scenarios</a><a id="play">AI-first SaaS playbook</a></p>
+    <p class="muted" style="font-size:14px">Tip: the site address is case-sensitive: <code>/Kiro-Reinvent/</code> with a capital K and R.</p>
+  </div>
+</main>
+<script>
+(function () {
+  // GitHub Pages serves this file for any missing path under the project site, at any depth,
+  // so every URL here is built from the project base, never relative.
+  var segs = location.pathname.split("/").filter(Boolean);
+  var base = segs.length && segs[0].toLowerCase() === "kiro-reinvent" ? "/" + segs[0] + "/" : "/";
+  var rest = (base === "/" ? segs : segs.slice(1)).join("/").toLowerCase()
+    .replace(/\/index(\.html?)?$/, "").replace(/\.(html?|md)$/, "").replace(/\/readme$/, "").replace(/\/+$/, "");
+  if (rest.indexOf("site/") === 0) rest = rest.slice(5);
+  function go(target) { location.replace(base + target + location.hash); }
+  var simple = { "": "", "index": "", "readme": "", "site": "", "home": "", "labs": "labs.html", "lab": "labs.html",
+    "all-labs": "labs.html", "scenarios": "scenarios.html", "scenario": "scenarios.html", "paths": "index.html#paths",
+    "learning-paths": "index.html#paths", "use-cases": "index.html#use-cases", "quickstart": "lab.html?id=01-kiro-cli-quickstart",
+    "quick-start": "lab.html?id=01-kiro-cli-quickstart", "playbook": "doc.html?doc=ai-first-saas-playbook", "docs": "doc.html?doc=landscape" };
+  if (Object.prototype.hasOwnProperty.call(simple, rest)) return go(simple[rest]);
+
+  Promise.all([fetch(base + "data/labs.json").then(function (r) { return r.json(); }),
+               fetch(base + "data/scenarios.json").then(function (r) { return r.json(); }).catch(function () { return { scenarios: [] }; })])
+  .then(function (res) {
+    var labs = res[0].labs, scen = res[1].scenarios;
+    var parts = rest.split("/"), head = parts[0], key = parts.slice(-1)[0];
+    function findLab(k) {
+      return labs.filter(function (l) { return l.slug.toLowerCase() === k; })[0] ||
+             labs.filter(function (l) { return l.id === k || l.id === ("0" + k).slice(-2); })[0] ||
+             labs.filter(function (l) { return k.length > 3 && l.slug.toLowerCase().indexOf(k) >= 0; })[0];
+    }
+    function findScen(k) { return scen.filter(function (s) { return s.id === k; })[0] || scen.filter(function (s) { return k.length > 3 && s.id.indexOf(k) >= 0; })[0]; }
+    var lab, sc;
+    if (head === "scenarios" || head === "scenario") { sc = findScen(key); if (sc) return go("scenarios.html?id=" + sc.id); }
+    if (head === "docs" || head === "doc") { return go("doc.html?doc=" + encodeURIComponent(key)); }
+    if (head === "labs" || head === "lab" || parts.length === 1) { lab = findLab(key); if (lab) return go("lab.html?id=" + lab.slug); }
+    sc = findScen(key); if (sc) return go("scenarios.html?id=" + sc.id);
+
+    // Not found: friendly page with suggestions
+    document.title = "Page Not Found · Kiro Reinvent Labs";
+    document.getElementById("title").textContent = "We couldn't find that page";
+    document.getElementById("msg").innerHTML = "No page matches <code></code>. Try one of these, or search below.";
+    document.querySelector("#msg code").textContent = "/" + rest;
+    document.getElementById("ui").hidden = false;
+    [["home", ""], ["all", "labs.html"], ["scen", "scenarios.html"], ["play", "doc.html?doc=ai-first-saas-playbook"]]
+      .forEach(function (x) { document.getElementById(x[0]).href = base + x[1]; });
+    var items = labs.map(function (l) { return { t: "Lab " + l.id + " · " + l.title, s: l.category, h: "lab.html?id=" + l.slug, k: (l.slug + " " + l.title + " " + (l.tags || []).join(" ")).toLowerCase() }; })
+      .concat(scen.map(function (s) { return { t: s.title, s: "Scenario · " + s.domain, h: "scenarios.html?id=" + s.id, k: (s.id + " " + s.title + " " + s.domain).toLowerCase() }; }));
+    function show(q) {
+      var terms = q.toLowerCase().split(/[^a-z0-9]+/).filter(function (t) { return t.length > 1; });
+      var ranked = items.map(function (it) { return [terms.reduce(function (n, t) { return n + (it.k.indexOf(t) >= 0 ? 1 : 0); }, 0), it]; })
+        .filter(function (x) { return !terms.length || x[0] > 0; }).sort(function (a, b) { return b[0] - a[0]; }).slice(0, 8);
+      var ul = document.getElementById("results"); ul.innerHTML = "";
+      ranked.forEach(function (x) { var li = document.createElement("li"), a = document.createElement("a"), sm = document.createElement("small");
+        a.href = base + x[1].h; a.textContent = x[1].t; sm.textContent = x[1].s; a.appendChild(sm); li.appendChild(a); ul.appendChild(li); });
+    }
+    var q = document.getElementById("q"); q.value = rest.replace(/[\/_-]+/g, " "); show(q.value);
+    q.addEventListener("input", function () { show(q.value); });
+  }).catch(function () { location.replace(base); });
+})();
+</script>
+</body>
+</html>

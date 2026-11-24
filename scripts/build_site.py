@@ -179,6 +179,51 @@ def validate_scenarios(lab_ids: set[str]) -> int:
     return len(data["scenarios"])
 
 
+STUB = """<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title} · Kiro Reinvent Labs</title><meta name="robots" content="noindex">
+<link rel="canonical" href="{target}"><meta http-equiv="refresh" content="0; url={target}">
+<script>location.replace("{target}" + location.hash);</script>
+<style>body{{font:16px system-ui,sans-serif;margin:3rem auto;max-width:40rem;padding:0 1rem;color:#17151c;background:#fbfaf8}}</style>
+</head><body><p>Opening <a href="{target}">{title}</a>…</p></body></html>
+"""
+
+
+def write_stub(rel_dir: str, target_from_root: str, title: str) -> None:
+    """Pretty URL (e.g. /labs/03-spec-driven-development/) → real page, like the Azure labs site's folder URLs."""
+    depth = len([p for p in rel_dir.strip("/").split("/") if p])
+    target = "../" * depth + target_from_root
+    out = OUT / rel_dir / "index.html"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(STUB.format(target=target, title=title.replace("<", "&lt;")), encoding="utf-8")
+
+
+def write_pretty_urls(labs: list[dict]) -> int:
+    n = 0
+    write_stub("labs", "labs.html", "All labs"); n += 1
+    for lab in labs:
+        write_stub(f"labs/{lab['slug']}", f"lab.html?id={lab['slug']}", f"Lab {lab['id']}: {lab['title']}")
+        write_stub(f"labs/{lab['id']}", f"lab.html?id={lab['slug']}", f"Lab {lab['id']}: {lab['title']}")
+        write_stub(f"lab/{lab['id']}", f"lab.html?id={lab['slug']}", f"Lab {lab['id']}: {lab['title']}")
+        n += 3
+    scen = SITE_SRC / "data" / "scenarios.json"
+    if scen.exists():
+        write_stub("scenarios", "scenarios.html", "Advanced scenarios"); n += 1
+        for sc in json.loads(scen.read_text(encoding="utf-8"))["scenarios"]:
+            write_stub(f"scenarios/{sc['id']}", f"scenarios.html?id={sc['id']}", sc["title"]); n += 1
+    for md in DOCS_SRC.glob("*.md"):
+        write_stub(f"docs/{md.stem}", f"doc.html?doc={md.stem}", md.stem.replace("-", " ").title()); n += 1
+    cat = json.loads((SITE_SRC / "data" / "catalog.json").read_text(encoding="utf-8"))
+    for path in cat.get("paths", []):
+        write_stub(f"paths/{path['id']}", f"labs.html?path={path['id']}", path["title"]); n += 1
+    aliases = {"quickstart": "lab.html?id=01-kiro-cli-quickstart", "playbook": "doc.html?doc=ai-first-saas-playbook",
+               "field": "doc.html?doc=kiro-in-the-field", "landscape": "doc.html?doc=landscape", "paths": "index.html#paths",
+               "use-cases": "index.html#use-cases", "site": "index.html"}
+    for k, v in aliases.items():
+        write_stub(k, v, k.replace("-", " ").title()); n += 1
+    return n
+
+
 def build() -> None:
     if OUT.exists():
         shutil.rmtree(OUT)
@@ -196,7 +241,8 @@ def build() -> None:
     )
     (OUT / ".nojekyll").write_text("", encoding="utf-8")
     n_scen = validate_scenarios({l["id"] for l in labs})
-    print(f"Built {len(labs)} labs and {n_scen} scenarios into {OUT.relative_to(ROOT)}/")
+    n_urls = write_pretty_urls(labs)
+    print(f"Built {len(labs)} labs, {n_scen} scenarios and {n_urls} pretty URLs into {OUT.relative_to(ROOT)}/")
 
 
 def main() -> None:
