@@ -107,6 +107,20 @@
         "43",
         "44"
       ]
+    },
+    {
+      "id": "ai-first",
+      "title": "AI-first SaaS organization",
+      "role": "Leaders & platform teams",
+      "blurb": "Automate every persona's work in a multi-tenant SaaS: persona kit, tenant lifecycle, tenant-aware observability with CloudWatch Omni, multi-tenant AI, the AI SDLC pipeline and the AI engineering platform.",
+      "labs": [
+        "45",
+        "46",
+        "47",
+        "48",
+        "49",
+        "50"
+      ]
     }
   ],
   "useCases": {
@@ -150,6 +164,26 @@
         "title": "Any API becomes an MCP tool",
         "text": "Lambda, OpenAPI and Smithy targets behind one governed gateway.",
         "lab": "27"
+      },
+      {
+        "title": "Every persona has an agent",
+        "text": "PM, architect, QA, SRE, FinOps, support and AI engineers each get a scoped Kiro agent with tenant-aware skills.",
+        "lab": "45"
+      },
+      {
+        "title": "Tenant lifecycle on autopilot",
+        "text": "Onboard, suspend and offboard tenants through one idempotent AWS CLI script driven by a skill and a Crew bot.",
+        "lab": "46"
+      },
+      {
+        "title": "See every tenant and agent",
+        "text": "Per-tenant metrics and agent traces in CloudWatch Omni, with DevOps Agent root cause.",
+        "lab": "47"
+      },
+      {
+        "title": "AI features that respect tenants",
+        "text": "Per-tenant inference profiles, filtered RAG, scoped memory and hard token budgets.",
+        "lab": "48"
       }
     ],
     "emerging": [
@@ -212,147 +246,19 @@
         "title": "Plans that update themselves",
         "text": "Tasks from your project tool in the IDE; hooks sync status on commit.",
         "lab": "42"
+      },
+      {
+        "title": "An SDLC run by agents",
+        "text": "Spec gate, isolation tests, AI review, cost diff and Security Agent on every PR, with humans at the gates.",
+        "lab": "49"
+      },
+      {
+        "title": "Prompts shipped like code",
+        "text": "Tier-aware routing, versioned prompts, canaries and eval-gated releases.",
+        "lab": "50"
       }
     ]
   },
-  "capabilities": [
-    {
-      "group": "Kiro surfaces",
-      "items": [
-        {
-          "label": "Kiro IDE",
-          "lab": "03"
-        },
-        {
-          "label": "Kiro CLI",
-          "lab": "01"
-        },
-        {
-          "label": "Headless / CI",
-          "lab": "10"
-        },
-        {
-          "label": "ACP editors",
-          "lab": "11"
-        },
-        {
-          "label": "Kiro Crew",
-          "lab": "12"
-        },
-        {
-          "label": "Autonomous agent",
-          "lab": "14"
-        }
-      ]
-    },
-    {
-      "group": "Context & control",
-      "items": [
-        {
-          "label": "Specs",
-          "lab": "03"
-        },
-        {
-          "label": "Steering",
-          "lab": "02"
-        },
-        {
-          "label": "Hooks",
-          "lab": "04"
-        },
-        {
-          "label": "Custom agents",
-          "lab": "05"
-        },
-        {
-          "label": "Subagents",
-          "lab": "06"
-        },
-        {
-          "label": "Skills",
-          "lab": "07"
-        },
-        {
-          "label": "Powers",
-          "lab": "08"
-        }
-      ]
-    },
-    {
-      "group": "AWS through MCP",
-      "items": [
-        {
-          "label": "AWS MCP Server",
-          "lab": "15"
-        },
-        {
-          "label": "IaC",
-          "lab": "16"
-        },
-        {
-          "label": "Serverless",
-          "lab": "17"
-        },
-        {
-          "label": "Cost & pricing",
-          "lab": "18"
-        },
-        {
-          "label": "CloudWatch / CloudTrail",
-          "lab": "19"
-        },
-        {
-          "label": "Databases",
-          "lab": "20"
-        }
-      ]
-    },
-    {
-      "group": "Agent runtime",
-      "items": [
-        {
-          "label": "Strands SDK",
-          "lab": "21"
-        },
-        {
-          "label": "Multi-agent",
-          "lab": "23"
-        },
-        {
-          "label": "A2A",
-          "lab": "24"
-        },
-        {
-          "label": "AgentCore Runtime",
-          "lab": "26"
-        },
-        {
-          "label": "Gateway",
-          "lab": "27"
-        },
-        {
-          "label": "Memory",
-          "lab": "28"
-        },
-        {
-          "label": "Identity",
-          "lab": "29"
-        },
-        {
-          "label": "Policy",
-          "lab": "30"
-        },
-        {
-          "label": "Code Interpreter / Browser",
-          "lab": "31"
-        },
-        {
-          "label": "Observability & Evals",
-          "lab": "32"
-        }
-      ]
-    }
-  ],
   "fieldStories": [
     {
       "title": "Repeatable PHP-to-Java migration engine",
@@ -426,5 +332,289 @@
       "url": "https://aws.amazon.com/blogs/machine-learning/accelerate-agentic-application-development-with-a-full-stack-starter-template-for-amazon-bedrock-agentcore/",
       "lab": "43"
     }
-  ]
+  ],
+  "architecture": {
+    "title": "AI-first SaaS on AWS",
+    "hubBadge": "Kiro · IDE · CLI · Web · Crew",
+    "top": {
+      "label": "Enterprise controls",
+      "items": [
+        {
+          "label": "IAM Identity Center & Orgs",
+          "lab": "38",
+          "icon": "building"
+        },
+        {
+          "label": "AgentCore Identity",
+          "lab": "29",
+          "icon": "key"
+        },
+        {
+          "label": "AgentCore Policy (Cedar)",
+          "lab": "30",
+          "icon": "shield"
+        },
+        {
+          "label": "Bedrock Guardrails",
+          "lab": "50",
+          "icon": "filter"
+        },
+        {
+          "label": "AWS Security Agent",
+          "lab": "49",
+          "icon": "bug"
+        }
+      ]
+    },
+    "left": {
+      "label": "AI-first teams",
+      "items": [
+        {
+          "label": "Product managers",
+          "lab": "45",
+          "icon": "user"
+        },
+        {
+          "label": "Architects",
+          "lab": "33",
+          "icon": "layers"
+        },
+        {
+          "label": "Developers",
+          "lab": "03",
+          "icon": "code"
+        },
+        {
+          "label": "AI engineers",
+          "lab": "50",
+          "icon": "spark"
+        },
+        {
+          "label": "QA",
+          "lab": "45",
+          "icon": "check"
+        },
+        {
+          "label": "SRE / operations",
+          "lab": "47",
+          "icon": "pulse"
+        },
+        {
+          "label": "Security",
+          "lab": "04",
+          "icon": "lock"
+        },
+        {
+          "label": "FinOps",
+          "lab": "48",
+          "icon": "coin"
+        },
+        {
+          "label": "Support",
+          "lab": "34",
+          "icon": "chat"
+        },
+        {
+          "label": "Tenant operations",
+          "lab": "46",
+          "icon": "users"
+        }
+      ]
+    },
+    "hub": {
+      "label": "Kiro agent platform",
+      "items": [
+        {
+          "label": "Spec-driven development",
+          "lab": "03",
+          "icon": "doc"
+        },
+        {
+          "label": "Steering",
+          "lab": "02",
+          "icon": "compass"
+        },
+        {
+          "label": "Skills at scale",
+          "lab": "41",
+          "icon": "puzzle"
+        },
+        {
+          "label": "Hooks & guardrails",
+          "lab": "04",
+          "icon": "hook"
+        },
+        {
+          "label": "Custom agents & subagents",
+          "lab": "06",
+          "icon": "bot"
+        },
+        {
+          "label": "Powers & MCP",
+          "lab": "08",
+          "icon": "plug"
+        },
+        {
+          "label": "Headless CI",
+          "lab": "10",
+          "icon": "terminal"
+        },
+        {
+          "label": "AI SDLC pipeline",
+          "lab": "49",
+          "icon": "flow"
+        },
+        {
+          "label": "Crew bots",
+          "lab": "13",
+          "icon": "clock"
+        },
+        {
+          "label": "Autonomous agent",
+          "lab": "14",
+          "icon": "rocket"
+        },
+        {
+          "label": "Persona kit",
+          "lab": "45",
+          "icon": "users"
+        },
+        {
+          "label": "Long-term memory",
+          "lab": "40",
+          "icon": "memory"
+        }
+      ]
+    },
+    "rightTop": {
+      "label": "AWS for agents",
+      "items": [
+        {
+          "label": "Agent Toolkit · AWS MCP Server",
+          "lab": "15",
+          "icon": "plug"
+        },
+        {
+          "label": "AWS CLI automation",
+          "lab": "46",
+          "icon": "terminal"
+        },
+        {
+          "label": "IaC & serverless MCP",
+          "lab": "16",
+          "icon": "layers"
+        },
+        {
+          "label": "Data MCP",
+          "lab": "20",
+          "icon": "db"
+        }
+      ]
+    },
+    "rightBottom": {
+      "label": "AI on AWS",
+      "items": [
+        {
+          "label": "Bedrock, multi-tenant",
+          "lab": "48",
+          "icon": "spark"
+        },
+        {
+          "label": "Strands Agents",
+          "lab": "21",
+          "icon": "bot"
+        },
+        {
+          "label": "AgentCore Runtime",
+          "lab": "26",
+          "icon": "cloud"
+        },
+        {
+          "label": "Gateway & tools",
+          "lab": "27",
+          "icon": "plug"
+        },
+        {
+          "label": "AgentCore Memory",
+          "lab": "28",
+          "icon": "memory"
+        },
+        {
+          "label": "Knowledge bases",
+          "lab": "37",
+          "icon": "db"
+        },
+        {
+          "label": "SageMaker AI",
+          "lab": "44",
+          "icon": "chip"
+        }
+      ]
+    },
+    "bottom": {
+      "label": "Observability",
+      "items": [
+        {
+          "label": "CloudWatch Omni",
+          "lab": "47",
+          "icon": "eye"
+        },
+        {
+          "label": "AgentCore Evaluations",
+          "lab": "32",
+          "icon": "check"
+        },
+        {
+          "label": "App Signals & CloudTrail",
+          "lab": "19",
+          "icon": "pulse"
+        },
+        {
+          "label": "AWS DevOps Agent",
+          "lab": "35",
+          "icon": "bot"
+        },
+        {
+          "label": "Cost per tenant",
+          "lab": "18",
+          "icon": "coin"
+        }
+      ]
+    },
+    "surfaces": {
+      "label": "Kiro surfaces",
+      "items": [
+        {
+          "label": "Kiro IDE",
+          "lab": "03",
+          "icon": "code"
+        },
+        {
+          "label": "Kiro CLI",
+          "lab": "01",
+          "icon": "terminal"
+        },
+        {
+          "label": "ACP editors",
+          "lab": "11",
+          "icon": "plug"
+        },
+        {
+          "label": "Kiro Web",
+          "lab": "14",
+          "icon": "cloud"
+        },
+        {
+          "label": "Kiro Crew",
+          "lab": "12",
+          "icon": "users"
+        },
+        {
+          "label": "SageMaker JupyterLab",
+          "lab": "44",
+          "icon": "chip"
+        }
+      ]
+    }
+  }
 }

@@ -1,0 +1,57 @@
+{
+  "name": "sre",
+  "description": "SRE: Investigates with observability tools, writes runbooks and alarms as IaC; never mutates production.",
+  "prompt": "You are the team's SRE assistant in an AI-first SaaS organization. Apply your skills (runbook-from-incident) exactly, cite the skill you used, keep humans in the loop for anything that changes production or customer-facing state, and always reason about tenants and tiers.",
+  "tools": [
+    "read",
+    "write",
+    "shell",
+    "@aws-mcp",
+    "@aws-knowledge"
+  ],
+  "includeMcpJson": true,
+  "permissions": {
+    "rules": [
+      {
+        "capability": "fs_write",
+        "match": [
+          "docs/runbooks/**",
+          "infra/**"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "aws cloudwatch get-*",
+          "aws cloudwatch describe-*",
+          "aws logs start-query*",
+          "aws logs get-query-results*"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "*deploy*",
+          "*delete*",
+          "*destroy*",
+          "*terminate*"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "*"
+        ],
+        "effect": "ask"
+      }
+    ]
+  },
+  "resources": [
+    "file://.kiro/steering/**/*.md",
+    "file://AGENTS.md",
+    "skill://.kiro/skills/runbook-from-incident/SKILL.md"
+  ]
+}

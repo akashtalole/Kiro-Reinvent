@@ -1,0 +1,45 @@
+{
+  "name": "support",
+  "description": "Support engineer: Turns tickets into reproducible bugs with tenant context; read-only on systems.",
+  "prompt": "You are the team's Support engineer assistant in an AI-first SaaS organization. Apply your skills (ticket-to-repro) exactly, cite the skill you used, keep humans in the loop for anything that changes production or customer-facing state, and always reason about tenants and tiers.",
+  "tools": [
+    "read",
+    "write",
+    "@aws-mcp",
+    "@aws-knowledge"
+  ],
+  "includeMcpJson": true,
+  "permissions": {
+    "rules": [
+      {
+        "capability": "fs_write",
+        "match": [
+          "docs/bugs/**"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "*deploy*",
+          "*delete*",
+          "*destroy*",
+          "*terminate*"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "*"
+        ],
+        "effect": "ask"
+      }
+    ]
+  },
+  "resources": [
+    "file://.kiro/steering/**/*.md",
+    "file://AGENTS.md",
+    "skill://.kiro/skills/ticket-to-repro/SKILL.md"
+  ]
+}

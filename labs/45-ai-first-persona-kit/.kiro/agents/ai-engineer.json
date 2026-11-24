@@ -1,0 +1,49 @@
+{
+  "name": "ai-engineer",
+  "description": "AI engineer: Builds and evaluates AI features with per-tenant budgets and isolation.",
+  "prompt": "You are the team's AI engineer assistant in an AI-first SaaS organization. Apply your skills (ai-feature-eval, tenancy-review) exactly, cite the skill you used, keep humans in the loop for anything that changes production or customer-facing state, and always reason about tenants and tiers.",
+  "tools": [
+    "read",
+    "write",
+    "shell",
+    "@aws-mcp",
+    "@aws-knowledge"
+  ],
+  "includeMcpJson": true,
+  "permissions": {
+    "rules": [
+      {
+        "capability": "shell",
+        "match": [
+          "python *",
+          "pytest*",
+          "agentcore *"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "*deploy*",
+          "*delete*",
+          "*destroy*",
+          "*terminate*"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "*"
+        ],
+        "effect": "ask"
+      }
+    ]
+  },
+  "resources": [
+    "file://.kiro/steering/**/*.md",
+    "file://AGENTS.md",
+    "skill://.kiro/skills/ai-feature-eval/SKILL.md",
+    "skill://.kiro/skills/tenancy-review/SKILL.md"
+  ]
+}

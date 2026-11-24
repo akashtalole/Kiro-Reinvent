@@ -1,0 +1,9 @@
+# Natural-language rules for AgentCore Policy (see Lab 30) on the SaaS tool gateway.
+
+Every tool call must include a tenant_id argument equal to the caller's "custom:tenantId" claim.
+
+Only users whose "custom:tier" claim is "premium" or "enterprise" may call the export_report tool.
+
+The bulk_delete tool may only be called by users whose "role" claim is "tenant-admin", and only for their own tenant.
+
+Nobody may call any tool with a tenant_id that differs from their own "custom:tenantId" claim.

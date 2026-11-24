@@ -1,0 +1,24 @@
+{
+  "support-answer": {
+    "stable": "v2",
+    "versions": {
+      "v2": {
+        "file": "support-answer/v2.md",
+        "eval": "evals/support-answer-v2.json"
+      },
+      "v3": {
+        "file": "support-answer/v3.md",
+        "eval": "evals/support-answer-v3.json"
+      }
+    }
+  },
+  "summarize-ticket": {
+    "stable": "v1",
+    "versions": {
+      "v1": {
+        "file": "summarize-ticket/v1.md",
+        "eval": "evals/summarize-ticket-v1.json"
+      }
+    }
+  }
+}

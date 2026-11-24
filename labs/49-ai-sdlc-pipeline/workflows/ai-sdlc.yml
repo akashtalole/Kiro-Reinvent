@@ -1,0 +1,108 @@
+# AI-first SDLC pipeline for a multi-tenant SaaS. Copy to .github/workflows/ai-sdlc.yml.
+# Secrets: KIRO_API_KEY. Vars: AWS_ROLE_ARN (OIDC, read-only for review jobs), DEV_ROLE_ARN (deploy to dev).
+name: AI SDLC
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+concurrency:
+  group: ai-sdlc-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  KIRO_INSTALL: curl -fsSL https://cli.kiro.dev/install | bash && echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+jobs:
+  spec-gate:                      # PM/architect intent → code traceability
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Every PR implements a ticked spec task
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: python3 scripts/spec_gate.py --text "$PR_BODY $(git log --format=%B "$BASE"..HEAD)"
+
+  test:                           # unit + tenant-isolation suites (QA persona)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm }
+      - run: npm ci && npm test
+      - name: Tenant isolation tests (block on failure)
+        run: npm run test:isolation
+
+  ai-review:                      # architect + security personas, headless Kiro
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - run: eval "$KIRO_INSTALL"
+      - name: Tenancy review of the diff
+        env:
+          KIRO_API_KEY: ${{ secrets.KIRO_API_KEY }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git diff "$BASE"...HEAD > /tmp/pr.diff
+          kiro-cli chat --no-interactive --agent architect \
+            "Apply the tenancy-review skill to /tmp/pr.diff. Markdown only: findings table, then 'Verdict: approve' or 'Verdict: changes requested'." > review.md
+      - name: Comment
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: gh pr comment ${{ github.event.pull_request.number }} --body-file review.md --edit-last || gh pr comment ${{ github.event.pull_request.number }} --body-file review.md
+      # AWS Security Agent (GA) also offers design-document and PR security review — enable it on the repo
+      # alongside this job for an independent, AWS-managed security pass.
+
+  cost-diff:                      # FinOps persona: price the infra change before merge
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with: { role-to-assume: "${{ vars.AWS_ROLE_ARN }}", aws-region: us-east-1 }
+      - run: eval "$KIRO_INSTALL" && cd infra && npm ci && npx cdk synth --quiet && npx cdk diff > /tmp/cdk.diff || true
+      - name: Price the diff (power-aws-cost-guard / AWS Pricing MCP)
+        env: { KIRO_API_KEY: "${{ secrets.KIRO_API_KEY }}" }
+        run: |
+          kiro-cli chat --no-interactive --trust-tools=read \
+            "Using the estimate-before-build skill, estimate the monthly cost delta of /tmp/cdk.diff at our current tenant count (see docs/capacity.md). Output a 5-line markdown summary." > cost.md
+      - env: { GH_TOKEN: "${{ github.token }}" }
+        run: gh pr comment ${{ github.event.pull_request.number }} --body-file cost.md
+
+  deploy-dev:                     # humans merge; the pipeline deploys to dev only
+    if: github.event_name == 'push'
+    needs: [test]
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with: { role-to-assume: "${{ vars.DEV_ROLE_ARN }}", aws-region: us-east-1 }
+      - run: cd infra && npm ci && npx cdk deploy --all --require-approval never
+      - name: Post-deploy smoke + isolation tests against dev
+        run: npm ci && npm run test:isolation -- --env dev
+
+  release-notes:                  # release manager persona
+    if: github.event_name == 'push'
+    needs: [deploy-dev]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - run: eval "$KIRO_INSTALL"
+      - env: { KIRO_API_KEY: "${{ secrets.KIRO_API_KEY }}" }
+        run: |
+          kiro-cli chat --no-interactive --agent release-manager \
+            "Draft release notes for commits since the last tag, grouped Added/Changed/Fixed, and list tenant-visible changes per tier." > RELEASE_NOTES.md
+      - uses: actions/upload-artifact@v4
+        with: { name: release-notes, path: RELEASE_NOTES.md }

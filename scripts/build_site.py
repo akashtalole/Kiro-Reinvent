@@ -40,6 +40,7 @@ CATEGORIES = [
     "Strands Agents",
     "AgentCore",
     "End-to-end solutions",
+    "AI-first SaaS",
 ]
 LEVELS = ["Beginner", "Intermediate", "Advanced"]
 

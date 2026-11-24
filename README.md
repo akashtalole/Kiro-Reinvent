@@ -1,8 +1,8 @@
 # Kiro Reinvent Labs
 
-**Learn to build with Kiro by building real things with it**: 44 hands-on labs that take you from your first spec to governed, production agents on AWS.
+**Learn to build with Kiro by building real things with it**: 50 hands-on labs that take you from your first spec to governed, production agents on AWS.
 
-[**🌐 Open the labs site**](https://akashtalole.github.io/Kiro-Reinvent/) · [Landscape report](docs/landscape.md) · [Kiro in the field](docs/kiro-in-the-field.md) · [Architecture patterns](docs/architecture-patterns.md) · [AWS MCP catalog](docs/aws-mcp-catalog.md) · [Setup](docs/setup.md)
+[**🌐 Open the labs site**](https://akashtalole.github.io/Kiro-Reinvent/) · [Landscape report](docs/landscape.md) · [AI-first SaaS playbook](docs/ai-first-saas-playbook.md) · [Kiro in the field](docs/kiro-in-the-field.md) · [Architecture patterns](docs/architecture-patterns.md) · [AWS MCP catalog](docs/aws-mcp-catalog.md) · [Setup](docs/setup.md)
 
 ```mermaid
 flowchart LR
@@ -115,6 +115,32 @@ Every lab is a folder with a README (scenario, diagram, steps, verify, clean up)
 | [39](labs/39-skill-driven-migration-engine/README.md) | [Field pattern: a skill-driven, parity-verified migration engine](labs/39-skill-driven-migration-engine/README.md) | Advanced | 3 h |
 | [44](labs/44-kiro-in-sagemaker-model-customization/README.md) | [Field pattern: agent-guided model fine-tuning with Kiro in SageMaker AI](labs/44-kiro-in-sagemaker-model-customization/README.md) | Advanced | 3 h |
 
+### AI-first SaaS
+
+| # | Lab | Level | Time |
+| --- | --- | --- | --- |
+| [45](labs/45-ai-first-persona-kit/README.md) | [The AI-first team kit — a Kiro agent and skills for every persona](labs/45-ai-first-persona-kit/README.md) | Intermediate | 60 min |
+| [46](labs/46-tenant-lifecycle-automation/README.md) | [Automate the tenant lifecycle with Kiro, skills and the AWS CLI](labs/46-tenant-lifecycle-automation/README.md) | Intermediate | 60 min |
+| [47](labs/47-tenant-observability-cloudwatch-omni/README.md) | [Tenant-aware observability with CloudWatch Omni](labs/47-tenant-observability-cloudwatch-omni/README.md) | Advanced | 75 min |
+| [48](labs/48-multi-tenant-ai-on-bedrock/README.md) | [Multi-tenant AI features on Bedrock — isolation, cost and budgets per tenant](labs/48-multi-tenant-ai-on-bedrock/README.md) | Advanced | 75 min |
+| [49](labs/49-ai-sdlc-pipeline/README.md) | [The AI-first SDLC pipeline — every persona automated, humans at the gates](labs/49-ai-sdlc-pipeline/README.md) | Advanced | 90 min |
+| [50](labs/50-ai-engineering-platform/README.md) | [An AI engineering platform for SaaS — routing, prompt versions, canaries, release gates](labs/50-ai-engineering-platform/README.md) | Advanced | 75 min |
+
+## AI-first SaaS on AWS
+
+The **AI-first SaaS** track (labs 45–50) and the [AI-first SaaS playbook](docs/ai-first-saas-playbook.md) show how a multi-tenant SaaS company automates the work of **every persona**: product, architecture, engineering, AI engineering, QA, SRE, security, FinOps, support and tenant operations. It uses Kiro (skills, custom agents, hooks, Crew bots, autonomous agent, headless CI), MCP, Agent Toolkit for AWS and the AWS CLI. The full AI stack on AWS covers Bedrock, Strands, AgentCore, SageMaker AI and Amazon Quick, with **Amazon CloudWatch Omni**, AgentCore Evaluations and AWS DevOps Agent for observability.
+
+| Lab | What gets automated |
+| --- | --- |
+| 45 Persona kit | A scoped Kiro agent and tenant-aware skill per persona (PRD→spec, tenancy review, isolation tests, runbooks, tenant cost, ticket→repro, AI eval gate) |
+| 46 Tenant lifecycle | Onboard, suspend and offboard via an idempotent AWS CLI script driven by a skill, a guard hook and a Crew bot |
+| 47 Observability | Per-tenant EMF metrics, `tenant.id` traces, CloudWatch Omni spaces, the Omni extension in Kiro, per-tier anomaly alarms, DevOps Agent root cause |
+| 48 Multi-tenant AI | Per-tenant Bedrock inference profiles, tenant-filtered RAG, scoped memory, atomic token budgets, Cedar tenant rules |
+| 49 AI SDLC pipeline | Spec gate, isolation tests, AI tenancy review, AI cost diff, Security Agent, dev deploy, AI release notes |
+| 50 AI platform | Tier-aware model routing, versioned prompts, per-tenant canaries, eval-based release gate |
+
+The home page opens with a **clickable architecture diagram**: personas, the Kiro agent platform, AWS for agents, AI on AWS, enterprise controls and observability. Hovering over any part previews the lab that teaches it.
+
 ## From the field: how AWS teams use Kiro
 
 Every post in the [AWS ML Blog's Kiro category](https://aws.amazon.com/blogs/machine-learning/category/artificial-intelligence/kiro/) is analyzed in [docs/kiro-in-the-field.md](docs/kiro-in-the-field.md) and mapped to a lab:
@@ -133,7 +159,7 @@ Every post in the [AWS ML Blog's Kiro category](https://aws.amazon.com/blogs/mac
 
 ## Learning paths
 
-Seven role-based paths (essentials in an afternoon, field patterns from AWS, Kiro power user, platform engineer, agent developer, security & governance, FinOps & operations) are listed on the [site](https://akashtalole.github.io/Kiro-Reinvent/#paths) and defined in [`site/data/catalog.json`](site/data/catalog.json).
+Eight role-based paths (essentials in an afternoon, field patterns from AWS, AI-first SaaS organization, Kiro power user, platform engineer, agent developer, security & governance, FinOps & operations) are listed on the [site](https://akashtalole.github.io/Kiro-Reinvent/#paths) and defined in [`site/data/catalog.json`](site/data/catalog.json).
 
 ## Run the site locally
 

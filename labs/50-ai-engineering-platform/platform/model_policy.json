@@ -1,0 +1,14 @@
+{
+  "version": 3,
+  "routes": {
+    "support-answer": {
+      "basic":      { "primary": "us.amazon.nova-lite-v1:0",            "fallbacks": ["us.amazon.nova-micro-v1:0"],        "max_tokens": 600,  "guardrail": "gr-basic" },
+      "premium":    { "primary": "global.anthropic.claude-haiku-4-5",   "fallbacks": ["us.amazon.nova-pro-v1:0"],          "max_tokens": 1200, "guardrail": "gr-standard" },
+      "enterprise": { "primary": "global.anthropic.claude-sonnet-4-6",  "fallbacks": ["global.anthropic.claude-haiku-4-5"], "max_tokens": 2500, "guardrail": "gr-standard" }
+    },
+    "summarize-ticket": {
+      "*":          { "primary": "us.amazon.nova-lite-v1:0",            "fallbacks": [],                                    "max_tokens": 400,  "guardrail": "gr-standard" }
+    }
+  },
+  "canary": { "support-answer": { "prompt_version": "v3", "percent": 10 } }
+}
