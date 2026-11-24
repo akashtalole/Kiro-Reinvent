@@ -1,0 +1,107 @@
+{
+  "paths": [
+    {
+      "id": "essentials",
+      "title": "Essentials in an afternoon",
+      "role": "Everyone",
+      "blurb": "Install Kiro, give it project context, ship one feature from a spec, and automate a check with a hook.",
+      "labs": ["01", "02", "03", "04"]
+    },
+    {
+      "id": "builder",
+      "title": "Kiro power user",
+      "role": "Application developer",
+      "blurb": "Shape Kiro into your team's agent: custom agents, subagents, skills, powers and MCP.",
+      "labs": ["02", "03", "05", "06", "07", "08", "09", "15"]
+    },
+    {
+      "id": "platform",
+      "title": "Platform & DevOps engineer",
+      "role": "Platform engineer",
+      "blurb": "Run Kiro headless in CI, drive AWS through MCP, and hand recurring ops work to Kiro Crew bots.",
+      "labs": ["10", "12", "13", "15", "16", "17", "19", "35"]
+    },
+    {
+      "id": "agent-dev",
+      "title": "Agent developer",
+      "role": "AI / agent engineer",
+      "blurb": "Build agents with Strands and take them to production on AgentCore with tools, memory, identity and evals.",
+      "labs": ["21", "22", "23", "24", "25", "26", "27", "28", "29", "32", "34"]
+    },
+    {
+      "id": "governance",
+      "title": "Security & governance",
+      "role": "Security / compliance",
+      "blurb": "Permissions, hooks, Cedar policy, OAuth identity and audit trails for agents that touch production.",
+      "labs": ["04", "05", "29", "30", "32", "38"]
+    },
+    {
+      "id": "finops",
+      "title": "FinOps & operations",
+      "role": "FinOps / SRE",
+      "blurb": "Cost, observability and incident workflows driven by agents over AWS MCP servers.",
+      "labs": ["15", "18", "19", "35"]
+    }
+  ],
+  "useCases": {
+    "core": [
+      { "title": "Spec → production feature", "text": "Turn a one-line prompt into EARS requirements, a design and a tracked task plan, then implement it wave by wave.", "lab": "03" },
+      { "title": "Guardrails on every save", "text": "Lint, test, secret-scan and doc-sync automatically with agent hooks.", "lab": "04" },
+      { "title": "A specialist agent per job", "text": "Reviewer, IaC author, release manager: scoped tools, permissions and context.", "lab": "05" },
+      { "title": "Infrastructure by conversation", "text": "Author and validate CDK / CloudFormation / Terraform with AWS IaC tooling over MCP.", "lab": "16" },
+      { "title": "Cost questions in plain English", "text": "Estimate before you build, explain the bill after you ship.", "lab": "18" },
+      { "title": "Agents in your pipeline", "text": "Headless Kiro reviews PRs, writes changelogs and fixes failing tests in CI.", "lab": "10" },
+      { "title": "Production agent hosting", "text": "Deploy any framework to serverless, session-isolated microVMs.", "lab": "26" },
+      { "title": "Any API becomes an MCP tool", "text": "Lambda, OpenAPI and Smithy targets behind one governed gateway.", "lab": "27" }
+    ],
+    "emerging": [
+      { "title": "Always-on engineering bots", "text": "Intake, build-health, review and release-readiness bots with their own memory.", "lab": "13" },
+      { "title": "Issue → PR, unattended", "text": "Label an issue and let the autonomous agent deliver a reviewed pull request.", "lab": "14" },
+      { "title": "Deterministic tool policy", "text": "Cedar rules decide which tool calls an agent may make, with which arguments.", "lab": "30" },
+      { "title": "Agents that remember", "text": "Semantic, summary, preference and episodic memory across sessions.", "lab": "28" },
+      { "title": "Agent swarms & graphs", "text": "Orchestrate specialists with graph, swarm and agents-as-tools patterns.", "lab": "23" },
+      { "title": "Cross-framework agents", "text": "Agents talk to agents over A2A, regardless of who built them.", "lab": "24" },
+      { "title": "Continuous agent quality", "text": "Online evaluations on live traces catch regressions before users do.", "lab": "32" },
+      { "title": "Legacy to cloud-native", "text": "Spec-driven modernization of a monolith into serverless services.", "lab": "36" }
+    ]
+  },
+  "capabilities": [
+    { "group": "Kiro surfaces", "items": [
+      { "label": "Kiro IDE", "lab": "03" },
+      { "label": "Kiro CLI", "lab": "01" },
+      { "label": "Headless / CI", "lab": "10" },
+      { "label": "ACP editors", "lab": "11" },
+      { "label": "Kiro Crew", "lab": "12" },
+      { "label": "Autonomous agent", "lab": "14" }
+    ]},
+    { "group": "Context & control", "items": [
+      { "label": "Specs", "lab": "03" },
+      { "label": "Steering", "lab": "02" },
+      { "label": "Hooks", "lab": "04" },
+      { "label": "Custom agents", "lab": "05" },
+      { "label": "Subagents", "lab": "06" },
+      { "label": "Skills", "lab": "07" },
+      { "label": "Powers", "lab": "08" }
+    ]},
+    { "group": "AWS through MCP", "items": [
+      { "label": "AWS MCP Server", "lab": "15" },
+      { "label": "IaC", "lab": "16" },
+      { "label": "Serverless", "lab": "17" },
+      { "label": "Cost & pricing", "lab": "18" },
+      { "label": "CloudWatch / CloudTrail", "lab": "19" },
+      { "label": "Databases", "lab": "20" }
+    ]},
+    { "group": "Agent runtime", "items": [
+      { "label": "Strands SDK", "lab": "21" },
+      { "label": "Multi-agent", "lab": "23" },
+      { "label": "A2A", "lab": "24" },
+      { "label": "AgentCore Runtime", "lab": "26" },
+      { "label": "Gateway", "lab": "27" },
+      { "label": "Memory", "lab": "28" },
+      { "label": "Identity", "lab": "29" },
+      { "label": "Policy", "lab": "30" },
+      { "label": "Code Interpreter / Browser", "lab": "31" },
+      { "label": "Observability & Evals", "lab": "32" }
+    ]}
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "name": "release-manager",
+  "description": "Prepares releases: changelog, version bump, release notes. Uses the manual release-notes steering.",
+  "prompt": "Prepare a release. Read commits since the last tag, group them using the release-notes steering, bump the semver in package.json (breaking→major, feat→minor, else patch), update CHANGELOG.md and draft GitHub release notes. Ask before tagging.",
+  "tools": ["read", "write", "shell"],
+  "permissions": {
+    "rules": [
+      { "capability": "shell", "match": ["git log *", "git describe *", "git tag -l*"], "effect": "allow" },
+      { "capability": "shell", "match": ["git tag *", "git push *"], "effect": "ask" },
+      { "capability": "fs_write", "match": ["CHANGELOG.md", "package.json"], "effect": "allow" }
+    ]
+  },
+  "resources": ["file://.kiro/steering/release-notes.md"],
+  "hooks": [
+    { "name": "Tag context", "trigger": "SessionStart", "action": { "type": "command", "command": "git describe --tags --abbrev=0 || echo 'no tags yet'" } }
+  ],
+  "model": "claude-sonnet-4.6"
+}

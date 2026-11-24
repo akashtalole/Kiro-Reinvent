@@ -1,0 +1,66 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Block destructive shell",
+      "description": "Deny rm -rf, force pushes and prod deploys from the agent.",
+      "trigger": "PreToolUse",
+      "matcher": "shell",
+      "action": {
+        "type": "command",
+        "command": "python3 scripts/guard_shell.py"
+      },
+      "timeout": 10
+    },
+    {
+      "name": "Secret scan before writes",
+      "trigger": "PreToolUse",
+      "matcher": "write",
+      "action": {
+        "type": "command",
+        "command": "python3 scripts/secret_scan.py"
+      },
+      "timeout": 10
+    },
+    {
+      "name": "Auto-approve read-only AWS calls",
+      "trigger": "PermissionRequest",
+      "matcher": "@aws-api",
+      "action": {
+        "type": "command",
+        "command": "python3 scripts/approve_readonly_aws.py"
+      }
+    },
+    {
+      "name": "Done means green",
+      "trigger": "Stop",
+      "action": {
+        "type": "command",
+        "command": "npm test --silent"
+      }
+    },
+    {
+      "name": "Offer a draft PR",
+      "trigger": "Stop",
+      "action": {
+        "type": "command",
+        "command": "gh pr create --draft --fill"
+      },
+      "confirm": {
+        "question": "Agent finished. Open a draft pull request?",
+        "options": [
+          {
+            "id": "pr",
+            "label": "Yes, open draft PR",
+            "run": true
+          },
+          {
+            "id": "no",
+            "label": "Not yet",
+            "run": false
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Lint on save",
+      "description": "Auto-fix lint issues for JS/TS files the agent or you save.",
+      "trigger": "PostFileSave",
+      "matcher": "\\.(js|ts|tsx)$",
+      "action": {
+        "type": "command",
+        "command": "npx --no-install eslint --fix src test || true"
+      },
+      "timeout": 60
+    },
+    {
+      "name": "Keep tests honest",
+      "trigger": "PostFileSave",
+      "matcher": "^src/.*\\.js$",
+      "action": {
+        "type": "agent",
+        "prompt": "A source file in src/ was saved. Check whether the matching test in test/ still covers the changed behaviour. If not, update or add tests, then run npm test."
+      }
+    },
+    {
+      "name": "Session briefing",
+      "trigger": "SessionStart",
+      "action": {
+        "type": "command",
+        "command": "git status --short && git log --oneline -5"
+      }
+    }
+  ]
+}

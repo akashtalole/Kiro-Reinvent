@@ -1,0 +1,13 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Rebuild site after lab edits",
+      "description": "Validate front matter and rebuild _site whenever a lab README or site file is saved.",
+      "trigger": "PostFileSave",
+      "matcher": "^(labs/.+/README\\.md|site/.+|docs/.+\\.md)$",
+      "action": { "type": "command", "command": "python3 scripts/build_site.py" },
+      "timeout": 60
+    }
+  ]
+}

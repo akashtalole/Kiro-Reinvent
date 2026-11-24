@@ -1,0 +1,12 @@
+# Natural-language policy requirements (input to StartPolicyGeneration). One rule per paragraph.
+
+Only users whose OAuth token has the scope "acme-tools/invoke" may call any tool on this gateway.
+
+The get_order tool may be called by any authenticated user.
+
+The issue_refund tool may only be called when the amount is less than or equal to 100,
+and only by users whose "role" claim is "support-agent" or "support-lead".
+
+Users whose "role" claim is "support-lead" may call issue_refund for amounts up to 1000.
+
+Nobody may call issue_refund for an order id that does not start with "A-".

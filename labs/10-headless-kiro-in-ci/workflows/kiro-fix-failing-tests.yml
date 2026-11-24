@@ -1,0 +1,44 @@
+# Nightly: if main's tests fail, let Kiro attempt a fix on a branch and open a draft PR for humans.
+name: Kiro nightly test doctor
+
+on:
+  schedule: [{ cron: "17 3 * * 1-5" }]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  doctor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm }
+      - run: npm ci
+      - id: tests
+        run: npm test 2>&1 | tee test.log; echo "status=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+      - name: Install Kiro CLI
+        if: steps.tests.outputs.status != '0'
+        run: |
+          curl -fsSL https://cli.kiro.dev/install | bash
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Ask Kiro to fix
+        if: steps.tests.outputs.status != '0'
+        env:
+          KIRO_API_KEY: ${{ secrets.KIRO_API_KEY }}
+        run: |
+          git switch -c kiro/test-doctor-${{ github.run_id }}
+          kiro-cli chat --no-interactive --trust-tools=read,write,shell \
+            "Tests are failing; the log is in test.log. Find the root cause, fix the code (not the tests, unless the test is wrong — explain why), and re-run npm test until green. Summarise the root cause in FIX.md."
+          npm test
+      - name: Open draft PR
+        if: steps.tests.outputs.status != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "kiro-test-doctor"; git config user.email "kiro-test-doctor@users.noreply.github.com"
+          git add -A && git commit -m "fix: repair failing tests (Kiro test doctor)" && git push -u origin HEAD
+          gh pr create --draft --title "Kiro test doctor: fix failing tests" --body-file FIX.md
