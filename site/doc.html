@@ -20,7 +20,7 @@
   // mark the nav item before site.js builds the header
   (function () {
     var d = new URLSearchParams(location.search).get("doc") || "landscape";
-    document.body.setAttribute("data-page", d === "architecture-patterns" ? "patterns" : d);
+    document.body.setAttribute("data-page", d === "architecture-patterns" ? "patterns" : d === "kiro-in-the-field" ? "field" : d === "ai-first-saas-playbook" ? "aifirst" : d);
   })();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>

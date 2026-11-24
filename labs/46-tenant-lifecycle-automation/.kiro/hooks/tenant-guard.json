@@ -1,0 +1,13 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Guard tenant offboarding",
+      "description": "Block offboard unless a ticket id and CONFIRM=<tenant> are present; block direct deletes on tenant tables.",
+      "trigger": "PreToolUse",
+      "matcher": "shell",
+      "action": { "type": "command", "command": "python3 scripts/tenant_guard.py" },
+      "timeout": 10
+    }
+  ]
+}

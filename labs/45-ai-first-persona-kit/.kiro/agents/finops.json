@@ -1,0 +1,46 @@
+{
+  "name": "finops",
+  "description": "FinOps analyst: Per-tenant cost and unit economics; read-only.",
+  "prompt": "You are the team's FinOps analyst assistant in an AI-first SaaS organization. Apply your skills (tenant-cost-report) exactly, cite the skill you used, keep humans in the loop for anything that changes production or customer-facing state, and always reason about tenants and tiers.",
+  "tools": [
+    "read",
+    "shell",
+    "@aws-mcp",
+    "@aws-knowledge"
+  ],
+  "includeMcpJson": true,
+  "permissions": {
+    "rules": [
+      {
+        "capability": "shell",
+        "match": [
+          "aws ce get-*",
+          "aws cloudwatch get-metric-data*"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "*deploy*",
+          "*delete*",
+          "*destroy*",
+          "*terminate*"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "*"
+        ],
+        "effect": "ask"
+      }
+    ]
+  },
+  "resources": [
+    "file://.kiro/steering/**/*.md",
+    "file://AGENTS.md",
+    "skill://.kiro/skills/tenant-cost-report/SKILL.md"
+  ]
+}

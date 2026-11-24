@@ -5,103 +5,616 @@
       "title": "Essentials in an afternoon",
       "role": "Everyone",
       "blurb": "Install Kiro, give it project context, ship one feature from a spec, and automate a check with a hook.",
-      "labs": ["01", "02", "03", "04"]
+      "labs": [
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
     },
     {
       "id": "builder",
       "title": "Kiro power user",
       "role": "Application developer",
       "blurb": "Shape Kiro into your team's agent: custom agents, subagents, skills, powers and MCP.",
-      "labs": ["02", "03", "05", "06", "07", "08", "09", "15"]
+      "labs": [
+        "02",
+        "03",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09",
+        "15",
+        "40",
+        "41",
+        "42"
+      ]
     },
     {
       "id": "platform",
       "title": "Platform & DevOps engineer",
       "role": "Platform engineer",
       "blurb": "Run Kiro headless in CI, drive AWS through MCP, and hand recurring ops work to Kiro Crew bots.",
-      "labs": ["10", "12", "13", "15", "16", "17", "19", "35"]
+      "labs": [
+        "10",
+        "12",
+        "13",
+        "15",
+        "16",
+        "17",
+        "19",
+        "35",
+        "39"
+      ]
     },
     {
       "id": "agent-dev",
       "title": "Agent developer",
       "role": "AI / agent engineer",
       "blurb": "Build agents with Strands and take them to production on AgentCore with tools, memory, identity and evals.",
-      "labs": ["21", "22", "23", "24", "25", "26", "27", "28", "29", "32", "34"]
+      "labs": [
+        "21",
+        "22",
+        "23",
+        "24",
+        "25",
+        "26",
+        "27",
+        "28",
+        "29",
+        "32",
+        "34",
+        "43"
+      ]
     },
     {
       "id": "governance",
       "title": "Security & governance",
       "role": "Security / compliance",
       "blurb": "Permissions, hooks, Cedar policy, OAuth identity and audit trails for agents that touch production.",
-      "labs": ["04", "05", "29", "30", "32", "38"]
+      "labs": [
+        "04",
+        "05",
+        "29",
+        "30",
+        "32",
+        "38"
+      ]
     },
     {
       "id": "finops",
       "title": "FinOps & operations",
       "role": "FinOps / SRE",
       "blurb": "Cost, observability and incident workflows driven by agents over AWS MCP servers.",
-      "labs": ["15", "18", "19", "35"]
+      "labs": [
+        "15",
+        "18",
+        "19",
+        "35"
+      ]
+    },
+    {
+      "id": "field",
+      "title": "Field patterns from AWS",
+      "role": "Everyone",
+      "blurb": "Patterns taken from real AWS ML Blog posts about Kiro: migration engines, domain skills, memory, plan sync, starter templates and ML fine-tuning.",
+      "labs": [
+        "39",
+        "40",
+        "41",
+        "42",
+        "43",
+        "44"
+      ]
+    },
+    {
+      "id": "ai-first",
+      "title": "AI-first SaaS organization",
+      "role": "Leaders & platform teams",
+      "blurb": "Automate every persona's work in a multi-tenant SaaS: persona kit, tenant lifecycle, tenant-aware observability with CloudWatch Omni, multi-tenant AI, the AI SDLC pipeline and the AI engineering platform.",
+      "labs": [
+        "45",
+        "46",
+        "47",
+        "48",
+        "49",
+        "50"
+      ]
     }
   ],
   "useCases": {
     "core": [
-      { "title": "Spec → production feature", "text": "Turn a one-line prompt into EARS requirements, a design and a tracked task plan, then implement it wave by wave.", "lab": "03" },
-      { "title": "Guardrails on every save", "text": "Lint, test, secret-scan and doc-sync automatically with agent hooks.", "lab": "04" },
-      { "title": "A specialist agent per job", "text": "Reviewer, IaC author, release manager: scoped tools, permissions and context.", "lab": "05" },
-      { "title": "Infrastructure by conversation", "text": "Author and validate CDK / CloudFormation / Terraform with AWS IaC tooling over MCP.", "lab": "16" },
-      { "title": "Cost questions in plain English", "text": "Estimate before you build, explain the bill after you ship.", "lab": "18" },
-      { "title": "Agents in your pipeline", "text": "Headless Kiro reviews PRs, writes changelogs and fixes failing tests in CI.", "lab": "10" },
-      { "title": "Production agent hosting", "text": "Deploy any framework to serverless, session-isolated microVMs.", "lab": "26" },
-      { "title": "Any API becomes an MCP tool", "text": "Lambda, OpenAPI and Smithy targets behind one governed gateway.", "lab": "27" }
+      {
+        "title": "Spec → production feature",
+        "text": "Turn a one-line prompt into EARS requirements, a design and a tracked task plan, then implement it wave by wave.",
+        "lab": "03"
+      },
+      {
+        "title": "Guardrails on every save",
+        "text": "Lint, test, secret-scan and doc-sync automatically with agent hooks.",
+        "lab": "04"
+      },
+      {
+        "title": "A specialist agent per job",
+        "text": "Reviewer, IaC author, release manager: scoped tools, permissions and context.",
+        "lab": "05"
+      },
+      {
+        "title": "Infrastructure by conversation",
+        "text": "Author and validate CDK / CloudFormation / Terraform with AWS IaC tooling over MCP.",
+        "lab": "16"
+      },
+      {
+        "title": "Cost questions in plain English",
+        "text": "Estimate before you build, explain the bill after you ship.",
+        "lab": "18"
+      },
+      {
+        "title": "Agents in your pipeline",
+        "text": "Headless Kiro reviews PRs, writes changelogs and fixes failing tests in CI.",
+        "lab": "10"
+      },
+      {
+        "title": "Production agent hosting",
+        "text": "Deploy any framework to serverless, session-isolated microVMs.",
+        "lab": "26"
+      },
+      {
+        "title": "Any API becomes an MCP tool",
+        "text": "Lambda, OpenAPI and Smithy targets behind one governed gateway.",
+        "lab": "27"
+      },
+      {
+        "title": "Every persona has an agent",
+        "text": "PM, architect, QA, SRE, FinOps, support and AI engineers each get a scoped Kiro agent with tenant-aware skills.",
+        "lab": "45"
+      },
+      {
+        "title": "Tenant lifecycle on autopilot",
+        "text": "Onboard, suspend and offboard tenants through one idempotent AWS CLI script driven by a skill and a Crew bot.",
+        "lab": "46"
+      },
+      {
+        "title": "See every tenant and agent",
+        "text": "Per-tenant metrics and agent traces in CloudWatch Omni, with DevOps Agent root cause.",
+        "lab": "47"
+      },
+      {
+        "title": "AI features that respect tenants",
+        "text": "Per-tenant inference profiles, filtered RAG, scoped memory and hard token budgets.",
+        "lab": "48"
+      }
     ],
     "emerging": [
-      { "title": "Always-on engineering bots", "text": "Intake, build-health, review and release-readiness bots with their own memory.", "lab": "13" },
-      { "title": "Issue → PR, unattended", "text": "Label an issue and let the autonomous agent deliver a reviewed pull request.", "lab": "14" },
-      { "title": "Deterministic tool policy", "text": "Cedar rules decide which tool calls an agent may make, with which arguments.", "lab": "30" },
-      { "title": "Agents that remember", "text": "Semantic, summary, preference and episodic memory across sessions.", "lab": "28" },
-      { "title": "Agent swarms & graphs", "text": "Orchestrate specialists with graph, swarm and agents-as-tools patterns.", "lab": "23" },
-      { "title": "Cross-framework agents", "text": "Agents talk to agents over A2A, regardless of who built them.", "lab": "24" },
-      { "title": "Continuous agent quality", "text": "Online evaluations on live traces catch regressions before users do.", "lab": "32" },
-      { "title": "Legacy to cloud-native", "text": "Spec-driven modernization of a monolith into serverless services.", "lab": "36" }
+      {
+        "title": "Always-on engineering bots",
+        "text": "Intake, build-health, review and release-readiness bots with their own memory.",
+        "lab": "13"
+      },
+      {
+        "title": "Issue → PR, unattended",
+        "text": "Label an issue and let the autonomous agent deliver a reviewed pull request.",
+        "lab": "14"
+      },
+      {
+        "title": "Deterministic tool policy",
+        "text": "Cedar rules decide which tool calls an agent may make, with which arguments.",
+        "lab": "30"
+      },
+      {
+        "title": "Agents that remember",
+        "text": "Semantic, summary, preference and episodic memory across sessions.",
+        "lab": "28"
+      },
+      {
+        "title": "Agent swarms & graphs",
+        "text": "Orchestrate specialists with graph, swarm and agents-as-tools patterns.",
+        "lab": "23"
+      },
+      {
+        "title": "Cross-framework agents",
+        "text": "Agents talk to agents over A2A, regardless of who built them.",
+        "lab": "24"
+      },
+      {
+        "title": "Continuous agent quality",
+        "text": "Online evaluations on live traces catch regressions before users do.",
+        "lab": "32"
+      },
+      {
+        "title": "Legacy to cloud-native",
+        "text": "Spec-driven modernization of a monolith into serverless services.",
+        "lab": "36"
+      },
+      {
+        "title": "Parity-verified migrations",
+        "text": "Methodology as skills, a parity harness as referee, and a rulebook you fix instead of the code.",
+        "lab": "39"
+      },
+      {
+        "title": "A coding agent that remembers",
+        "text": "Kiro CLI with long-term memory in AgentCore Memory through your own MCP server.",
+        "lab": "40"
+      },
+      {
+        "title": "Dozens of skills, small contexts",
+        "text": "A skill-free coordinator routes to specialists that load only their own skills.",
+        "lab": "41"
+      },
+      {
+        "title": "Plans that update themselves",
+        "text": "Tasks from your project tool in the IDE; hooks sync status on commit.",
+        "lab": "42"
+      },
+      {
+        "title": "An SDLC run by agents",
+        "text": "Spec gate, isolation tests, AI review, cost diff and Security Agent on every PR, with humans at the gates.",
+        "lab": "49"
+      },
+      {
+        "title": "Prompts shipped like code",
+        "text": "Tier-aware routing, versioned prompts, canaries and eval-gated releases.",
+        "lab": "50"
+      }
     ]
   },
-  "capabilities": [
-    { "group": "Kiro surfaces", "items": [
-      { "label": "Kiro IDE", "lab": "03" },
-      { "label": "Kiro CLI", "lab": "01" },
-      { "label": "Headless / CI", "lab": "10" },
-      { "label": "ACP editors", "lab": "11" },
-      { "label": "Kiro Crew", "lab": "12" },
-      { "label": "Autonomous agent", "lab": "14" }
-    ]},
-    { "group": "Context & control", "items": [
-      { "label": "Specs", "lab": "03" },
-      { "label": "Steering", "lab": "02" },
-      { "label": "Hooks", "lab": "04" },
-      { "label": "Custom agents", "lab": "05" },
-      { "label": "Subagents", "lab": "06" },
-      { "label": "Skills", "lab": "07" },
-      { "label": "Powers", "lab": "08" }
-    ]},
-    { "group": "AWS through MCP", "items": [
-      { "label": "AWS MCP Server", "lab": "15" },
-      { "label": "IaC", "lab": "16" },
-      { "label": "Serverless", "lab": "17" },
-      { "label": "Cost & pricing", "lab": "18" },
-      { "label": "CloudWatch / CloudTrail", "lab": "19" },
-      { "label": "Databases", "lab": "20" }
-    ]},
-    { "group": "Agent runtime", "items": [
-      { "label": "Strands SDK", "lab": "21" },
-      { "label": "Multi-agent", "lab": "23" },
-      { "label": "A2A", "lab": "24" },
-      { "label": "AgentCore Runtime", "lab": "26" },
-      { "label": "Gateway", "lab": "27" },
-      { "label": "Memory", "lab": "28" },
-      { "label": "Identity", "lab": "29" },
-      { "label": "Policy", "lab": "30" },
-      { "label": "Code Interpreter / Browser", "lab": "31" },
-      { "label": "Observability & Evals", "lab": "32" }
-    ]}
-  ]
+  "fieldStories": [
+    {
+      "title": "Repeatable PHP-to-Java migration engine",
+      "date": "Oct 2026",
+      "domain": "Modernization",
+      "how": "Skills + steering encode an 8-phase, parity-verified methodology; AWS Transform runs the same skills at portfolio scale.",
+      "url": "https://aws.amazon.com/blogs/machine-learning/build-a-repeatable-php-to-java-migration-engine-with-kiro/",
+      "lab": "39"
+    },
+    {
+      "title": "Workflow context with Smartsheet MCP",
+      "date": "Oct 2026",
+      "domain": "Work management",
+      "how": "Remote MCP in mcp.json; specs from roadmap rows; a hook marks tasks Complete on commit.",
+      "url": "https://aws.amazon.com/blogs/machine-learning/workflow-context-for-ai-agents-with-smartsheet-mcp-on-aws/",
+      "lab": "42"
+    },
+    {
+      "title": "HCLS reasoning with open-source agent skills",
+      "date": "Sep 2026",
+      "domain": "Healthcare & life sciences",
+      "how": "38 skills; Kiro CLI coordinator + 8 specialists; skills won 70–86% of head-to-head comparisons.",
+      "url": "https://aws.amazon.com/blogs/machine-learning/improving-hcls-ai-reasoning-with-open-source-agent-skills/",
+      "lab": "41"
+    },
+    {
+      "title": "AI as accessibility",
+      "date": "Jul 2026",
+      "domain": "Personal productivity",
+      "how": "A neurodivergent architect built a custom MCP server with Kiro; triage rules live in Markdown.",
+      "url": "https://aws.amazon.com/blogs/machine-learning/when-your-brain-works-differently-ai-isnt-a-luxury-its-accessibility/",
+      "lab": "40"
+    },
+    {
+      "title": "ProServe became a frontier team",
+      "date": "Jun 2026",
+      "domain": "Delivery operating model",
+      "how": "AI-DLC: specs as source of truth, steering as first-order artifacts, parallel agents, shift-left testing.",
+      "url": "https://aws.amazon.com/blogs/machine-learning/built-from-the-inside-out-how-aws-professional-services-became-a-frontier-team-first/",
+      "lab": "38"
+    },
+    {
+      "title": "Research assistants with Strands",
+      "date": "May 2026",
+      "domain": "Agent development",
+      "how": "The Strands power grounds Kiro's code generation; a Streamlit + Strands app from one prompt.",
+      "url": "https://aws.amazon.com/blogs/machine-learning/from-idea-to-ai-app-creating-intelligent-research-assistants-with-strands/",
+      "lab": "21"
+    },
+    {
+      "title": "Kiro CLI memory with AgentCore Memory",
+      "date": "May 2026",
+      "domain": "Developer productivity",
+      "how": "Custom MCP server + default custom agent + hooks give Kiro CLI memory across sessions.",
+      "url": "https://aws.amazon.com/blogs/machine-learning/extending-conversational-memory-in-kiro-cli-using-amazon-bedrock-agentcore-memory/",
+      "lab": "40"
+    },
+    {
+      "title": "Agent-guided model customization in SageMaker AI",
+      "date": "May 2026",
+      "domain": "ML engineering",
+      "how": "Kiro pre-configured over ACP in JupyterLab; 9 skills drive SFT/DPO/RLVR, eval and deploy.",
+      "url": "https://aws.amazon.com/blogs/machine-learning/agent-guided-workflows-to-accelerate-model-customization-in-amazon-sagemaker-ai/",
+      "lab": "44"
+    },
+    {
+      "title": "Full-stack starter template for AgentCore (FAST)",
+      "date": "Feb 2026",
+      "domain": "Agent applications",
+      "how": "A CDK template shipped with steering docs so Kiro extends it along documented patterns.",
+      "url": "https://aws.amazon.com/blogs/machine-learning/accelerate-agentic-application-development-with-a-full-stack-starter-template-for-amazon-bedrock-agentcore/",
+      "lab": "43"
+    }
+  ],
+  "architecture": {
+    "title": "AI-first SaaS on AWS",
+    "hubBadge": "Kiro · IDE · CLI · Web · Crew",
+    "top": {
+      "label": "Enterprise controls",
+      "items": [
+        {
+          "label": "IAM Identity Center & Orgs",
+          "lab": "38",
+          "icon": "building"
+        },
+        {
+          "label": "AgentCore Identity",
+          "lab": "29",
+          "icon": "key"
+        },
+        {
+          "label": "AgentCore Policy (Cedar)",
+          "lab": "30",
+          "icon": "shield"
+        },
+        {
+          "label": "Bedrock Guardrails",
+          "lab": "50",
+          "icon": "filter"
+        },
+        {
+          "label": "AWS Security Agent",
+          "lab": "49",
+          "icon": "bug"
+        }
+      ]
+    },
+    "left": {
+      "label": "AI-first teams",
+      "items": [
+        {
+          "label": "Product managers",
+          "lab": "45",
+          "icon": "user"
+        },
+        {
+          "label": "Architects",
+          "lab": "33",
+          "icon": "layers"
+        },
+        {
+          "label": "Developers",
+          "lab": "03",
+          "icon": "code"
+        },
+        {
+          "label": "AI engineers",
+          "lab": "50",
+          "icon": "spark"
+        },
+        {
+          "label": "QA",
+          "lab": "45",
+          "icon": "check"
+        },
+        {
+          "label": "SRE / operations",
+          "lab": "47",
+          "icon": "pulse"
+        },
+        {
+          "label": "Security",
+          "lab": "04",
+          "icon": "lock"
+        },
+        {
+          "label": "FinOps",
+          "lab": "48",
+          "icon": "coin"
+        },
+        {
+          "label": "Support",
+          "lab": "34",
+          "icon": "chat"
+        },
+        {
+          "label": "Tenant operations",
+          "lab": "46",
+          "icon": "users"
+        }
+      ]
+    },
+    "hub": {
+      "label": "Kiro agent platform",
+      "items": [
+        {
+          "label": "Spec-driven development",
+          "lab": "03",
+          "icon": "doc"
+        },
+        {
+          "label": "Steering",
+          "lab": "02",
+          "icon": "compass"
+        },
+        {
+          "label": "Skills at scale",
+          "lab": "41",
+          "icon": "puzzle"
+        },
+        {
+          "label": "Hooks & guardrails",
+          "lab": "04",
+          "icon": "hook"
+        },
+        {
+          "label": "Custom agents & subagents",
+          "lab": "06",
+          "icon": "bot"
+        },
+        {
+          "label": "Powers & MCP",
+          "lab": "08",
+          "icon": "plug"
+        },
+        {
+          "label": "Headless CI",
+          "lab": "10",
+          "icon": "terminal"
+        },
+        {
+          "label": "AI SDLC pipeline",
+          "lab": "49",
+          "icon": "flow"
+        },
+        {
+          "label": "Crew bots",
+          "lab": "13",
+          "icon": "clock"
+        },
+        {
+          "label": "Autonomous agent",
+          "lab": "14",
+          "icon": "rocket"
+        },
+        {
+          "label": "Persona kit",
+          "lab": "45",
+          "icon": "users"
+        },
+        {
+          "label": "Long-term memory",
+          "lab": "40",
+          "icon": "memory"
+        }
+      ]
+    },
+    "rightTop": {
+      "label": "AWS for agents",
+      "items": [
+        {
+          "label": "Agent Toolkit · AWS MCP Server",
+          "lab": "15",
+          "icon": "plug"
+        },
+        {
+          "label": "AWS CLI automation",
+          "lab": "46",
+          "icon": "terminal"
+        },
+        {
+          "label": "IaC & serverless MCP",
+          "lab": "16",
+          "icon": "layers"
+        },
+        {
+          "label": "Data MCP",
+          "lab": "20",
+          "icon": "db"
+        }
+      ]
+    },
+    "rightBottom": {
+      "label": "AI on AWS",
+      "items": [
+        {
+          "label": "Bedrock, multi-tenant",
+          "lab": "48",
+          "icon": "spark"
+        },
+        {
+          "label": "Strands Agents",
+          "lab": "21",
+          "icon": "bot"
+        },
+        {
+          "label": "AgentCore Runtime",
+          "lab": "26",
+          "icon": "cloud"
+        },
+        {
+          "label": "Gateway & tools",
+          "lab": "27",
+          "icon": "plug"
+        },
+        {
+          "label": "AgentCore Memory",
+          "lab": "28",
+          "icon": "memory"
+        },
+        {
+          "label": "Knowledge bases",
+          "lab": "37",
+          "icon": "db"
+        },
+        {
+          "label": "SageMaker AI",
+          "lab": "44",
+          "icon": "chip"
+        }
+      ]
+    },
+    "bottom": {
+      "label": "Observability",
+      "items": [
+        {
+          "label": "CloudWatch Omni",
+          "lab": "47",
+          "icon": "eye"
+        },
+        {
+          "label": "AgentCore Evaluations",
+          "lab": "32",
+          "icon": "check"
+        },
+        {
+          "label": "App Signals & CloudTrail",
+          "lab": "19",
+          "icon": "pulse"
+        },
+        {
+          "label": "AWS DevOps Agent",
+          "lab": "35",
+          "icon": "bot"
+        },
+        {
+          "label": "Cost per tenant",
+          "lab": "18",
+          "icon": "coin"
+        }
+      ]
+    },
+    "surfaces": {
+      "label": "Kiro surfaces",
+      "items": [
+        {
+          "label": "Kiro IDE",
+          "lab": "03",
+          "icon": "code"
+        },
+        {
+          "label": "Kiro CLI",
+          "lab": "01",
+          "icon": "terminal"
+        },
+        {
+          "label": "ACP editors",
+          "lab": "11",
+          "icon": "plug"
+        },
+        {
+          "label": "Kiro Web",
+          "lab": "14",
+          "icon": "cloud"
+        },
+        {
+          "label": "Kiro Crew",
+          "lab": "12",
+          "icon": "users"
+        },
+        {
+          "label": "SageMaker JupyterLab",
+          "lab": "44",
+          "icon": "chip"
+        }
+      ]
+    }
+  }
 }

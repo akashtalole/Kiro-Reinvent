@@ -1,0 +1,1 @@
+{ "prompt": "support-answer", "version": "v3", "cases": 60, "pass_rate": 0.91, "faithfulness": 0.93, "isolation_probes_passed": 6, "isolation_probes": 6, "p95_ms": 2250, "cost_per_1k_usd": 0.44 }

@@ -15,9 +15,9 @@
 <main>
   <section class="hero">
     <div class="wrap">
-      <a class="banner" href="doc.html?doc=landscape"><b>NEW</b> Kiro Crew bots, CLI V3 harness, AgentCore Policy &amp; Evaluations — see the landscape →</a>
+      <a class="banner" href="doc.html?doc=ai-first-saas-playbook"><b>NEW</b> AI-first SaaS track: every persona automated, CloudWatch Omni, multi-tenant AI →</a>
       <h1>Learn Kiro by building<br>real things with it.</h1>
-      <p class="lede">Hands-on labs that take you from your first spec to governed, production agents on AWS — using Kiro IDE &amp; CLI, Kiro Crew, AWS MCP servers, Strands Agents and Amazon Bedrock AgentCore.</p>
+      <p class="lede">Hands-on labs for running a multi-tenant SaaS as an AI-first organization on AWS. Every persona automates its work with Kiro, skills, MCP and the AWS CLI, and ships governed agents on Bedrock and AgentCore, observed end to end in CloudWatch Omni.</p>
       <div class="hero-actions">
         <a class="btn btn-primary" href="lab.html?id=01-kiro-cli-quickstart">Start the 15-minute quick start →</a>
         <a class="btn btn-ghost" href="labs.html" id="browse-all">Browse all labs</a>
@@ -28,18 +28,10 @@
         <div class="stat"><b data-stat="hours">—</b><span>Hands-on time</span></div>
         <div class="stat"><b data-stat="e2e">—</b><span>End-to-end builds</span></div>
       </div>
+      <div class="arch" id="arch" aria-label="Clickable architecture: AI-first SaaS on AWS"></div>
     </div>
   </section>
 
-  <section id="map">
-    <div class="wrap">
-      <div class="section-head">
-        <div><div class="eyebrow">The stack</div><h2>Everything you can build with</h2></div>
-        <p>Pick any piece to open the lab that teaches it. Labs compose: the end-to-end builds wire these pieces together.</p>
-      </div>
-      <div class="capmap" id="capmap"></div>
-    </div>
-  </section>
 
   <section id="start">
     <div class="wrap quick">
@@ -109,6 +101,16 @@
     </div>
   </section>
 
+  <section id="field">
+    <div class="wrap">
+      <div class="section-head">
+        <div><div class="eyebrow">From the field</div><h2>How AWS teams actually use Kiro</h2></div>
+        <p>Every post in the AWS Machine Learning Blog's Kiro category, the pattern behind it, and the lab that teaches it. <a href="doc.html?doc=kiro-in-the-field">Read the field guide →</a></p>
+      </div>
+      <div class="grid grid-3" id="field-grid"></div>
+    </div>
+  </section>
+
   <section id="catalog">
     <div class="wrap">
       <div class="section-head">
@@ -161,6 +163,7 @@
 </main>
 
 <script src="assets/site.js"></script>
+<script src="assets/arch.js"></script>
 <script>
 (function () {
   var K = window.KRL, esc = K.esc;
@@ -179,12 +182,8 @@
     set("e2e", labs.filter(function (l) { return l.category === "End-to-end solutions"; }).length);
     document.getElementById("browse-all").textContent = "Browse all " + labs.length + " labs";
 
-    document.getElementById("capmap").innerHTML = cat.capabilities.map(function (g) {
-      return '<div class="capgroup"><h4>' + esc(g.group) + '</h4><div class="captiles">' + g.items.map(function (it) {
-        var l = byId[it.lab]; if (!l) return "";
-        return '<a class="captile" href="' + K.labHref(l) + '" title="Lab ' + l.id + ": " + esc(l.title) + '">' + esc(it.label) + "<small>" + l.id + "</small></a>";
-      }).join("") + "</div></div>";
-    }).join("");
+    if (cat.architecture && window.KRLArch) window.KRLArch.render(document.getElementById("arch"), cat.architecture, byId, K);
+
 
     document.getElementById("paths-grid").innerHTML = cat.paths.map(function (p) {
       var ls = p.labs.map(function (id) { return byId[id]; }).filter(Boolean);
@@ -206,6 +205,13 @@
     document.getElementById("uc-core").innerHTML = uc(cat.useCases.core);
     document.getElementById("uc-emerging").innerHTML = uc(cat.useCases.emerging);
 
+    document.getElementById("field-grid").innerHTML = (cat.fieldStories || []).map(function (f) {
+      var l = byId[f.lab];
+      return '<div class="card"><span class="lab-num">' + esc(f.date) + " · " + esc(f.domain) + '</span><h3 style="font-size:17px"><a href="' + esc(f.url) +
+        '" rel="noopener">' + esc(f.title) + " ↗</a></h3><p>" + esc(f.how) + "</p>" +
+        (l ? '<a class="lablink" style="font-size:13px;font-family:var(--mono);margin-top:auto" href="' + K.labHref(l) + '">Lab ' + l.id + " · " + esc(l.title) + " →</a>" : "") + "</div>";
+    }).join("");
+
     var blurbs = {
       "Kiro foundations": "Install, steering, specs and hooks — the core loop.",
       "Customize Kiro": "Custom agents, subagents, skills, powers and MCP.",
@@ -213,7 +219,8 @@
       "AWS MCP servers": "Drive AWS — IaC, serverless, cost, ops, data — through MCP.",
       "Strands Agents": "Build model-driven agents, tools, multi-agent systems and evals.",
       "AgentCore": "Run agents in production: runtime, gateway, memory, identity, policy.",
-      "End-to-end solutions": "Complete builds that combine everything, start to finish."
+      "End-to-end solutions": "Complete builds that combine everything, start to finish.",
+      "AI-first SaaS": "Automate every persona and the tenant lifecycle; observe with CloudWatch Omni."
     };
     document.getElementById("cat-grid").innerHTML = data.categories.map(function (c) {
       var n = labs.filter(function (l) { return l.category === c; }).length;
@@ -226,7 +233,7 @@
         esc(l.title) + "</h3><p>" + esc(l.summary) + '</p><div class="meta">' + K.levelChip(l.level) + '<span class="chip">⏱ ' + esc(l.duration) + "</span></div></a>";
     }).join("");
   }).catch(function (e) {
-    document.getElementById("capmap").innerHTML = '<div class="empty">Could not load lab data (' + esc(e.message) + "). Build the site with <code>python scripts/build_site.py</code>.</div>";
+    document.getElementById("arch").innerHTML = '<div class="empty">Could not load lab data (' + esc(e.message) + "). Build the site with <code>python scripts/build_site.py</code>.</div>";
   });
 })();
 </script>

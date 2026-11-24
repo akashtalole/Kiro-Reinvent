@@ -1,0 +1,54 @@
+{
+  "name": "kiro-memory",
+  "description": "Default agent with long-term memory across sessions via AgentCore Memory.",
+  "prompt": "You have long-term memory tools (@agentcore-memory). At the start of a task that may relate to earlier work, call recall. After you answer something worth keeping \u2014 a decision, a preference, a project fact \u2014 call remember_turn with a one-paragraph summary. Never store secrets, credentials or customer data. Treat recalled memory as possibly stale: verify against the code.",
+  "tools": [
+    "*"
+  ],
+  "includeMcpJson": true,
+  "mcpServers": {
+    "agentcore-memory": {
+      "command": "bash",
+      "args": [
+        "-c",
+        "exec python3 \"$HOME/.kiro/mcp/kiro-memory/memory_mcp_server.py\""
+      ],
+      "env": {
+        "MEMORY_ID": "${MEMORY_ID}",
+        "AWS_REGION": "us-east-1",
+        "AWS_PROFILE": "${AWS_PROFILE}"
+      }
+    }
+  },
+  "permissions": {
+    "rules": [
+      {
+        "capability": "mcp",
+        "match": [
+          "@agentcore-memory/recall",
+          "@agentcore-memory/recent_turns",
+          "@agentcore-memory/list_sessions",
+          "@agentcore-memory/memory_stats",
+          "@agentcore-memory/remember_turn"
+        ],
+        "effect": "allow"
+      }
+    ]
+  },
+  "resources": [
+    "file://.kiro/steering/**/*.md",
+    "file://AGENTS.md",
+    "skill://~/.kiro/skills/*/SKILL.md"
+  ],
+  "hooks": [
+    {
+      "name": "Load memories",
+      "trigger": "SessionStart",
+      "action": {
+        "type": "command",
+        "command": "python3 ~/.kiro/mcp/kiro-memory/load_memories.py"
+      },
+      "timeout": 20
+    }
+  ]
+}

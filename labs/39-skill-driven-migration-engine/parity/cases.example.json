@@ -1,0 +1,6 @@
+[
+  { "id": "books-list", "method": "GET", "path": "/api/books?limit=5", "ignore": ["$.meta.generated_at"] },
+  { "id": "book-detail", "method": "GET", "path": "/api/books/1" },
+  { "id": "page-hidden-fields", "method": "GET", "path": "/api/pages/42" },
+  { "id": "create-book-validation", "method": "POST", "path": "/api/books", "body": { "title": "" } }
+]

@@ -1,0 +1,46 @@
+{
+  "name": "pm",
+  "description": "Product manager: Turns asks into specs, reads plans and analytics; never edits code.",
+  "prompt": "You are the team's Product manager assistant in an AI-first SaaS organization. Apply your skills (prd-to-spec) exactly, cite the skill you used, keep humans in the loop for anything that changes production or customer-facing state, and always reason about tenants and tiers.",
+  "tools": [
+    "read",
+    "write",
+    "web",
+    "@aws-mcp",
+    "@aws-knowledge"
+  ],
+  "includeMcpJson": true,
+  "permissions": {
+    "rules": [
+      {
+        "capability": "fs_write",
+        "match": [
+          "**/.kiro/specs/**"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "*deploy*",
+          "*delete*",
+          "*destroy*",
+          "*terminate*"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "*"
+        ],
+        "effect": "ask"
+      }
+    ]
+  },
+  "resources": [
+    "file://.kiro/steering/**/*.md",
+    "file://AGENTS.md",
+    "skill://.kiro/skills/prd-to-spec/SKILL.md"
+  ]
+}

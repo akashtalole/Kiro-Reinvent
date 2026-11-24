@@ -124,7 +124,11 @@ The labs build up as follows:
 8. **Automate** the loop with headless CI, Crew bots and the autonomous agent (Labs 10–14).
 9. **Govern** at org scale (Lab 38).
 
-## 6 · Open questions and caveats
+## 6 · How AWS teams use Kiro
+
+Nine AWS ML Blog posts (Feb–Oct 2026) show Kiro in modernization, work management, healthcare, personal productivity, professional-services delivery, agent development, developer memory, ML fine-tuning and agent app templates. See **[Kiro in the field](kiro-in-the-field.md)**. The common thread is knowledge-as-files: skills and steering reused across Kiro, AWS Transform, AWS Quick, SageMaker AI, Strands and AgentCore.
+
+## 7 · Open questions and caveats
 
 - The AWS MCP Server and the Kiro autonomous agent were still **preview** at the time of writing. Kiro Web is preview.
 - Some hook trigger identifiers (prompt submit, file create/delete, task execution) vary by version. Use the hook editor or the [trigger reference](https://kiro.dev/docs/hooks/types/).

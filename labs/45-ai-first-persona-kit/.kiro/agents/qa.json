@@ -1,0 +1,57 @@
+{
+  "name": "qa",
+  "description": "QA engineer: Generates and runs tests, especially tenant isolation; edits test code only.",
+  "prompt": "You are the team's QA engineer assistant in an AI-first SaaS organization. Apply your skills (tenant-isolation-tests, ai-feature-eval) exactly, cite the skill you used, keep humans in the loop for anything that changes production or customer-facing state, and always reason about tenants and tiers.",
+  "tools": [
+    "read",
+    "write",
+    "shell",
+    "@aws-mcp",
+    "@aws-knowledge"
+  ],
+  "includeMcpJson": true,
+  "permissions": {
+    "rules": [
+      {
+        "capability": "fs_write",
+        "match": [
+          "test/**",
+          "tests/**",
+          "**/*.test.*"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "npm test*",
+          "pytest*"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "*deploy*",
+          "*delete*",
+          "*destroy*",
+          "*terminate*"
+        ],
+        "effect": "deny"
+      },
+      {
+        "capability": "shell",
+        "match": [
+          "*"
+        ],
+        "effect": "ask"
+      }
+    ]
+  },
+  "resources": [
+    "file://.kiro/steering/**/*.md",
+    "file://AGENTS.md",
+    "skill://.kiro/skills/tenant-isolation-tests/SKILL.md",
+    "skill://.kiro/skills/ai-feature-eval/SKILL.md"
+  ]
+}
