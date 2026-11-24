@@ -152,6 +152,27 @@ def validate_scenarios(lab_ids: set[str]) -> int:
         for st in sc.get("steps", []):
             if st.get("kind") not in ("agent", "human", "system"):
                 errors.append(f"{sid}: step kind must be agent|human|system")
+            if not st.get("checkpoint"):
+                errors.append(f"{sid}: happy-path step '{st.get('actor')}' needs a checkpoint")
+            for t in st.get("troubleshoot", []):
+                if set(t) != {"symptom", "cause", "fix"}:
+                    errors.append(f"{sid}: troubleshoot entries need symptom/cause/fix")
+        path_ids = set()
+        for path in sc.get("paths", []):
+            pid = path.get("id", "?")
+            if pid in path_ids or pid == "happy":
+                errors.append(f"{sid}/{pid}: duplicate or reserved path id")
+            path_ids.add(pid)
+            if path.get("type") not in ("alternate", "failure", "edge"):
+                errors.append(f"{sid}/{pid}: type must be alternate|failure|edge")
+            if not (1 <= int(path.get("branchesAt", 0)) <= len(sc.get("steps", [])) + 1):
+                errors.append(f"{sid}/{pid}: branchesAt out of range")
+            for k in ("name", "when", "steps", "outcome"):
+                if not path.get(k):
+                    errors.append(f"{sid}/{pid}: missing {k}")
+            for st in path.get("steps", []):
+                if st.get("kind") not in ("agent", "human", "system") or not st.get("checkpoint"):
+                    errors.append(f"{sid}/{pid}: each step needs kind and checkpoint")
     if errors:
         print("Scenario errors:\n  " + "\n  ".join(errors), file=sys.stderr)
         sys.exit(1)

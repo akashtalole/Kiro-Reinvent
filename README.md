@@ -141,6 +141,8 @@ The [**Scenarios**](https://akashtalole.github.io/Kiro-Reinvent/scenarios.html) 
 | Modernization | On-prem single-tenant installs into pooled SaaS · runtime end-of-life upgrade wave |
 | Integration & ecosystem | B2B agent-to-agent integration with a partner |
 
+Like the tracks on a lab page, every scenario has a **✓ happy path** with a checkpoint on each step and collapsible *Troubleshoot N known errors* panels (symptom → cause → fix), plus **alternate paths**: ✗ failures, ◇ edge cases and ↪ variations. Each alternate path shows where it branches from the happy path and how it ends. Readers can tick steps as done and track their progress. That adds up to 45 paths and 36 known-error fixes.
+
 The scenarios live in `site/data/scenarios.json`. The build validates every lab reference, and CI checks that the markdown version is in sync.
 
 ## AI-first SaaS on AWS

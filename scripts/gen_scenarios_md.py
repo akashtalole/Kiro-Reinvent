@@ -12,6 +12,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 SRC = ROOT / "site" / "data" / "scenarios.json"
 DST = ROOT / "docs" / "advanced-scenarios.md"
 ICON = {"agent": "🤖", "human": "🧑", "system": "⚙️"}
+PATH_ICON = {"alternate": "↪", "failure": "✗", "edge": "◇"}
 
 
 def lab_index() -> dict:
@@ -34,7 +35,9 @@ def render() -> str:
         "End-to-end stories showing how an AI-first, multi-tenant SaaS team uses Kiro, skills, MCP, the AWS CLI, "
         "Bedrock, AgentCore and CloudWatch Omni when things get hard. Each scenario lists the trigger, who does "
         "what (🤖 agent · 🧑 human · ⚙️ system), the guardrails, the outcome, the metrics to track, and the labs that "
-        "teach every piece. The metrics are what to measure, not promised results.",
+        "teach every piece. Like a lab with tracks, every scenario has a **happy path** with a checkpoint on each step "
+        "and troubleshooting for known errors, plus **alternate paths**: failures, edge cases and variations, "
+        "showing where they branch and how they end. The metrics are what to measure, not promised results.",
         "",
         "| Scenario | Domain | Complexity | Personas |",
         "| --- | --- | --- | --- |",
@@ -44,10 +47,23 @@ def render() -> str:
     for sc in data["scenarios"]:
         lines += ["", f'<a id="{sc["id"]}"></a>', "", f"## {sc['title']}", "",
                   f"*{sc['domain']} · {sc['complexity']} · {', '.join(sc['personas'])}*", "", sc["tagline"], "",
-                  f"**Trigger:** {sc['trigger']}", "", "```mermaid", sc["diagram"], "```", "", "| # | Who | Does | With |",
-                  "| --- | --- | --- | --- |"]
+                  f"**Trigger:** {sc['trigger']}", "", "```mermaid", sc["diagram"], "```", "",
+                  "### ✓ Happy path", "", "| # | Who | Does | With | Checkpoint |", "| --- | --- | --- | --- | --- |"]
         for i, st in enumerate(sc["steps"], 1):
-            lines.append(f"| {i} | {ICON[st['kind']]} {st['actor']} | {st['action']} | {', '.join(st.get('tools', [])) or '—'} |")
+            lines.append(f"| {i} | {ICON[st['kind']]} {st['actor']} | {st['action']} | {', '.join(st.get('tools', [])) or '—'} | {st['checkpoint']} |")
+        ts = [(i, t) for i, st in enumerate(sc["steps"], 1) for t in st.get("troubleshoot", [])]
+        if ts:
+            lines += ["", "<details><summary>Troubleshoot " + str(len(ts)) + " known errors</summary>", "",
+                      "| Step | Symptom | Cause | Fix |", "| --- | --- | --- | --- |"]
+            lines += [f"| {i} | {t['symptom']} | {t['cause']} | {t['fix']} |" for i, t in ts]
+            lines += ["", "</details>"]
+        for path in sc.get("paths", []):
+            lines += ["", f"### {PATH_ICON[path['type']]} {path['name']} ({path['type']})", "",
+                      f"**When:** {path['when']} · **branches at step {path['branchesAt']}**", "",
+                      "| # | Who | Does | Checkpoint |", "| --- | --- | --- | --- |"]
+            for j, st in enumerate(path["steps"], 1):
+                lines.append(f"| {path['branchesAt']}.{j} | {ICON[st['kind']]} {st['actor']} | {st['action']} | {st['checkpoint']} |")
+            lines += ["", f"**Path outcome:** {path['outcome']}"]
         lines += ["", "**Guardrails:** " + " · ".join(sc["guardrails"]), "", f"**Outcome:** {sc['outcome']}", "",
                   "**Metrics to track:** " + " · ".join(sc["metrics"]), "",
                   "**Labs:** " + " · ".join(f"[{l} {labs[l][1]}](../labs/{labs[l][0]}/README.md)" for l in sc["labs"] if l in labs),
