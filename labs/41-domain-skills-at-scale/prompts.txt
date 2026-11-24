@@ -1,0 +1,3 @@
+Is this safe and fast? SELECT * FROM orders WHERE customer_id NOT IN (SELECT customer_id FROM blocked) ORDER BY created_at OFFSET 50000 LIMIT 50
+Threat-model a public webhook endpoint that triggers a Lambda which calls an LLM agent with tool access to our CRM.
+Review: SQS queue (visibility 30s) triggers a Lambda (timeout 60s, batch 10) with no DLQ that writes to DynamoDB.

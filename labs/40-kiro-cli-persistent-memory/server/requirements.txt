@@ -1,0 +1,2 @@
+mcp>=2.0
+bedrock-agentcore>=1.20

@@ -65,6 +65,7 @@
     nav("index.html#paths", "Learning paths", "") +
     nav("index.html#use-cases", "Use cases", "") +
     nav("doc.html?doc=landscape", "Landscape", "landscape") +
+    nav("doc.html?doc=kiro-in-the-field", "From the field", "field") +
     nav("doc.html?doc=architecture-patterns", "Patterns", "patterns") +
     "</nav>" +
     '<span class="header-spacer"></span>' +
@@ -89,7 +90,7 @@
     '<li><a href="index.html#use-cases">Use cases</a></li><li><a href="doc.html?doc=setup">Setup guide</a></li></ul></div>' +
     "<div><h5>Reference</h5><ul>" +
     '<li><a href="doc.html?doc=landscape">Product landscape</a></li><li><a href="doc.html?doc=architecture-patterns">Architecture patterns</a></li>' +
-    '<li><a href="doc.html?doc=aws-mcp-catalog">AWS MCP catalog</a></li><li><a href="doc.html?doc=troubleshooting">Troubleshooting</a></li></ul></div>' +
+    '<li><a href="doc.html?doc=aws-mcp-catalog">AWS MCP catalog</a></li><li><a href="doc.html?doc=kiro-in-the-field">Kiro in the field</a></li><li><a href="doc.html?doc=troubleshooting">Troubleshooting</a></li></ul></div>' +
     "<div><h5>Contribute</h5><ul>" +
     '<li><a href="' + REPO + '">GitHub</a></li><li><a href="doc.html?doc=authoring">Authoring guide</a></li>' +
     '<li><a href="' + REPO + '/tree/main/.kiro/skills/lab-creator">Lab-creator skill</a></li>' +

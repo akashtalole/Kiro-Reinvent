@@ -1,8 +1,8 @@
 # Kiro Reinvent Labs
 
-**Learn to build with Kiro by building real things with it**: 38 hands-on labs that take you from your first spec to governed, production agents on AWS.
+**Learn to build with Kiro by building real things with it**: 44 hands-on labs that take you from your first spec to governed, production agents on AWS.
 
-[**🌐 Open the labs site**](https://akashtalole.github.io/Kiro-Reinvent/) · [Landscape report](docs/landscape.md) · [Architecture patterns](docs/architecture-patterns.md) · [AWS MCP catalog](docs/aws-mcp-catalog.md) · [Setup](docs/setup.md)
+[**🌐 Open the labs site**](https://akashtalole.github.io/Kiro-Reinvent/) · [Landscape report](docs/landscape.md) · [Kiro in the field](docs/kiro-in-the-field.md) · [Architecture patterns](docs/architecture-patterns.md) · [AWS MCP catalog](docs/aws-mcp-catalog.md) · [Setup](docs/setup.md)
 
 ```mermaid
 flowchart LR
@@ -54,6 +54,8 @@ Every lab is a folder with a README (scenario, diagram, steps, verify, clean up)
 | [07](labs/07-agent-skills/README.md) | [Agent skills](labs/07-agent-skills/README.md) | Intermediate | 30 min |
 | [08](labs/08-build-a-kiro-power/README.md) | [Build a Kiro power](labs/08-build-a-kiro-power/README.md) | Intermediate | 40 min |
 | [09](labs/09-mcp-servers-in-kiro/README.md) | [MCP servers in Kiro](labs/09-mcp-servers-in-kiro/README.md) | Beginner | 30 min |
+| [40](labs/40-kiro-cli-persistent-memory/README.md) | [Field pattern: long-term memory for Kiro CLI with AgentCore Memory](labs/40-kiro-cli-persistent-memory/README.md) | Intermediate | 45 min |
+| [41](labs/41-domain-skills-at-scale/README.md) | [Field pattern: domain skills at scale — coordinator, specialists, A/B evals](labs/41-domain-skills-at-scale/README.md) | Advanced | 60 min |
 
 ### Automate & scale
 
@@ -75,6 +77,7 @@ Every lab is a folder with a README (scenario, diagram, steps, verify, clean up)
 | [18](labs/18-finops-with-mcp/README.md) | [FinOps with MCP — estimate, explain, optimize](labs/18-finops-with-mcp/README.md) | Beginner | 35 min |
 | [19](labs/19-observability-with-mcp/README.md) | [Incident investigation with CloudWatch & CloudTrail MCP](labs/19-observability-with-mcp/README.md) | Intermediate | 45 min |
 | [20](labs/20-data-with-mcp/README.md) | [Data modeling and querying with MCP](labs/20-data-with-mcp/README.md) | Intermediate | 45 min |
+| [42](labs/42-work-management-mcp-in-the-dev-loop/README.md) | [Field pattern: project plans in the dev loop with a work-management MCP](labs/42-work-management-mcp-in-the-dev-loop/README.md) | Beginner | 30 min |
 
 ### Strands Agents
 
@@ -97,6 +100,7 @@ Every lab is a folder with a README (scenario, diagram, steps, verify, clean up)
 | [30](labs/30-agentcore-policy/README.md) | [AgentCore Policy — deterministic tool control with Cedar](labs/30-agentcore-policy/README.md) | Advanced | 50 min |
 | [31](labs/31-agentcore-code-interpreter-browser/README.md) | [AgentCore Code Interpreter and Browser](labs/31-agentcore-code-interpreter-browser/README.md) | Intermediate | 40 min |
 | [32](labs/32-agentcore-observability-evaluations/README.md) | [AgentCore Observability and Evaluations](labs/32-agentcore-observability-evaluations/README.md) | Advanced | 45 min |
+| [43](labs/43-fullstack-agentcore-starter/README.md) | [Field pattern: full-stack agent app from the FAST starter, customized with Kiro](labs/43-fullstack-agentcore-starter/README.md) | Intermediate | 90 min |
 
 ### End-to-end solutions
 
@@ -108,10 +112,28 @@ Every lab is a folder with a README (scenario, diagram, steps, verify, clean up)
 | [36](labs/36-e2e-legacy-modernization/README.md) | [E2E: Legacy monolith to serverless, spec by spec](labs/36-e2e-legacy-modernization/README.md) | Advanced | 6 h |
 | [37](labs/37-e2e-enterprise-knowledge-assistant/README.md) | [E2E: Enterprise knowledge assistant with permissions-aware RAG](labs/37-e2e-enterprise-knowledge-assistant/README.md) | Advanced | 5 h |
 | [38](labs/38-e2e-governed-agent-platform/README.md) | [E2E: A governed agent platform for your organization](labs/38-e2e-governed-agent-platform/README.md) | Advanced | 1 day |
+| [39](labs/39-skill-driven-migration-engine/README.md) | [Field pattern: a skill-driven, parity-verified migration engine](labs/39-skill-driven-migration-engine/README.md) | Advanced | 3 h |
+| [44](labs/44-kiro-in-sagemaker-model-customization/README.md) | [Field pattern: agent-guided model fine-tuning with Kiro in SageMaker AI](labs/44-kiro-in-sagemaker-model-customization/README.md) | Advanced | 3 h |
+
+## From the field: how AWS teams use Kiro
+
+Every post in the [AWS ML Blog's Kiro category](https://aws.amazon.com/blogs/machine-learning/category/artificial-intelligence/kiro/) is analyzed in [docs/kiro-in-the-field.md](docs/kiro-in-the-field.md) and mapped to a lab:
+
+| Post | How Kiro is used | Lab |
+| --- | --- | --- |
+| [Repeatable PHP-to-Java migration engine](https://aws.amazon.com/blogs/machine-learning/build-a-repeatable-php-to-java-migration-engine-with-kiro/) (Oct 2026) | Skills + steering encode an 8-phase, parity-verified methodology; AWS Transform runs the same skills at portfolio scale. | [39](labs/39-skill-driven-migration-engine/README.md) |
+| [Workflow context with Smartsheet MCP](https://aws.amazon.com/blogs/machine-learning/workflow-context-for-ai-agents-with-smartsheet-mcp-on-aws/) (Oct 2026) | Remote MCP in mcp.json; specs from roadmap rows; a hook marks tasks Complete on commit. | [42](labs/42-work-management-mcp-in-the-dev-loop/README.md) |
+| [HCLS reasoning with open-source agent skills](https://aws.amazon.com/blogs/machine-learning/improving-hcls-ai-reasoning-with-open-source-agent-skills/) (Sep 2026) | 38 skills; Kiro CLI coordinator + 8 specialists; skills won 70–86% of head-to-head comparisons. | [41](labs/41-domain-skills-at-scale/README.md) |
+| [AI as accessibility](https://aws.amazon.com/blogs/machine-learning/when-your-brain-works-differently-ai-isnt-a-luxury-its-accessibility/) (Jul 2026) | A neurodivergent architect built a custom MCP server with Kiro; triage rules live in Markdown. | [40](labs/40-kiro-cli-persistent-memory/README.md) |
+| [ProServe became a frontier team](https://aws.amazon.com/blogs/machine-learning/built-from-the-inside-out-how-aws-professional-services-became-a-frontier-team-first/) (Jun 2026) | AI-DLC: specs as source of truth, steering as first-order artifacts, parallel agents, shift-left testing. | [38](labs/38-e2e-governed-agent-platform/README.md) |
+| [Research assistants with Strands](https://aws.amazon.com/blogs/machine-learning/from-idea-to-ai-app-creating-intelligent-research-assistants-with-strands/) (May 2026) | The Strands power grounds Kiro's code generation; a Streamlit + Strands app from one prompt. | [21](labs/21-strands-first-agent/README.md) |
+| [Kiro CLI memory with AgentCore Memory](https://aws.amazon.com/blogs/machine-learning/extending-conversational-memory-in-kiro-cli-using-amazon-bedrock-agentcore-memory/) (May 2026) | Custom MCP server + default custom agent + hooks give Kiro CLI memory across sessions. | [40](labs/40-kiro-cli-persistent-memory/README.md) |
+| [Agent-guided model customization in SageMaker AI](https://aws.amazon.com/blogs/machine-learning/agent-guided-workflows-to-accelerate-model-customization-in-amazon-sagemaker-ai/) (May 2026) | Kiro pre-configured over ACP in JupyterLab; 9 skills drive SFT/DPO/RLVR, eval and deploy. | [44](labs/44-kiro-in-sagemaker-model-customization/README.md) |
+| [Full-stack starter template for AgentCore (FAST)](https://aws.amazon.com/blogs/machine-learning/accelerate-agentic-application-development-with-a-full-stack-starter-template-for-amazon-bedrock-agentcore/) (Feb 2026) | A CDK template shipped with steering docs so Kiro extends it along documented patterns. | [43](labs/43-fullstack-agentcore-starter/README.md) |
 
 ## Learning paths
 
-Six role-based paths (essentials in an afternoon, Kiro power user, platform engineer, agent developer, security & governance, FinOps & operations) are listed on the [site](https://akashtalole.github.io/Kiro-Reinvent/#paths) and defined in [`site/data/catalog.json`](site/data/catalog.json).
+Seven role-based paths (essentials in an afternoon, field patterns from AWS, Kiro power user, platform engineer, agent developer, security & governance, FinOps & operations) are listed on the [site](https://akashtalole.github.io/Kiro-Reinvent/#paths) and defined in [`site/data/catalog.json`](site/data/catalog.json).
 
 ## Run the site locally
 

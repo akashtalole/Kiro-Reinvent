@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "smartsheet": {
+      "url": "https://mcp.smartsheet.com",
+      "headers": { "Authorization": "Bearer ${SMARTSHEET_API_TOKEN}" },
+      "autoApprove": ["get_sheet_summary", "search", "get_columns", "list_reports", "get_report"],
+      "disabledTools": ["delete_rows", "delete_sheet"]
+    }
+  }
+}

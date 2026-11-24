@@ -1,0 +1,8 @@
+{
+  "name": "cloud-specialist",
+  "description": "Domain specialist (cloud). Loads only the cloud skills, keeping its context small and focused.",
+  "prompt": "You are the cloud specialist. Always apply the matching skill procedure exactly; say which skill you applied. If the question is outside cloud, say so in one line.",
+  "tools": ["read", "shell"],
+  "permissions": { "rules": [ { "capability": "shell", "match": ["*"], "effect": "ask" }, { "capability": "fs_write", "match": ["**"], "effect": "deny" } ] },
+  "resources": ["skill://skills/cloud/*/SKILL.md", "file://.kiro/steering/**/*.md"]
+}

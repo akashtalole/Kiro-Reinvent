@@ -1,0 +1,20 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Brief me on my task",
+      "description": "At session start, show the task for the current branch and anything blocking it.",
+      "trigger": "SessionStart",
+      "action": { "type": "command", "command": "git rev-parse --abbrev-ref HEAD | grep -oE '^[A-Z]+-[0-9]+' | sed 's/^/Current task id: /' || true" }
+    },
+    {
+      "name": "Sync task status when work is committed",
+      "description": "When the agent stops, if a commit referencing a task id was made this session, update the row and leave an audit comment.",
+      "trigger": "Stop",
+      "action": {
+        "type": "agent",
+        "prompt": "Check `git log --since='2 hours ago' --pretty='%h %s'` for commits referencing a task id (e.g. TASK-123). For each one, find the row in the sprint sheet via the smartsheet tools. If the work is finished and tests pass, set Status to Complete and set PR if a PR URL is known. Always add a discussion comment on that row describing what changed and which commit. If unsure whether the task is finished, set nothing and tell me instead."
+      }
+    }
+  ]
+}

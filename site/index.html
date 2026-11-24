@@ -109,6 +109,16 @@
     </div>
   </section>
 
+  <section id="field">
+    <div class="wrap">
+      <div class="section-head">
+        <div><div class="eyebrow">From the field</div><h2>How AWS teams actually use Kiro</h2></div>
+        <p>Every post in the AWS Machine Learning Blog's Kiro category, the pattern behind it, and the lab that teaches it. <a href="doc.html?doc=kiro-in-the-field">Read the field guide →</a></p>
+      </div>
+      <div class="grid grid-3" id="field-grid"></div>
+    </div>
+  </section>
+
   <section id="catalog">
     <div class="wrap">
       <div class="section-head">
@@ -205,6 +215,13 @@
     }
     document.getElementById("uc-core").innerHTML = uc(cat.useCases.core);
     document.getElementById("uc-emerging").innerHTML = uc(cat.useCases.emerging);
+
+    document.getElementById("field-grid").innerHTML = (cat.fieldStories || []).map(function (f) {
+      var l = byId[f.lab];
+      return '<div class="card"><span class="lab-num">' + esc(f.date) + " · " + esc(f.domain) + '</span><h3 style="font-size:17px"><a href="' + esc(f.url) +
+        '" rel="noopener">' + esc(f.title) + " ↗</a></h3><p>" + esc(f.how) + "</p>" +
+        (l ? '<a class="lablink" style="font-size:13px;font-family:var(--mono);margin-top:auto" href="' + K.labHref(l) + '">Lab ' + l.id + " · " + esc(l.title) + " →</a>" : "") + "</div>";
+    }).join("");
 
     var blurbs = {
       "Kiro foundations": "Install, steering, specs and hooks — the core loop.",

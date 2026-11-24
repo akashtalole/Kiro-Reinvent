@@ -68,7 +68,7 @@ code, pre, kbd { font-family: var(--mono); }
   background: linear-gradient(135deg, var(--accent), var(--warm)); color: #fff; font-size: 14px; font-weight: 800;
 }
 .nav { display: none; gap: 4px; }
-.nav a { color: var(--fg-muted); padding: 6px 10px; border-radius: 8px; font-size: 14.5px; font-weight: 500; }
+.nav a { white-space: nowrap; color: var(--fg-muted); padding: 6px 10px; border-radius: 8px; font-size: 14.5px; font-weight: 500; }
 .nav a:hover, .nav a[aria-current="page"] { color: var(--fg); background: var(--bg-sunk); text-decoration: none; }
 .header-spacer { flex: 1; }
 .search-btn {
@@ -82,10 +82,8 @@ code, pre, kbd { font-family: var(--mono); }
 }
 .icon-btn:hover { color: var(--fg); }
 .search-btn .label, .search-btn kbd { display: none; }
-@media (min-width: 900px) {
-  .nav { display: flex; }
-  .search-btn .label, .search-btn kbd { display: inline; }
-}
+@media (min-width: 1100px) { .nav { display: flex; } }
+@media (min-width: 1240px) { .search-btn .label, .search-btn kbd { display: inline; } }
 
 /* ---------- buttons, chips ---------- */
 .btn {
