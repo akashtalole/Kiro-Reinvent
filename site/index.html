@@ -101,6 +101,16 @@
     </div>
   </section>
 
+  <section id="scenarios">
+    <div class="wrap">
+      <div class="section-head">
+        <div><div class="eyebrow">Advanced scenarios</div><h2>When things get hard</h2></div>
+        <p>End-to-end stories of an AI-first SaaS team: noisy neighbours at 2 a.m., cross-tenant leaks caught in CI, model end-of-life, fleet-wide CVEs, right-to-erasure, partner agents. <a href="scenarios.html">All scenarios →</a></p>
+      </div>
+      <div class="grid grid-3" id="scenario-grid"></div>
+    </div>
+  </section>
+
   <section id="field">
     <div class="wrap">
       <div class="section-head">
@@ -204,6 +214,16 @@
     }
     document.getElementById("uc-core").innerHTML = uc(cat.useCases.core);
     document.getElementById("uc-emerging").innerHTML = uc(cat.useCases.emerging);
+
+    K.getJSON("data/scenarios.json").then(function (sd) {
+      var featured = ["noisy-neighbour-2am", "rag-leak-caught", "model-deprecation-wave", "cve-fleet-remediation", "gdpr-erasure", "partner-agent-integration"];
+      document.getElementById("scenario-grid").innerHTML = featured.map(function (id) { return sd.scenarios.filter(function (s) { return s.id === id; })[0]; })
+        .filter(Boolean).map(function (s) {
+          return '<a class="card" href="scenarios.html?id=' + encodeURIComponent(s.id) + '"><span class="lab-num">' + esc(s.domain) + "</span><h3>" + esc(s.title) +
+            "</h3><p>" + esc(s.tagline) + '</p><div class="meta"><span class="chip ' + (s.complexity === "Expert" ? "warm" : "accent") + '">' + esc(s.complexity) +
+            '</span><span class="chip">' + s.steps.length + " steps</span><span class=\"chip\">" + s.labs.length + " labs</span></div></a>";
+        }).join("") + '<a class="card" href="scenarios.html" style="background:var(--accent-soft)"><h3>All ' + sd.scenarios.length + ' scenarios →</h3><p>Filter by domain, complexity and persona.</p></a>';
+    });
 
     document.getElementById("field-grid").innerHTML = (cat.fieldStories || []).map(function (f) {
       var l = byId[f.lab];

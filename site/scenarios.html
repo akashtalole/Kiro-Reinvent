@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Advanced Scenarios · Kiro Reinvent</title>
+<meta name="description" content="End-to-end advanced use cases: how an AI-first multi-tenant SaaS team uses Kiro, skills, MCP, AWS CLI, Bedrock, AgentCore and CloudWatch Omni when things get hard.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%236b4cf6'/><text x='16' y='22' font-size='17' font-family='Arial' font-weight='700' fill='white' text-anchor='middle'>K</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body data-page="scenarios">
+<main>
+  <section style="padding-top:40px" id="list-view">
+    <div class="wrap">
+      <div class="eyebrow">Advanced use cases</div>
+      <h1 style="font-size:clamp(30px,4vw,44px)">Scenarios: when things get hard</h1>
+      <p class="lede">End-to-end stories of an AI-first, multi-tenant SaaS team at work. Each one shows who does what (agents, humans and systems), the guardrails, what to measure, and the labs that teach every piece.</p>
+      <div class="toolbar">
+        <input class="searchbox" id="q" type="search" placeholder="Search scenarios — e.g. “Omni”, “erasure”, “canary”, “partner”" aria-label="Search scenarios">
+        <div class="filter-row" id="dom-row"><span class="lbl">Domain</span></div>
+        <div class="filter-row" id="cx-row"><span class="lbl">Complexity</span></div>
+        <div class="filter-row" id="per-row"><span class="lbl">Persona</span></div>
+      </div>
+      <p class="muted" id="count"></p>
+      <div class="grid grid-3" id="cards"></div>
+    </div>
+  </section>
+  <section style="padding-top:32px; display:none" id="detail-view">
+    <div class="wrap" id="detail"></div>
+  </section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="assets/site.js"></script>
+<script>
+(function () {
+  var K = window.KRL, esc = K.esc;
+  var KIND = { agent: ["Agent", "accent"], human: ["Human", "warm"], system: ["System", "ok"] };
+  var state = { q: "", domain: "", complexity: "", persona: "" };
+  Promise.all([K.getJSON("data/scenarios.json"), K.getJSON("data/labs.json")]).then(function (res) {
+    var data = res[0], labs = res[1].labs, byId = {};
+    labs.forEach(function (l) { byId[l.id] = l; });
+    var personas = [];
+    data.scenarios.forEach(function (s) { s.personas.forEach(function (p) { if (personas.indexOf(p) < 0) personas.push(p); }); });
+    personas.sort();
+
+    function chips(el, values, key) {
+      el.insertAdjacentHTML("beforeend", '<button class="chip" data-v="">All</button>' + values.map(function (v) {
+        return '<button class="chip" data-v="' + esc(v) + '">' + esc(v) + "</button>"; }).join(""));
+      el.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; state[key] = b.getAttribute("data-v"); renderList(); });
+    }
+    chips(document.getElementById("dom-row"), data.domains, "domain");
+    chips(document.getElementById("cx-row"), ["Advanced", "Expert"], "complexity");
+    chips(document.getElementById("per-row"), personas, "persona");
+    document.getElementById("q").addEventListener("input", function (e) { state.q = e.target.value; renderList(); });
+
+    function card(s) {
+      var agents = s.steps.filter(function (x) { return x.kind === "agent"; }).length;
+      return '<a class="card" href="scenarios.html?id=' + encodeURIComponent(s.id) + '"><span class="lab-num">' + esc(s.domain) + "</span>" +
+        "<h3>" + esc(s.title) + "</h3><p>" + esc(s.tagline) + '</p><div class="meta"><span class="chip ' + (s.complexity === "Expert" ? "warm" : "accent") + '">' +
+        esc(s.complexity) + '</span><span class="chip">' + s.steps.length + " steps · " + agents + ' agent</span><span class="chip">' + s.labs.length + " labs</span></div></a>";
+    }
+    function renderList() {
+      ["dom-row", "cx-row", "per-row"].forEach(function (id, i) {
+        var key = ["domain", "complexity", "persona"][i];
+        document.querySelectorAll("#" + id + " button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-v") === state[key])); });
+      });
+      var terms = state.q.toLowerCase().split(/\s+/).filter(Boolean);
+      var hits = data.scenarios.filter(function (s) {
+        if (state.domain && s.domain !== state.domain) return false;
+        if (state.complexity && s.complexity !== state.complexity) return false;
+        if (state.persona && s.personas.indexOf(state.persona) < 0) return false;
+        var hay = JSON.stringify(s).toLowerCase();
+        return terms.every(function (t) { return hay.indexOf(t) >= 0; });
+      });
+      document.getElementById("count").textContent = hits.length + " of " + data.scenarios.length + " scenarios";
+      document.getElementById("cards").innerHTML = hits.length ? hits.map(card).join("") : '<div class="empty" style="grid-column:1/-1">No scenarios match.</div>';
+    }
+
+    function renderDetail(s) {
+      document.title = s.title + " · Kiro Reinvent";
+      var idx = data.scenarios.indexOf(s), next = data.scenarios[(idx + 1) % data.scenarios.length];
+      document.getElementById("detail").innerHTML =
+        '<div class="crumbs"><a href="scenarios.html">Scenarios</a> / ' + esc(s.domain) + "</div>" +
+        '<h1 style="font-size:clamp(28px,3.6vw,42px);max-width:900px">' + esc(s.title) + "</h1>" +
+        '<p class="lede">' + esc(s.tagline) + "</p>" +
+        '<div class="meta" style="display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 22px"><span class="chip ' + (s.complexity === "Expert" ? "warm" : "accent") + '">' + esc(s.complexity) + "</span>" +
+          s.personas.map(function (p) { return '<span class="chip">' + esc(p) + "</span>"; }).join("") + "</div>" +
+        '<div class="sc-trigger"><b>Trigger</b><span>' + esc(s.trigger) + "</span></div>" +
+        '<h2 class="sc-h">Flow</h2><div class="md sc-flow"><div class="mermaid" id="sc-diagram"></div></div>' +
+        '<div class="sc-grid"><div><h2 class="sc-h">How it unfolds</h2><ol class="tl">' + s.steps.map(function (st) {
+          var k = KIND[st.kind];
+          return '<li class="tl-' + st.kind + '"><div class="tl-head"><span class="chip ' + k[1] + '">' + k[0] + '</span><b>' + esc(st.actor) + "</b></div>" +
+            "<p>" + esc(st.action) + "</p>" + (st.tools && st.tools.length ? '<div class="tl-tools">' + st.tools.map(function (t) { return "<code>" + esc(t) + "</code>"; }).join(" ") + "</div>" : "") + "</li>";
+        }).join("") + "</ol></div>" +
+        '<div><h2 class="sc-h">Controls &amp; results</h2>' +
+        '<div class="aside-box"><h4>Guardrails</h4><ul class="sc-list">' + s.guardrails.map(function (g) { return "<li>" + esc(g) + "</li>"; }).join("") + "</ul></div>" +
+        '<div class="aside-box" style="margin-top:12px"><h4>Outcome</h4><p style="margin:0">' + esc(s.outcome) + '</p></div>' +
+        '<div class="aside-box" style="margin-top:12px"><h4>Metrics to track</h4><ul class="sc-list">' + s.metrics.map(function (m) { return "<li>" + esc(m) + "</li>"; }).join("") + "</ul></div>" +
+        "</div></div>" +
+        '<h2 class="sc-h" style="margin-top:34px">Build it: the labs behind this scenario</h2><div class="grid grid-3">' +
+          s.labs.map(function (id) { return byId[id] ? K.labCard(byId[id], { maxServices: 2 }) : ""; }).join("") + "</div>" +
+        '<h2 class="sc-h" style="margin-top:28px">AWS &amp; Kiro services</h2><div style="display:flex;flex-wrap:wrap;gap:6px">' +
+          s.services.map(function (x) { return '<span class="chip">' + esc(x) + "</span>"; }).join("") + "</div>" +
+        '<nav class="pager"><a class="prev" href="scenarios.html"><small>← All scenarios</small>Back to the catalog</a>' +
+        '<a class="next" href="scenarios.html?id=' + encodeURIComponent(next.id) + '"><small>Next scenario →</small>' + esc(next.title) + "</a></nav>";
+      var d = document.getElementById("sc-diagram");
+      function draw() {
+        if (!window.mermaid) { d.textContent = s.diagram; return; }
+        window.mermaid.initialize({ startOnLoad: false, theme: K.theme() === "dark" ? "dark" : "neutral", securityLevel: "strict" });
+        d.removeAttribute("data-processed"); d.textContent = s.diagram;
+        try { window.mermaid.run({ nodes: [d] }); } catch (e) { /* leave source */ }
+      }
+      draw(); document.addEventListener("krl-theme", draw);
+    }
+
+    var id = new URLSearchParams(location.search).get("id");
+    var sc = id && data.scenarios.filter(function (s) { return s.id === id; })[0];
+    if (sc) {
+      document.getElementById("list-view").style.display = "none";
+      document.getElementById("detail-view").style.display = "";
+      renderDetail(sc);
+    } else { renderList(); }
+  });
+})();
+</script>
+</body>
+</html>

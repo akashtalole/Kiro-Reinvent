@@ -2,7 +2,7 @@
 
 **Learn to build with Kiro by building real things with it**: 50 hands-on labs that take you from your first spec to governed, production agents on AWS.
 
-[**🌐 Open the labs site**](https://akashtalole.github.io/Kiro-Reinvent/) · [Landscape report](docs/landscape.md) · [AI-first SaaS playbook](docs/ai-first-saas-playbook.md) · [Kiro in the field](docs/kiro-in-the-field.md) · [Architecture patterns](docs/architecture-patterns.md) · [AWS MCP catalog](docs/aws-mcp-catalog.md) · [Setup](docs/setup.md)
+[**🌐 Open the labs site**](https://akashtalole.github.io/Kiro-Reinvent/) · [Landscape report](docs/landscape.md) · [Advanced scenarios](docs/advanced-scenarios.md) · [AI-first SaaS playbook](docs/ai-first-saas-playbook.md) · [Kiro in the field](docs/kiro-in-the-field.md) · [Architecture patterns](docs/architecture-patterns.md) · [AWS MCP catalog](docs/aws-mcp-catalog.md) · [Setup](docs/setup.md)
 
 ```mermaid
 flowchart LR
@@ -125,6 +125,23 @@ Every lab is a folder with a README (scenario, diagram, steps, verify, clean up)
 | [48](labs/48-multi-tenant-ai-on-bedrock/README.md) | [Multi-tenant AI features on Bedrock — isolation, cost and budgets per tenant](labs/48-multi-tenant-ai-on-bedrock/README.md) | Advanced | 75 min |
 | [49](labs/49-ai-sdlc-pipeline/README.md) | [The AI-first SDLC pipeline — every persona automated, humans at the gates](labs/49-ai-sdlc-pipeline/README.md) | Advanced | 90 min |
 | [50](labs/50-ai-engineering-platform/README.md) | [An AI engineering platform for SaaS — routing, prompt versions, canaries, release gates](labs/50-ai-engineering-platform/README.md) | Advanced | 75 min |
+
+## Advanced use cases and scenarios
+
+The [**Scenarios**](https://akashtalole.github.io/Kiro-Reinvent/scenarios.html) page ([markdown version](docs/advanced-scenarios.md)) tells 16 end-to-end stories of an AI-first, multi-tenant SaaS team when things get hard. Each story shows the trigger, every step by agent, human or system, a flow diagram, guardrails, metrics to track, and the labs that teach each piece. You can filter them by domain, complexity and persona.
+
+| Domain | Scenarios |
+| --- | --- |
+| Tenant lifecycle | Zero-touch enterprise onboarding with SSO and data residency |
+| Reliability & operations | 2 a.m. noisy neighbour · multi-region failover game day · AWS + Azure incident in one Omni space |
+| Security & compliance | Fleet-wide CVE remediation · right to erasure across data, search and AI memory · continuous audit evidence |
+| AI engineering | Cross-tenant RAG leak caught in CI · model deprecation without a quality dip |
+| Cost & FinOps | Runaway agent spend capped by budgets · repackaging tiers from unit economics |
+| Delivery & SDLC | Customer ticket to deployed fix the same day · new AI feature from idea to GA in a sprint |
+| Modernization | On-prem single-tenant installs into pooled SaaS · runtime end-of-life upgrade wave |
+| Integration & ecosystem | B2B agent-to-agent integration with a partner |
+
+The scenarios live in `site/data/scenarios.json`. The build validates every lab reference, and CI checks that the markdown version is in sync.
 
 ## AI-first SaaS on AWS
 

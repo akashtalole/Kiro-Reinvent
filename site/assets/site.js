@@ -63,7 +63,7 @@
     '<nav class="nav" aria-label="Primary">' +
     nav("labs.html", "All labs", "labs") +
     nav("index.html#paths", "Learning paths", "") +
-    nav("doc.html?doc=landscape", "Landscape", "landscape") +
+    nav("scenarios.html", "Scenarios", "scenarios") +
     nav("doc.html?doc=ai-first-saas-playbook", "AI-first SaaS", "aifirst") +
     nav("doc.html?doc=kiro-in-the-field", "From the field", "field") +
     "</nav>" +
@@ -86,7 +86,7 @@
     '<p style="max-width:360px">Hands-on labs for building end-to-end solutions with Kiro, AWS MCP servers, Strands Agents and Amazon Bedrock AgentCore.</p></div>' +
     "<div><h5>Learn</h5><ul>" +
     '<li><a href="labs.html">All labs</a></li><li><a href="index.html#paths">Learning paths</a></li>' +
-    '<li><a href="index.html#use-cases">Use cases</a></li><li><a href="index.html#field">From the field</a></li><li><a href="doc.html?doc=setup">Setup guide</a></li></ul></div>' +
+    '<li><a href="index.html#use-cases">Use cases</a></li><li><a href="scenarios.html">Advanced scenarios</a></li><li><a href="index.html#field">From the field</a></li><li><a href="doc.html?doc=setup">Setup guide</a></li></ul></div>' +
     "<div><h5>Reference</h5><ul>" +
     '<li><a href="doc.html?doc=landscape">Product landscape</a></li><li><a href="doc.html?doc=architecture-patterns">Architecture patterns</a></li>' +
     '<li><a href="doc.html?doc=aws-mcp-catalog">AWS MCP catalog</a></li><li><a href="doc.html?doc=kiro-in-the-field">Kiro in the field</a></li><li><a href="doc.html?doc=ai-first-saas-playbook">AI-first SaaS playbook</a></li><li><a href="doc.html?doc=troubleshooting">Troubleshooting</a></li></ul></div>' +
