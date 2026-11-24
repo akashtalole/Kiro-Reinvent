@@ -2,7 +2,7 @@
 
 > Generated from `site/data/scenarios.json` by `scripts/gen_scenarios_md.py`. Edit the JSON, not this file.
 
-End-to-end stories showing how an AI-first, multi-tenant SaaS team uses Kiro, skills, MCP, the AWS CLI, Bedrock, AgentCore and CloudWatch Omni when things get hard. Each scenario lists the trigger, who does what (🤖 agent · 🧑 human · ⚙️ system), the guardrails, the outcome, the metrics to track, and the labs that teach every piece. The metrics are what to measure, not promised results.
+End-to-end stories showing how an AI-first, multi-tenant SaaS team uses Kiro, skills, MCP, the AWS CLI, Bedrock, AgentCore and CloudWatch Omni when things get hard. Each scenario lists the trigger, who does what (🤖 agent · 🧑 human · ⚙️ system), the guardrails, the outcome, the metrics to track, and the labs that teach every piece. Like a lab with tracks, every scenario has a **happy path** with a checkpoint on each step and troubleshooting for known errors, plus **alternate paths**: failures, edge cases and variations, showing where they branch and how they end. The metrics are what to measure, not promised results.
 
 | Scenario | Domain | Complexity | Personas |
 | --- | --- | --- | --- |
@@ -54,15 +54,65 @@ sequenceDiagram
   Bot->>CRM: Live + audit summary
 ```
 
-| # | Who | Does | With |
+### ✓ Happy path
+
+| # | Who | Does | With | Checkpoint |
+| --- | --- | --- | --- | --- |
+| 1 | 🤖 Crew intake bot | Reads the new row in the Signups sheet, then validates the contract fields: tier, region and IdP metadata URL. | Smartsheet MCP, tenant-ops skill | The row has a valid tier, region and IdP metadata URL; the bot comments 'Validated'. |
+| 2 | 🤖 architect agent | Runs tenancy-review on the request. Enterprise means the silo model: a dedicated stack pinned to eu-central-1 and a KMS key per tenant. | tenancy-review skill, AWS Knowledge MCP | Review output: model = silo, region = eu-central-1, KMS key per tenant; no blocking findings. |
+| 3 | ⚙️ tenantctl | Dry run: tenant record, admin user with custom:tenantId, usage plan, Bedrock application inference profile in the EU region. | AWS CLI, tenantctl.sh | Dry-run output lists the tenant record, admin user, usage plan key and inference profile, all in eu-central-1. |
+| 4 | 🧑 Tenant ops lead | Approves the plan in the Slack thread. | Kiro Crew channel | Approval recorded in the thread with the approver's name and a timestamp. |
+| 5 | ⚙️ Pipeline | Deploys the silo stack with CDK in the EU account, then runs onboarding and registers the customer IdP as a Cognito SAML provider. | AWS CDK, Cognito, tenantctl.sh | `cdk deploy` succeeds; `tenantctl.sh status t-…` shows ACTIVE; a SAML provider exists in the tenant's user pool. |
+| 6 | 🤖 qa agent | Runs the isolation and residency smoke suite: no data outside the EU, and cross-tenant probes return 403/404. | tenant-isolation-tests skill | Isolation suite green; the residency check finds no resources or objects outside eu-central-1. |
+| 7 | 🤖 Crew intake bot | Posts a welcome pack and an audit summary on the row, then sets Status = Live. | Smartsheet MCP | Row status = Live with an audit summary comment. |
+
+<details><summary>Troubleshoot 4 known errors</summary>
+
+| Step | Symptom | Cause | Fix |
 | --- | --- | --- | --- |
-| 1 | 🤖 Crew intake bot | Reads the new row in the Signups sheet, then validates the contract fields: tier, region and IdP metadata URL. | Smartsheet MCP, tenant-ops skill |
-| 2 | 🤖 architect agent | Runs tenancy-review on the request. Enterprise means the silo model: a dedicated stack pinned to eu-central-1 and a KMS key per tenant. | tenancy-review skill, AWS Knowledge MCP |
-| 3 | ⚙️ tenantctl | Dry run: tenant record, admin user with custom:tenantId, usage plan, Bedrock application inference profile in the EU region. | AWS CLI, tenantctl.sh |
-| 4 | 🧑 Tenant ops lead | Approves the plan in the Slack thread. | Kiro Crew channel |
-| 5 | ⚙️ Pipeline | Deploys the silo stack with CDK in the EU account, then runs onboarding and registers the customer IdP as a Cognito SAML provider. | AWS CDK, Cognito, tenantctl.sh |
-| 6 | 🤖 qa agent | Runs the isolation and residency smoke suite: no data outside the EU, and cross-tenant probes return 403/404. | tenant-isolation-tests skill |
-| 7 | 🤖 Crew intake bot | Posts a welcome pack and an audit summary on the row, then sets Status = Live. | Smartsheet MCP |
+| 3 | The dry run shows us-east-1 resources | AWS_REGION was not set from the tenant record | Export the region from the tenant record before calling tenantctl; add a region check to the skill. |
+| 3 | `create-inference-profile` fails with ValidationException | The base model ARN isn't available in the target region | Use the region's model or inference-profile ARN; list them with `aws bedrock list-inference-profiles`. |
+| 5 | Users get a SAML error on first login | IdP metadata URL or attribute mapping is wrong | Re-import the metadata; map the IdP group claim to `custom:tenantId` only through a trusted pre-token Lambda, never user-editable. |
+| 6 | Residency check flags a CloudWatch log group in us-east-1 | A global service (or default) wrote logs outside the region | Pin logging destinations in the silo stack; add an SCP denying other regions for the tenant account. |
+
+</details>
+
+### ✗ Approval denied: contract mismatch (failure)
+
+**When:** The ops lead spots that the contract says premium, not enterprise · **branches at step 4**
+
+| # | Who | Does | Checkpoint |
+| --- | --- | --- | --- |
+| 4.1 | 🧑 Tenant ops lead | Rejects with a reason in the thread. | Rejection reason recorded; no AWS calls were made after the dry run. |
+| 4.2 | 🤖 Crew intake bot | Sets the row to 'Needs sales review', tags the account owner and stops. | Row status updated; the bot doesn't retry automatically. |
+| 4.3 | 🧑 Sales ops | Fixes the tier in the CRM, which re-queues the row. | The next bot run starts again at step 1. |
+
+**Path outcome:** Nothing is provisioned on bad input; the record of why is on the row.
+
+### ✗ Residency test fails after provisioning (failure)
+
+**When:** The qa agent finds tenant data replicated to another region · **branches at step 6**
+
+| # | Who | Does | Checkpoint |
+| --- | --- | --- | --- |
+| 6.1 | 🤖 qa agent | Reports the failing object or resource and blocks the Live status. | Row stays 'Provisioning'; the finding is linked. |
+| 6.2 | 🤖 architect agent | Finds the cause (e.g. a cross-region backup rule) and proposes an IaC fix. | A PR with the region-pinned config and a test. |
+| 6.3 | ⚙️ Pipeline | Redeploys the stack and deletes the out-of-region copy, then re-runs the suite. | Suite green; row moves to Live. |
+| 6.4 | 🧑 Security | Confirms the deletion evidence for the customer's DPA file. | Evidence attached to the tenant record. |
+
+**Path outcome:** The violation is caught before go-live and documented.
+
+### ◇ Edge case: tenant id already exists (edge)
+
+**When:** The customer already had a basic-tier trial under the same id · **branches at step 3**
+
+| # | Who | Does | Checkpoint |
+| --- | --- | --- | --- |
+| 3.1 | ⚙️ tenantctl | Conditional put fails, so it logs `onboard.exists` and continues idempotently. | No overwrite of the existing record. |
+| 3.2 | 🤖 Crew intake bot | Treats it as an upgrade: plans a tier change and silo migration instead of a new tenant. | Plan shows upgrade + data migration steps. |
+| 3.3 | 🧑 Tenant ops lead | Approves the upgrade plan. | Approval recorded. |
+
+**Path outcome:** The trial becomes the enterprise tenant without duplicate identities.
 
 **Guardrails:** Silo deploys need a human approval · Region allow-list per tenant record; SCPs deny other regions in the tenant account · Onboarding is idempotent (conditional writes) · Every step logged with the approver
 
@@ -103,15 +153,63 @@ sequenceDiagram
   SRE->>SRE: runbook + alarm + spec task
 ```
 
-| # | Who | Does | With |
+### ✓ Happy path
+
+| # | Who | Does | With | Checkpoint |
+| --- | --- | --- | --- | --- |
+| 1 | 🤖 Crew heartbeat | Sees the alarm and starts the sre agent with the tenant-incident skill for the last 60 minutes. | Kiro Crew, CloudWatch alarms | An incident thread exists; the agent posts 'Investigating premium p95, window 01:10–02:10 UTC'. |
+| 2 | 🤖 sre agent | Scopes the problem to the premium tier. The noisy-neighbour query shows t-globex2 at 61% of requests and 9x its usual AI tokens. | tenant-incident skill, CloudWatch Logs Insights, CloudWatch Omni | Query output shows one tenant with a disproportionate share of Requests/AITokens in the window. |
+| 3 | 🤖 AWS DevOps Agent | Correlates the spike with t-globex2's new nightly export job and shared DynamoDB partition throttling. | CloudWatch Omni root cause | Root cause hypothesis names a specific change (new job) and resource (partition), with trace links. |
+| 4 | 🤖 sre agent | Proposes a mitigation: move t-globex2's API key to a stricter usage plan for 4 hours. No global change. | tenantctl.sh (dry run) | Dry-run shows a single API key moving to the strict plan with an expiry time. |
+| 5 | 🧑 On-call SRE | Approves on mobile. The throttle is applied, and premium p95 recovers within 6 minutes. | Kiro mobile / Slack | Premium p95 back inside the anomaly band within 10 minutes. |
+| 6 | 🤖 support agent | Drafts a customer-safe note to t-globex2's account manager explaining the throttle and suggesting off-peak scheduling. | ticket-to-repro skill | Draft message is in the account manager's queue, not sent. |
+| 7 | 🤖 sre agent | Runs runbook-from-incident, which produces a per-tenant write-capacity alarm and a spec task for adaptive throttling. | runbook-from-incident skill | PR with the new alarm + a spec task exists and links the incident. |
+
+<details><summary>Troubleshoot 3 known errors</summary>
+
+| Step | Symptom | Cause | Fix |
 | --- | --- | --- | --- |
-| 1 | 🤖 Crew heartbeat | Sees the alarm and starts the sre agent with the tenant-incident skill for the last 60 minutes. | Kiro Crew, CloudWatch alarms |
-| 2 | 🤖 sre agent | Scopes the problem to the premium tier. The noisy-neighbour query shows t-globex2 at 61% of requests and 9x its usual AI tokens. | tenant-incident skill, CloudWatch Logs Insights, CloudWatch Omni |
-| 3 | 🤖 AWS DevOps Agent | Correlates the spike with t-globex2's new nightly export job and shared DynamoDB partition throttling. | CloudWatch Omni root cause |
-| 4 | 🤖 sre agent | Proposes a mitigation: move t-globex2's API key to a stricter usage plan for 4 hours. No global change. | tenantctl.sh (dry run) |
-| 5 | 🧑 On-call SRE | Approves on mobile. The throttle is applied, and premium p95 recovers within 6 minutes. | Kiro mobile / Slack |
-| 6 | 🤖 support agent | Drafts a customer-safe note to t-globex2's account manager explaining the throttle and suggesting off-peak scheduling. | ticket-to-repro skill |
-| 7 | 🤖 sre agent | Runs runbook-from-incident, which produces a per-tenant write-capacity alarm and a spec task for adaptive throttling. | runbook-from-incident skill |
+| 2 | Query returns no TenantId values | Service isn't emitting EMF with the TenantId dimension | Add `emit_usage()` from lab 47; meanwhile filter by the tenant claim in access logs. |
+| 2 | Every tenant looks equally busy | Cause is shared infrastructure, not a tenant | Take the 'Not a tenant' path: investigate dependencies and deployments instead. |
+| 5 | p95 doesn't recover after the throttle | The tenant's traffic wasn't the real cause, or a backlog is still draining | Check queue depth and DynamoDB throttles; revert the throttle if it didn't help. |
+
+</details>
+
+### ↪ Not a tenant: a bad deploy (alternate)
+
+**When:** No tenant stands out; all premium tenants are slow equally · **branches at step 2**
+
+| # | Who | Does | Checkpoint |
+| --- | --- | --- | --- |
+| 2.1 | 🤖 sre agent | Checks deployments and config changes in the window via CloudTrail and the pipeline history. | Finds a deploy 12 minutes before the alarm. |
+| 2.2 | 🤖 AWS DevOps Agent | Correlates the latency with a new N+1 query in that release. | Root cause with trace evidence. |
+| 2.3 | 🧑 On-call SRE | Rolls back the release. | p95 recovers; the rollback is recorded. |
+| 2.4 | 🤖 sre agent | Runbook + regression test task; adds a latency gate to the pipeline. | PR adds a performance check. |
+
+**Path outcome:** The fix is a rollback, not a throttle. The skill's scope check prevents punishing an innocent tenant.
+
+### ◇ Edge case: the noisy tenant is enterprise (edge)
+
+**When:** The tenant causing the load has an enterprise SLA · **branches at step 4**
+
+| # | Who | Does | Checkpoint |
+| --- | --- | --- | --- |
+| 4.1 | 🤖 sre agent | Proposes isolating the workload instead of throttling (e.g. dedicated queue or capacity), because throttling would breach the SLA. | Two options with SLA impact noted. |
+| 4.2 | 🧑 Incident commander | Chooses temporary dedicated capacity and pages the account manager. | Decision logged. |
+| 4.3 | ⚙️ Pipeline | Deploys the dedicated consumer for that tenant. | Other tenants recover; the enterprise tenant keeps its SLA. |
+
+**Path outcome:** Tier-aware mitigation that respects contracts.
+
+### ✗ Nobody approves within 15 minutes (failure)
+
+**When:** The on-call engineer doesn't respond · **branches at step 5**
+
+| # | Who | Does | Checkpoint |
+| --- | --- | --- | --- |
+| 5.1 | 🤖 Crew heartbeat | Escalates to the secondary on-call through the paging tool; does not apply the throttle itself. | Escalation sent; no automatic mutation. |
+| 5.2 | 🧑 Secondary on-call | Approves the throttle. | Approval recorded; mitigation proceeds from step 5. |
+
+**Path outcome:** Agents never self-approve mutations; escalation is automatic.
 
 **Guardrails:** Investigation is read-only · Mitigation is scoped to one tenant and time-boxed · A human approves every throttle change · The customer message is reviewed before it is sent
 
@@ -143,13 +241,49 @@ flowchart LR
   FIX --> SEC{Security review} --> MERGE[merge]
 ```
 
-| # | Who | Does | With |
+### ✓ Happy path
+
+| # | Who | Does | With | Checkpoint |
+| --- | --- | --- | --- | --- |
+| 1 | ⚙️ AI SDLC pipeline | Runs the spec gate, unit tests and the isolation suite. The RAG isolation probe for tenant A asking about tenant B's documents returns B's chunks. | spec_gate.py, tenant-isolation-tests | The CI job `test` fails on `@isolation rag: tenant A cannot retrieve tenant B` with B's document ids in the output. |
+| 2 | 🤖 architect agent | Its tenancy review flags that the filter is now a parameter the model can control, not a closure, and cites the tenancy-review rule. | tenancy-review skill, headless Kiro | PR comment from the architect agent cites the tenancy-review rule and the file and line. |
+| 3 | ⚙️ release_gate | isolation_probes_passed < isolation_probes, so the release is blocked. | router.release_gate | Gate output: 'failed tenant-isolation probes'; status check red. |
+| 4 | 🤖 ai-engineer agent | Restores kb_filter as a closure and adds a deterministic 'no foreign tenant id in output' check to the golden set. | ai-feature-eval skill, Kiro | New commit restores the closure filter; the golden set gains a 'no foreign tenant id in output' check. |
+| 5 | 🧑 Security engineer | Reviews the fix and the new probe, then approves. | GitHub review | Approval from security; all checks green. |
+
+<details><summary>Troubleshoot 2 known errors</summary>
+
+| Step | Symptom | Cause | Fix |
 | --- | --- | --- | --- |
-| 1 | ⚙️ AI SDLC pipeline | Runs the spec gate, unit tests and the isolation suite. The RAG isolation probe for tenant A asking about tenant B's documents returns B's chunks. | spec_gate.py, tenant-isolation-tests |
-| 2 | 🤖 architect agent | Its tenancy review flags that the filter is now a parameter the model can control, not a closure, and cites the tenancy-review rule. | tenancy-review skill, headless Kiro |
-| 3 | ⚙️ release_gate | isolation_probes_passed < isolation_probes, so the release is blocked. | router.release_gate |
-| 4 | 🤖 ai-engineer agent | Restores kb_filter as a closure and adds a deterministic 'no foreign tenant id in output' check to the golden set. | ai-feature-eval skill, Kiro |
-| 5 | 🧑 Security engineer | Reviews the fix and the new probe, then approves. | GitHub review |
+| 1 | The isolation test passes even though the filter was removed | Seed data has only one tenant, or both tenants share documents | Seed two tenants with distinct documents and assert on tenantId of every retrieved chunk. |
+| 1 | Test is flaky | Retrieval is semantic, so B's chunk sometimes ranks low | Query with B-unique phrases and check all top-k results, not just the first. |
+
+</details>
+
+### ✗ What if it had reached production? (failure)
+
+**When:** The isolation probe was missing and the change shipped · **branches at step 1**
+
+| # | Who | Does | Checkpoint |
+| --- | --- | --- | --- |
+| 1.1 | ⚙️ CloudWatch Omni | An online evaluator with a deterministic 'foreign tenant id in output' check fires. | Alert with session ids. |
+| 1.2 | 🧑 Incident commander | Disables the feature flag for all tenants immediately. | Feature off within minutes. |
+| 1.3 | 🤖 sre agent | Lists affected sessions and tenants from traces (tenant.id, prompt version). | Impact list for legal and support. |
+| 1.4 | 🧑 Security / DPO | Runs the breach-notification process for affected tenants. | Notifications per contract and regulation. |
+| 1.5 | 🤖 ai-engineer agent | Adds the missing probe to the golden set and the gate, so it's never missing again. | Gate updated; postmortem filed. |
+
+**Path outcome:** Why the CI probe matters: the production path is expensive and painful.
+
+### ↪ Backstop: Policy blocks a tool-level leak (alternate)
+
+**When:** The leak was through an agent tool call, not retrieval · **branches at step 2**
+
+| # | Who | Does | Checkpoint |
+| --- | --- | --- | --- |
+| 2.1 | ⚙️ AgentCore Policy | Cedar rule denies a tool call whose tenant_id differs from the caller's claim. | Decision log shows DENY with the mismatched tenant ids. |
+| 2.2 | 🤖 ai-engineer agent | Fixes the tool to take tenant_id from context, not from the model. | Denials drop to zero for legitimate traffic. |
+
+**Path outcome:** Defense in depth: even if code regresses, the gateway refuses cross-tenant tool calls.
 
 **Guardrails:** Isolation probes are a hard gate · The tenant filter is never a model-controlled argument · Gateway policy requires tool tenant_id = caller claim
 
@@ -184,14 +318,50 @@ flowchart LR
   OMNI -->|regression| REVERT[revert PR]
 ```
 
-| # | Who | Does | With |
+### ✓ Happy path
+
+| # | Who | Does | With | Checkpoint |
+| --- | --- | --- | --- | --- |
+| 1 | 🤖 ai-engineer agent | Lists every route, profile and tenant that uses the model, from model_policy.json and the application inference profiles. | router.py, AWS MCP Server | Inventory table: routes × tiers × tenants × monthly tokens on the deprecated model. |
+| 2 | 🤖 ai-engineer agent | Runs ai-feature-eval for 3 candidate models on each golden set and writes eval records. | ai-feature-eval skill, Strands Evals | Eval records exist for each candidate × tier, with pass rate, faithfulness, isolation, p95, cost. |
+| 3 | 🤖 finops agent | Prices each candidate at current per-tier volume and flags a margin impact for basic. | tenant-cost-report, AWS Pricing MCP | Cost delta per tier; basic tier margin impact flagged. |
+| 4 | 🧑 Product manager | Picks the candidate per tier, trading quality against margin. | Kiro spec | Spec records the choice per tier and the rationale. |
+| 5 | ⚙️ Pipeline | The release gate passes. Canary is 10% of tenants per tier, and inference profiles are updated via tenantctl. | release_gate, tenantctl.sh | release_gate passes; canary percent = 10 in model_policy.json; profiles updated. |
+| 6 | ⚙️ CloudWatch Omni | Compares online evaluation scores and latency by prompt and model version. The canary is healthy, so it is promoted to 100%. | Omni evaluators | Omni comparison: candidate ≥ baseline on online evals; promoted to 100%. |
+
+<details><summary>Troubleshoot 3 known errors</summary>
+
+| Step | Symptom | Cause | Fix |
 | --- | --- | --- | --- |
-| 1 | 🤖 ai-engineer agent | Lists every route, profile and tenant that uses the model, from model_policy.json and the application inference profiles. | router.py, AWS MCP Server |
-| 2 | 🤖 ai-engineer agent | Runs ai-feature-eval for 3 candidate models on each golden set and writes eval records. | ai-feature-eval skill, Strands Evals |
-| 3 | 🤖 finops agent | Prices each candidate at current per-tier volume and flags a margin impact for basic. | tenant-cost-report, AWS Pricing MCP |
-| 4 | 🧑 Product manager | Picks the candidate per tier, trading quality against margin. | Kiro spec |
-| 5 | ⚙️ Pipeline | The release gate passes. Canary is 10% of tenants per tier, and inference profiles are updated via tenantctl. | release_gate, tenantctl.sh |
-| 6 | ⚙️ CloudWatch Omni | Compares online evaluation scores and latency by prompt and model version. The canary is healthy, so it is promoted to 100%. | Omni evaluators |
+| 5 | Gate fails on latency budget | Candidate is slower at your output lengths | Lower max_tokens per tier, enable streaming, or choose the next candidate. |
+| 5 | Profile update fails | Application inference profiles copy a fixed model; they can't be edited in place | Create a new profile per tenant pointing at the new model and switch the resolver, then delete the old ones. |
+| 6 | Online scores look worse only for one language | Golden set under-represented that language | Add cases for it, re-run the gate, and keep that tier's canary at 10% meanwhile. |
+
+</details>
+
+### ✗ Canary regresses (failure)
+
+**When:** Online evaluation scores for the canary drop below baseline · **branches at step 6**
+
+| # | Who | Does | Checkpoint |
+| --- | --- | --- | --- |
+| 6.1 | ⚙️ CloudWatch Omni | Alarm on helpfulness for model version = candidate. | Alarm names the tier and route. |
+| 6.2 | 🤖 ai-engineer agent | Opens a revert PR for the canary config. | PR sets canary to 0%. |
+| 6.3 | 🧑 AI lead | Merges the revert. | All tenants back on the baseline model. |
+| 6.4 | 🤖 ai-engineer agent | Clusters the failing sessions into new golden cases, then tries the next candidate. | New eval record for candidate #2. |
+
+**Path outcome:** Rollback is a config revert; the failures improve the eval set.
+
+### ◇ No candidate meets the bar for basic tier (edge)
+
+**When:** Every candidate is either worse or too expensive for basic · **branches at step 4**
+
+| # | Who | Does | Checkpoint |
+| --- | --- | --- | --- |
+| 4.1 | 🧑 Product manager | Decides to change the basic-tier feature (shorter answers, summary only) instead of the model. | Spec updated for basic. |
+| 4.2 | 🤖 ai-engineer agent | New prompt version for basic, then evaluates and gates it. | Gate passes at the lower cost. |
+
+**Path outcome:** Sometimes the right fix is product scope, not a model.
 
 **Guardrails:** No model change without an eval record · Cost increase over 15% needs a budget owner · Deterministic per-tenant canary; rollback = revert the PR
 
@@ -223,13 +393,49 @@ flowchart LR
   FIN --> AM[Account manager → customer]
 ```
 
-| # | Who | Does | With |
+### ✓ Happy path
+
+| # | Who | Does | With | Checkpoint |
+| --- | --- | --- | --- | --- |
+| 1 | ⚙️ TokenBudget | Atomic conditional updates reject calls once the monthly tier budget is reached, so requests fail fast with a clear error code. | tenant_ai.TokenBudget, DynamoDB | Calls beyond the cap return `budget_exceeded`; the budget item `used` stops increasing. |
+| 2 | ⚙️ CloudWatch alarm | The per-tenant AITokens alarm fires for t-initech. | ops/alarms.sh | Alarm `ai-tokens-spike-t-initech` in ALARM state. |
+| 3 | 🤖 Crew cost sentinel | Confirms the spend in Cost Explorer under the tenantId tag and finds the looping caller in the traces. | Billing MCP, CloudWatch Omni | Cost Explorer filtered by tag tenantId = t-initech confirms the spike; the looping caller id is in the traces. |
+| 4 | 🤖 finops agent | Writes a margin impact summary and recommends an overage add-on or the enterprise tier. | tenant-cost-report skill | Report shows margin impact and two commercial options. |
+| 5 | 🧑 Account manager | Contacts the customer with the fix (backoff) and the commercial options. | — | Customer contact logged with the backoff guidance. |
+
+<details><summary>Troubleshoot 3 known errors</summary>
+
+| Step | Symptom | Cause | Fix |
 | --- | --- | --- | --- |
-| 1 | ⚙️ TokenBudget | Atomic conditional updates reject calls once the monthly tier budget is reached, so requests fail fast with a clear error code. | tenant_ai.TokenBudget, DynamoDB |
-| 2 | ⚙️ CloudWatch alarm | The per-tenant AITokens alarm fires for t-initech. | ops/alarms.sh |
-| 3 | 🤖 Crew cost sentinel | Confirms the spend in Cost Explorer under the tenantId tag and finds the looping caller in the traces. | Billing MCP, CloudWatch Omni |
-| 4 | 🤖 finops agent | Writes a margin impact summary and recommends an overage add-on or the enterprise tier. | tenant-cost-report skill |
-| 5 | 🧑 Account manager | Contacts the customer with the fix (backoff) and the commercial options. | — |
+| 1 | Tenant exceeded the cap anyway | Concurrent requests read-then-write instead of the atomic conditional update | Use TokenBudget.charge (UpdateItem with ConditionExpression) exactly as in lab 48. |
+| 1 | Legitimate calls blocked at month start | Budget key uses the wrong period or time zone | Key by UTC month (`BUDGET#tenant#YYYY-MM`) and test the rollover. |
+| 3 | Cost Explorer shows no tenantId breakdown | Cost-allocation tag not activated or calls don't use the tenant's profile | Activate the tag in Billing; route calls through the application inference profile. |
+
+</details>
+
+### ✗ It's abuse, not a bug (failure)
+
+**When:** Traces show prompt-injection attempts and a leaked API key · **branches at step 3**
+
+| # | Who | Does | Checkpoint |
+| --- | --- | --- | --- |
+| 3.1 | 🧑 Security | Rotates the tenant's API key via tenantctl suspend/resume, then tells the tenant admin. | Old key disabled; new key issued. |
+| 3.2 | 🤖 AWS Security Agent | Reviews the endpoint for further abuse paths. | Findings report. |
+| 3.3 | 🤖 sre agent | Adds a per-key rate alarm and a WAF rate rule. | PR with the new controls. |
+
+**Path outcome:** The budget limits the damage; the response is security, not billing.
+
+### ◇ Enterprise tenant with contracted overage (edge)
+
+**When:** The contract allows paid overage instead of a hard stop · **branches at step 1**
+
+| # | Who | Does | Checkpoint |
+| --- | --- | --- | --- |
+| 1.1 | ⚙️ TokenBudget | Tier config for this tenant uses a soft cap: alert at 100%, hard stop at 150%. | Calls continue past 100% with overage metered. |
+| 1.2 | 🤖 finops agent | Generates the overage line items for billing. | Invoice draft. |
+| 1.3 | 🧑 Account manager | Confirms with the customer before invoicing. | Customer acknowledged. |
+
+**Path outcome:** Budgets follow the contract, not one global rule.
 
 **Guardrails:** Hard budget per tenant and tier · Per-tenant cost attribution via inference profiles · Agents never change budgets or prices
 
@@ -263,13 +469,48 @@ flowchart LR
   RM --> ROLL[progressive rollout by tier]
 ```
 
-| # | Who | Does | With |
+### ✓ Happy path
+
+| # | Who | Does | With | Checkpoint |
+| --- | --- | --- | --- | --- |
+| 1 | 🧑 security engineer + Kiro | Runs a code search for affected repos and versions, then opens one issue per repo from the delegate template with label kiro. | Kiro CLI, GitHub | A list of affected repos and versions; one `kiro`-labelled issue per repo using the delegate template. |
+| 2 | 🤖 Kiro autonomous agent | Works the issues in parallel sandboxes: bumps the version, fixes breaking changes and runs tests and isolation suites. | Kiro autonomous agent, steering | A PR per repo with the bump, fixes and passing tests. |
+| 3 | ⚙️ AI SDLC pipeline | Runs on each PR: spec-exempt (security), tests, isolation suite and AI review. | ai-sdlc.yml | Pipeline green per PR (spec-exempt: security reason recorded). |
+| 4 | 🤖 AWS Security Agent | PR security review confirms the vulnerable path is gone. An on-demand pen test runs against the dev endpoint. | AWS Security Agent | Security Agent: vulnerable path not reachable; the pen test reports no exploit. |
+| 5 | 🧑 Release manager | Batch-merges green PRs and rolls out progressively by tier. | release-manager agent | All PRs merged; rollout complete across tiers; the dependency scanner shows 0 affected. |
+
+<details><summary>Troubleshoot 3 known errors</summary>
+
+| Step | Symptom | Cause | Fix |
 | --- | --- | --- | --- |
-| 1 | 🧑 security engineer + Kiro | Runs a code search for affected repos and versions, then opens one issue per repo from the delegate template with label kiro. | Kiro CLI, GitHub |
-| 2 | 🤖 Kiro autonomous agent | Works the issues in parallel sandboxes: bumps the version, fixes breaking changes and runs tests and isolation suites. | Kiro autonomous agent, steering |
-| 3 | ⚙️ AI SDLC pipeline | Runs on each PR: spec-exempt (security), tests, isolation suite and AI review. | ai-sdlc.yml |
-| 4 | 🤖 AWS Security Agent | PR security review confirms the vulnerable path is gone. An on-demand pen test runs against the dev endpoint. | AWS Security Agent |
-| 5 | 🧑 Release manager | Batch-merges green PRs and rolls out progressively by tier. | release-manager agent |
+| 2 | Agent PR changes far more than the bump | Issue scope too loose | Constrain the template: 'only dependency and directly required code changes; no refactors'. |
+| 2 | Tests fail on the new major version | Breaking API change in the library | Let the agent apply the upgrade guide; if > N files, route to a human owner. |
+| 5 | Error rate rises in the first wave | Behaviour change in the library (e.g. stricter parsing) | Rollback alarms revert that wave; add a compatibility shim and re-run. |
+
+</details>
+
+### ◇ No patched version exists yet (edge)
+
+**When:** The library hasn't released a fix · **branches at step 1**
+
+| # | Who | Does | Checkpoint |
+| --- | --- | --- | --- |
+| 1.1 | 🧑 security engineer + Kiro | Designs a mitigation: input-size limits and WAF rule blocking the exploit pattern. | Mitigation spec. |
+| 1.2 | ⚙️ Pipeline | Deploys the WAF rule and limits fleet-wide. | Exploit pattern blocked at the edge. |
+| 1.3 | 🤖 Crew bot | Watches the upstream repo and reopens the fleet issues when a fix ships. | Issues reopened automatically. |
+
+**Path outcome:** Exposure is reduced right away, and the patch wave starts automatically later.
+
+### ✗ A repo has no tests (failure)
+
+**When:** The agent can't prove the bump is safe · **branches at step 2**
+
+| # | Who | Does | Checkpoint |
+| --- | --- | --- | --- |
+| 2.1 | 🤖 Kiro autonomous agent | Marks the PR draft and states it can't verify behaviour. | Draft PR with the risk noted. |
+| 2.2 | 🧑 Service owner | Adds a smoke test or approves a manual check. | Verification recorded before merge. |
+
+**Path outcome:** Agents surface missing safety nets instead of guessing.
 
 **Guardrails:** Agents open PRs, humans merge · Sandbox network allow-list · Progressive rollout with automatic rollback alarms
 
@@ -309,14 +550,48 @@ sequenceDiagram
   R->>C: hotfix + notes (via support draft)
 ```
 
-| # | Who | Does | With |
+### ✓ Happy path
+
+| # | Who | Does | With | Checkpoint |
+| --- | --- | --- | --- | --- |
+| 1 | 🤖 support agent | Redacts PII, pulls t-acme01's logs and traces for the window, and finds a serialization error after Tuesday's release. Writes a reproducible bug report. | ticket-to-repro skill, CloudWatch Omni | Bug report with redacted ticket, trace ids for t-acme01, the first failing request time and a reproduction on a test tenant. |
+| 2 | 🧑 Developer + Kiro | Creates a bugfix spec where unchanged behaviour = other export formats. Kiro implements it with a regression test. | Kiro bugfix spec | Bugfix spec with 'unchanged behaviour' = other formats; regression test fails before the fix and passes after. |
+| 3 | 🤖 qa agent | Adds an isolation case: an export as tenant A never contains B's rows. | tenant-isolation-tests | New isolation test is in the suite and green. |
+| 4 | ⚙️ AI SDLC pipeline | Runs the gates, deploys to dev and runs the smoke tests. | ai-sdlc.yml | Pipeline green; dev smoke passes. |
+| 5 | 🧑 Release manager | Promotes the hotfix. Release notes are generated per tier. | release-manager agent | Hotfix promoted; release notes list the fix under premium. |
+| 6 | 🤖 support agent | Drafts a specific customer reply with the root cause in plain terms and the fixed version. A human sends it. | ticket-to-repro skill | Customer reply draft ready for a human to send. |
+
+<details><summary>Troubleshoot 2 known errors</summary>
+
+| Step | Symptom | Cause | Fix |
 | --- | --- | --- | --- |
-| 1 | 🤖 support agent | Redacts PII, pulls t-acme01's logs and traces for the window, and finds a serialization error after Tuesday's release. Writes a reproducible bug report. | ticket-to-repro skill, CloudWatch Omni |
-| 2 | 🧑 Developer + Kiro | Creates a bugfix spec where unchanged behaviour = other export formats. Kiro implements it with a regression test. | Kiro bugfix spec |
-| 3 | 🤖 qa agent | Adds an isolation case: an export as tenant A never contains B's rows. | tenant-isolation-tests |
-| 4 | ⚙️ AI SDLC pipeline | Runs the gates, deploys to dev and runs the smoke tests. | ai-sdlc.yml |
-| 5 | 🧑 Release manager | Promotes the hotfix. Release notes are generated per tier. | release-manager agent |
-| 6 | 🤖 support agent | Drafts a specific customer reply with the root cause in plain terms and the fixed version. A human sends it. | ticket-to-repro skill |
+| 1 | Can't reproduce on the test tenant | Data-dependent bug (specific characters or sizes) | Ask for an anonymized sample via support; replay the exact request shape with synthetic data. |
+| 4 | Isolation smoke fails on dev after the fix | The fix changed the export query's tenant predicate | Block the release; restore the predicate and add a unit test on the query builder. |
+
+</details>
+
+### ↪ Not a bug: customer configuration (alternate)
+
+**When:** Logs show the export filters exclude everything · **branches at step 1**
+
+| # | Who | Does | Checkpoint |
+| --- | --- | --- | --- |
+| 1.1 | 🤖 support agent | Explains the filter setting with a screenshot-ready answer; no engineering hand-off. | Reply draft with steps. |
+| 1.2 | 🤖 pm agent | Logs a UX issue: warn when filters return zero rows. | Backlog item linked to the ticket. |
+
+**Path outcome:** The ticket is resolved in minutes, and the confusing UX goes into the backlog.
+
+### ✗ Many tenants affected (failure)
+
+**When:** Logs show the same error for 30% of premium tenants · **branches at step 1**
+
+| # | Who | Does | Checkpoint |
+| --- | --- | --- | --- |
+| 1.1 | 🤖 support agent | Escalates to an incident instead of a single ticket. | Incident opened with tenant list. |
+| 1.2 | 🧑 Incident commander | Rolls back Tuesday's release while the fix is built. | Exports work again for everyone. |
+| 1.3 | 🤖 support agent | Drafts a status-page update and proactive notices for affected tenants. | Comms reviewed and sent by humans. |
+
+**Path outcome:** Single-ticket flow upgrades to incident flow automatically.
 
 **Guardrails:** PII redaction before engineering sees the ticket · Reproduction uses a test tenant, never customer data · Humans send customer communications
 
@@ -347,13 +622,49 @@ flowchart LR
   VER --> CERT[erasure certificate]
 ```
 
-| # | Who | Does | With |
+### ✓ Happy path
+
+| # | Who | Does | With | Checkpoint |
+| --- | --- | --- | --- | --- |
+| 1 | 🤖 tenant-ops agent | Builds a data map for u-881: DynamoDB items, S3 exports, Knowledge Base documents (metadata tenantId+userId), AgentCore Memory namespace /tenant/t-acme01/user/u-881, and logs. | tenant-ops skill, AWS MCP Server | Data map lists every store with item counts for u-881 (DynamoDB, S3, KB docs, memory records, logs). |
+| 2 | 🧑 DPO | Reviews the data map and the legal holds, then approves. | — | DPO approval recorded; no legal hold. |
+| 3 | ⚙️ Erasure job | Deletes items and objects, removes KB documents and re-syncs the data source, and deletes memory records for the actor. | AWS CLI, Bedrock Knowledge Bases, AgentCore Memory | Deletion job log shows per-store counts deleted; KB ingestion job completed. |
+| 4 | 🤖 qa agent | Verifies retrieval and memory recall for u-881 return nothing, and searches logs for residual identifiers. | tenant-isolation-tests | Retrieval and memory recall for u-881 return nothing; log scan finds no identifiers beyond retention exceptions. |
+| 5 | 🤖 tenant-ops agent | Generates an erasure certificate listing systems, timestamps and verification queries. | — | Certificate lists systems, timestamps and the verification queries. |
+
+<details><summary>Troubleshoot 3 known errors</summary>
+
+| Step | Symptom | Cause | Fix |
 | --- | --- | --- | --- |
-| 1 | 🤖 tenant-ops agent | Builds a data map for u-881: DynamoDB items, S3 exports, Knowledge Base documents (metadata tenantId+userId), AgentCore Memory namespace /tenant/t-acme01/user/u-881, and logs. | tenant-ops skill, AWS MCP Server |
-| 2 | 🧑 DPO | Reviews the data map and the legal holds, then approves. | — |
-| 3 | ⚙️ Erasure job | Deletes items and objects, removes KB documents and re-syncs the data source, and deletes memory records for the actor. | AWS CLI, Bedrock Knowledge Bases, AgentCore Memory |
-| 4 | 🤖 qa agent | Verifies retrieval and memory recall for u-881 return nothing, and searches logs for residual identifiers. | tenant-isolation-tests |
-| 5 | 🤖 tenant-ops agent | Generates an erasure certificate listing systems, timestamps and verification queries. | — |
+| 3 | KB still returns the user's content | Documents deleted from S3 but the data source wasn't re-synced | Start an ingestion job for the data source and wait for COMPLETE before verifying. |
+| 3 | Memory records reappear | Events still exist and extraction re-ran | Delete events for the actor/session as well as long-term records. |
+| 4 | Identifier found in old CloudWatch logs | Logs have longer retention than the erasure policy allows | Document the retention exception or mask via subscription filter; shorten retention. |
+
+</details>
+
+### ◇ A legal hold blocks deletion (edge)
+
+**When:** The user's data is under litigation hold · **branches at step 2**
+
+| # | Who | Does | Checkpoint |
+| --- | --- | --- | --- |
+| 2.1 | 🧑 DPO | Rejects deletion and records the legal basis; restricts processing instead. | Hold documented. |
+| 2.2 | 🤖 tenant-ops agent | Marks the user as 'processing restricted', which excludes them from AI memory and retrieval. | Restriction flag set; recall returns nothing for the user. |
+| 2.3 | 🤖 Crew bot | Reminds the DPO when the hold expires. | Scheduled follow-up. |
+
+**Path outcome:** Lawful handling: restriction now, erasure later.
+
+### ↪ Whole-tenant erasure at offboarding (alternate)
+
+**When:** The request covers every user of the tenant · **branches at step 1**
+
+| # | Who | Does | Checkpoint |
+| --- | --- | --- | --- |
+| 1.1 | ⚙️ tenantctl | Offboard flow: export → suspend → mark offboarded (ticket + CONFIRM). | Tenant OFFBOARDED. |
+| 1.2 | ⚙️ Erasure job | After the retention window, deletes all tenant data, inference profiles, memory namespaces and KB docs. | Per-store deletion counts. |
+| 1.3 | 🤖 qa agent | Verifies nothing of the tenant remains by retrieval, recall and Cost Explorer (no spend). | Verification report. |
+
+**Path outcome:** Offboarding and erasure share one audited flow.
 
 **Guardrails:** Identity-scoped memory namespaces make deletion precise · Human approval and legal-hold check · Verification by retrieval, not by assumption
 
@@ -387,14 +698,48 @@ flowchart LR
   OM --> GA[GA]
 ```
 
-| # | Who | Does | With |
+### ✓ Happy path
+
+| # | Who | Does | With | Checkpoint |
+| --- | --- | --- | --- | --- |
+| 1 | 🤖 pm agent | prd-to-spec: EARS requirements with tier gating (premium+), isolation, metering, success metrics and rollout. | prd-to-spec skill | requirements.md has tier gating, isolation, metering and success metrics. |
+| 2 | 🤖 architect agent | Design: a Strands agent on AgentCore Runtime, tools via Gateway, a per-tenant inference profile and Policy rules. | tenancy-review, AWS Knowledge MCP | design.md has the agent, tools, profile and policy rules, plus a diagram. |
+| 3 | 🤖 finops agent | Estimates cost per tenant per month at forecast usage, so the PM sets premium-only and a monthly cap. | estimate-before-build | Cost estimate in design.md; PM decision recorded (premium-only + cap). |
+| 4 | 🤖 Developers + subagents | Implement spec task waves in parallel. | Kiro specs, subagents | All tasks ticked; spec gate passes on every PR. |
+| 5 | 🤖 ai-engineer agent | Builds a golden set with isolation probes; the release gate passes; 10% canary of premium tenants. | ai-feature-eval, release_gate | Eval record passes the gate; canary config at 10% premium. |
+| 6 | ⚙️ CloudWatch Omni | Online evaluations and latency look healthy, so GA follows. | Omni evaluators | Omni shows healthy online scores and latency; the flag is set to GA. |
+
+<details><summary>Troubleshoot 2 known errors</summary>
+
+| Step | Symptom | Cause | Fix |
 | --- | --- | --- | --- |
-| 1 | 🤖 pm agent | prd-to-spec: EARS requirements with tier gating (premium+), isolation, metering, success metrics and rollout. | prd-to-spec skill |
-| 2 | 🤖 architect agent | Design: a Strands agent on AgentCore Runtime, tools via Gateway, a per-tenant inference profile and Policy rules. | tenancy-review, AWS Knowledge MCP |
-| 3 | 🤖 finops agent | Estimates cost per tenant per month at forecast usage, so the PM sets premium-only and a monthly cap. | estimate-before-build |
-| 4 | 🤖 Developers + subagents | Implement spec task waves in parallel. | Kiro specs, subagents |
-| 5 | 🤖 ai-engineer agent | Builds a golden set with isolation probes; the release gate passes; 10% canary of premium tenants. | ai-feature-eval, release_gate |
-| 6 | ⚙️ CloudWatch Omni | Online evaluations and latency look healthy, so GA follows. | Omni evaluators |
+| 5 | Golden set too small to trust | Only happy-path cases | Add adversarial, out-of-scope and cross-tenant probes; ≥ 30 cases per tier. |
+| 6 | Adoption is low in canary | Feature hard to discover | PM adds in-product prompts; this is a product signal, not a model problem. |
+
+</details>
+
+### ✗ Cost estimate kills the plan (failure)
+
+**When:** Estimated cost per tenant exceeds the premium price uplift · **branches at step 3**
+
+| # | Who | Does | Checkpoint |
+| --- | --- | --- | --- |
+| 3.1 | 🧑 Product manager | Narrows scope to weekly summaries (batch) instead of on-demand. | Spec updated. |
+| 3.2 | 🤖 architect agent | Redesigns as a scheduled batch job using Bedrock batch inference. | New design with lower unit cost. |
+| 3.3 | 🤖 finops agent | Re-estimates. | Within margin target, so the build proceeds. |
+
+**Path outcome:** The cost gate changed the design before any code was written.
+
+### ✗ Eval gate fails (failure)
+
+**When:** Faithfulness below baseline on long accounts · **branches at step 5**
+
+| # | Who | Does | Checkpoint |
+| --- | --- | --- | --- |
+| 5.1 | 🤖 ai-engineer agent | Adds retrieval chunking and a citation requirement to the prompt; re-runs the eval. | New eval record. |
+| 5.2 | ⚙️ release_gate | Passes on second attempt. | Canary proceeds. |
+
+**Path outcome:** The gate did its job, and the fix is measurable.
 
 **Guardrails:** Spec gate on every PR · Eval and cost gates · Tier-gated feature flag
 
@@ -426,13 +771,48 @@ flowchart LR
   PAR -->|fail| RB[fix rulebook → regenerate]
 ```
 
-| # | Who | Does | With |
+### ✓ Happy path
+
+| # | Who | Does | With | Checkpoint |
+| --- | --- | --- | --- | --- |
+| 1 | 🤖 migration-engine skill | Discovery on the legacy schema, then a rulebook mapping legacy entities to pooled keys with tenantId. | migration-engine skill, Kiro | Manifest + RULEBOOK.md approved; flags resolved. |
+| 2 | ⚙️ Parity harness | Replays recorded API cases per customer against legacy and the pooled tenant. | parity_harness.py | Harness passes on legacy and fails on injected breakage (`--self-test`). |
+| 3 | 🤖 AWS Transform | Runs the same skill files across the customer portfolio as parallel jobs. | AWS Transform | Jobs complete per customer with generated mappings. |
+| 4 | 🤖 Crew bot | Per wave: onboard tenants via tenantctl, import data, run parity and post the report. | tenant-ops skill, Kiro Crew | Per-wave report: tenants onboarded, data imported, parity %. |
+| 5 | 🧑 Customer success | Go/no-go per customer from the parity report, then cutover scheduling. | — | Signed go/no-go per customer; cutover scheduled. |
+
+<details><summary>Troubleshoot 2 known errors</summary>
+
+| Step | Symptom | Cause | Fix |
 | --- | --- | --- | --- |
-| 1 | 🤖 migration-engine skill | Discovery on the legacy schema, then a rulebook mapping legacy entities to pooled keys with tenantId. | migration-engine skill, Kiro |
-| 2 | ⚙️ Parity harness | Replays recorded API cases per customer against legacy and the pooled tenant. | parity_harness.py |
-| 3 | 🤖 AWS Transform | Runs the same skill files across the customer portfolio as parallel jobs. | AWS Transform |
-| 4 | 🤖 Crew bot | Per wave: onboard tenants via tenantctl, import data, run parity and post the report. | tenant-ops skill, Kiro Crew |
-| 5 | 🧑 Customer success | Go/no-go per customer from the parity report, then cutover scheduling. | — |
+| 2 | Parity fails on timestamps for every case | Legacy stored local time; pooled stores UTC | Add a rulebook rule for time-zone conversion and an ignore rule only for volatile fields. |
+| 4 | Import collides with existing tenant ids | Legacy customer ids overlap the t- namespace | Prefix legacy ids deterministically (t-l-<id>) in the rulebook; re-run the wave. |
+
+</details>
+
+### ◇ Heavily customised install (edge)
+
+**When:** A customer has custom tables and code the pooled product doesn't support · **branches at step 2**
+
+| # | Who | Does | Checkpoint |
+| --- | --- | --- | --- |
+| 2.1 | 🤖 architect agent | Classifies customisations: drop, replace with config, or build as an extension. | Customisation inventory. |
+| 2.2 | 🧑 Customer success | Negotiates a plan with the customer. | Agreed scope. |
+| 2.3 | 🧑 Tenant operations | Moves the customer to a later wave or a silo tier. | Plan updated. |
+
+**Path outcome:** Not every install fits the pool, and the factory handles exceptions explicitly.
+
+### ✗ Cutover rollback (failure)
+
+**When:** Post-cutover error rate spikes for a migrated customer · **branches at step 5**
+
+| # | Who | Does | Checkpoint |
+| --- | --- | --- | --- |
+| 5.1 | 🧑 Incident commander | Switches the customer back to legacy within the rollback window. | Customer back on legacy. |
+| 5.2 | 🤖 migration-engine skill | Adds the failing requests as parity cases and fixes the rulebook. | Parity 100% including new cases. |
+| 5.3 | 🧑 Customer success | Reschedules cutover. | New date agreed. |
+
+**Path outcome:** The rollback window turns a bad cutover into a delay, not an outage.
 
 **Guardrails:** No cutover without a parity report · Rulebook changes are reviewed and regenerate output · Rollback window per tenant
 
@@ -463,13 +843,37 @@ flowchart LR
   SCORE --> PM[postmortem + spec tasks]
 ```
 
-| # | Who | Does | With |
+### ✓ Happy path
+
+| # | Who | Does | With | Checkpoint |
+| --- | --- | --- | --- | --- |
+| 1 | 🤖 architect agent | Reviews region-switch plans and IaC for drift between primary and secondary, and opens fixes. | iac-author, AWS IaC MCP | Drift report: none, or fix PRs merged. |
+| 2 | 🤖 sre agent | Generates the game day runbook, success criteria per tier and synthetic tenant traffic. | runbook-from-incident | Runbook with RTO/RPO targets per tier; synthetic traffic running. |
+| 3 | 🧑 Incident commander | Starts the switch using declarative region-switch plans. | Amazon Application Recovery Controller | Region-switch plan executed; steps green. |
+| 4 | ⚙️ CloudWatch Omni | Tracks golden metrics and per-tenant error rates across both regions in one space. | Omni spaces | Omni shows traffic and error rates per tenant in the secondary region. |
+| 5 | 🤖 sre agent | Scores the run against RTO and RPO per tier, and turns gaps into a postmortem and spec tasks. | runbook-from-incident | Scorecard vs targets; postmortem and tasks filed. |
+
+<details><summary>Troubleshoot 2 known errors</summary>
+
+| Step | Symptom | Cause | Fix |
 | --- | --- | --- | --- |
-| 1 | 🤖 architect agent | Reviews region-switch plans and IaC for drift between primary and secondary, and opens fixes. | iac-author, AWS IaC MCP |
-| 2 | 🤖 sre agent | Generates the game day runbook, success criteria per tier and synthetic tenant traffic. | runbook-from-incident |
-| 3 | 🧑 Incident commander | Starts the switch using declarative region-switch plans. | Amazon Application Recovery Controller |
-| 4 | ⚙️ CloudWatch Omni | Tracks golden metrics and per-tenant error rates across both regions in one space. | Omni spaces |
-| 5 | 🤖 sre agent | Scores the run against RTO and RPO per tier, and turns gaps into a postmortem and spec tasks. | runbook-from-incident |
+| 3 | Switch stalls on database promotion | Replication lag above the threshold | Wait or accept data loss within RPO; document; tune replication. |
+| 4 | Some tenants still route to the primary | Client-side DNS caching or hard-coded regional endpoints | Lower TTLs; remove regional endpoints from SDK config. |
+
+</details>
+
+### ✗ RTO missed (failure)
+
+**When:** Failover took longer than the enterprise SLA · **branches at step 5**
+
+| # | Who | Does | Checkpoint |
+| --- | --- | --- | --- |
+| 5.1 | 🤖 sre agent | Breaks down the timeline by step to find the slowest dependency. | Timeline with durations. |
+| 5.2 | 🤖 architect agent | Proposes warm standby for that dependency, with cost. | Design + cost. |
+| 5.3 | 🧑 Leadership | Approves the spend or adjusts the SLA. | Decision recorded. |
+| 5.4 | ⚙️ Pipeline | Re-runs the game day next sprint. | RTO met. |
+
+**Path outcome:** A missed target becomes a funded fix, not just a finding.
 
 **Guardrails:** Humans initiate failover · Synthetic tenants only during drills · Every finding becomes a tracked task
 
@@ -500,13 +904,35 @@ flowchart LR
   CFG --> GATE[release gate] --> LIVE[flags on]
 ```
 
-| # | Who | Does | With |
+### ✓ Happy path
+
+| # | Who | Does | With | Checkpoint |
+| --- | --- | --- | --- | --- |
+| 1 | 🤖 finops agent | tenant-cost-report for the quarter: margin by tier, top negative-margin tenants and drivers (AI tokens on summaries). | tenant-cost-report, Cost Explorer | Margin by tier with method and assumptions stated. |
+| 2 | 🤖 Amazon Quick | Research flow combining usage data, competitor pricing pages and win/loss notes into a briefing. | Quick Research, Quick Flows | Briefing with cited sources. |
+| 3 | 🤖 pm agent | Drafts packaging options and a spec for an AI add-on with metering and a monthly cap. | prd-to-spec | Options document + spec draft for the add-on. |
+| 4 | 🧑 Leadership | Chooses the option. | — | Decision recorded. |
+| 5 | ⚙️ AI platform | Tier routes and budgets updated in model_policy and TIER_DEFAULTS via PR and the release gate. | router.py, tenant_ai.py | Config PR merged through the gate; flags on for new tenants; existing contracts grandfathered. |
+
+<details><summary>Troubleshoot 1 known errors</summary>
+
+| Step | Symptom | Cause | Fix |
 | --- | --- | --- | --- |
-| 1 | 🤖 finops agent | tenant-cost-report for the quarter: margin by tier, top negative-margin tenants and drivers (AI tokens on summaries). | tenant-cost-report, Cost Explorer |
-| 2 | 🤖 Amazon Quick | Research flow combining usage data, competitor pricing pages and win/loss notes into a briefing. | Quick Research, Quick Flows |
-| 3 | 🤖 pm agent | Drafts packaging options and a spec for an AI add-on with metering and a monthly cap. | prd-to-spec |
-| 4 | 🧑 Leadership | Chooses the option. | — |
-| 5 | ⚙️ AI platform | Tier routes and budgets updated in model_policy and TIER_DEFAULTS via PR and the release gate. | router.py, tenant_ai.py |
+| 1 | Shared infra cost allocation looks wrong | Usage metrics missing for some features | Instrument those features with TenantUsage first; mark the allocation as provisional. |
+
+</details>
+
+### ↪ Existing customers push back (alternate)
+
+**When:** Key accounts object to the change · **branches at step 4**
+
+| # | Who | Does | Checkpoint |
+| --- | --- | --- | --- |
+| 4.1 | 🧑 Account managers | Offer grandfathering until renewal. | Exceptions list. |
+| 4.2 | 🤖 tenant-ops agent | Sets per-tenant overrides in the tenant record. | Overrides visible in status. |
+| 4.3 | 🤖 finops agent | Tracks margin for grandfathered tenants separately. | Monthly report includes the cohort. |
+
+**Path outcome:** Pricing changes roll out gradually by contract.
 
 **Guardrails:** Agents propose, humans price · Changes ship via reviewed config · Existing contracts are respected (grandfathering flags)
 
@@ -536,12 +962,33 @@ flowchart LR
   H --> RB[runbook + expiry alarm]
 ```
 
-| # | Who | Does | With |
+### ✓ Happy path
+
+| # | Who | Does | With | Checkpoint |
+| --- | --- | --- | --- | --- |
+| 1 | 🤖 sre agent | Queries the Omni space that includes Azure Monitor metrics, resource logs and Application Insights traces. | CloudWatch Omni, tenant-incident skill | The Omni space shows both clouds' telemetry for the window. |
+| 2 | 🤖 AWS DevOps Agent | Correlates both errors to the same expired certificate on a shared identity integration. | Omni root cause | Single root cause with evidence from both clouds. |
+| 3 | 🧑 On-call SRE | Rotates the certificate and confirms recovery in both clouds. | — | Certificate rotated; errors stop in both clouds. |
+| 4 | 🤖 sre agent | Runbook plus a certificate-expiry alarm for all clouds. | runbook-from-incident | Runbook + alarm PR merged. |
+
+<details><summary>Troubleshoot 1 known errors</summary>
+
+| Step | Symptom | Cause | Fix |
 | --- | --- | --- | --- |
-| 1 | 🤖 sre agent | Queries the Omni space that includes Azure Monitor metrics, resource logs and Application Insights traces. | CloudWatch Omni, tenant-incident skill |
-| 2 | 🤖 AWS DevOps Agent | Correlates both errors to the same expired certificate on a shared identity integration. | Omni root cause |
-| 3 | 🧑 On-call SRE | Rotates the certificate and confirms recovery in both clouds. | — |
-| 4 | 🤖 sre agent | Runbook plus a certificate-expiry alarm for all clouds. | runbook-from-incident |
+| 1 | Azure data missing in Omni | Entra ID tenant not connected or diagnostic settings not exporting | Connect the Entra tenant in Omni and enable diagnostic settings for the resources. |
+
+</details>
+
+### ↪ Two independent causes (alternate)
+
+**When:** Correlation shows unrelated failures in each cloud · **branches at step 2**
+
+| # | Who | Does | Checkpoint |
+| --- | --- | --- | --- |
+| 2.1 | 🤖 sre agent | Splits into two incident tracks with separate owners. | Two threads. |
+| 2.2 | 🧑 Incident commander | Assigns owners and keeps one status page. | Coordinated comms. |
+
+**Path outcome:** One view of both clouds stops two coincidences being treated as one cause.
 
 **Guardrails:** Read-only investigation · Customer communications reviewed
 
@@ -578,13 +1025,47 @@ sequenceDiagram
   T-->>PA: status only
 ```
 
-| # | Who | Does | With |
+### ✓ Happy path
+
+| # | Who | Does | With | Checkpoint |
+| --- | --- | --- | --- | --- |
+| 1 | 🤖 architect agent | Designs an A2A endpoint on AgentCore Runtime with an agent card exposing only get_order_status. | Strands A2A, AgentCore Runtime | Agent card exposes only get_order_status. |
+| 2 | 🧑 Security | Configures partner OAuth client credentials in AgentCore Identity, and Cedar rules: partner can call get_order_status only for consenting tenants. | AgentCore Identity, AgentCore Policy | Partner client exists in Identity; Cedar rules created in LOG_ONLY. |
+| 3 | 🧑 Tenant admin | Opts in from the tenant settings page, which writes the consent flag to the tenant record. | — | Consent flag on the tenant record. |
+| 4 | ⚙️ Policy engine | LOG_ONLY for a week, review the decisions, then ENFORCE. | AgentCore Policy | A week of decision logs reviewed; no unexpected allows; ENFORCE set. |
+| 5 | ⚙️ CloudWatch Omni | Partner calls traced with partner id and tenant id; abuse alarms. | Omni | Traces carry partner id + tenant id; abuse alarm configured. |
+
+<details><summary>Troubleshoot 2 known errors</summary>
+
+| Step | Symptom | Cause | Fix |
 | --- | --- | --- | --- |
-| 1 | 🤖 architect agent | Designs an A2A endpoint on AgentCore Runtime with an agent card exposing only get_order_status. | Strands A2A, AgentCore Runtime |
-| 2 | 🧑 Security | Configures partner OAuth client credentials in AgentCore Identity, and Cedar rules: partner can call get_order_status only for consenting tenants. | AgentCore Identity, AgentCore Policy |
-| 3 | 🧑 Tenant admin | Opts in from the tenant settings page, which writes the consent flag to the tenant record. | — |
-| 4 | ⚙️ Policy engine | LOG_ONLY for a week, review the decisions, then ENFORCE. | AgentCore Policy |
-| 5 | ⚙️ CloudWatch Omni | Partner calls traced with partner id and tenant id; abuse alarms. | Omni |
+| 2 | Policy creation fails validation | Hand-written Cedar names don't match the gateway schema | Generate from natural language first (lab 30), then edit. |
+| 4 | Legitimate partner calls denied | Consent claim not propagated to the policy context | Pass consent as a tool input or tag from the tenant record; re-test in LOG_ONLY. |
+
+</details>
+
+### ✗ Partner queries a non-consenting tenant (failure)
+
+**When:** Partner requests status for a tenant that didn't opt in · **branches at step 4**
+
+| # | Who | Does | Checkpoint |
+| --- | --- | --- | --- |
+| 4.1 | ⚙️ AgentCore Policy | Denies the tool call. | DENY in the decision log with tenant id. |
+| 4.2 | 🤖 Your A2A agent | Returns a structured 'not authorized for this customer' response, without revealing whether the order exists. | No data leakage in the response. |
+| 4.3 | 🤖 Crew bot | Weekly report of denied attempts to the partner manager. | Report sent. |
+
+**Path outcome:** Consent is enforced at the gateway, outside both agents' code.
+
+### ↪ Partnership ends (alternate)
+
+**When:** Contract terminated · **branches at step 5**
+
+| # | Who | Does | Checkpoint |
+| --- | --- | --- | --- |
+| 5.1 | 🧑 Security | Deletes the partner's OAuth client and policies. | Partner calls fail auth. |
+| 5.2 | 🤖 qa agent | Verifies the partner can no longer obtain tokens. | Verification log. |
+
+**Path outcome:** Clean revocation with evidence.
 
 **Guardrails:** Consent per tenant · Least-privilege tool surface · Policy enforced outside the agent code
 
@@ -616,13 +1097,36 @@ flowchart LR
   OM -->|regression| RBK[rollback]
 ```
 
-| # | Who | Does | With |
+### ✓ Happy path
+
+| # | Who | Does | With | Checkpoint |
+| --- | --- | --- | --- | --- |
+| 1 | 🤖 Crew release-readiness bot | Inventories functions per account and stack with the AWS MCP Server, groups them by owner and risk, and plans waves. | AWS MCP Server, Kiro Crew | Inventory by account, stack and owner; waves defined. |
+| 2 | 🤖 Kiro autonomous agent | One issue per stack: runtime bump, CDK migration and tests, then a PR. | Kiro autonomous agent | A PR per stack with the runtime and CDK upgrades and tests passing. |
+| 3 | 🤖 serverless-review skill | Checks timeouts, memory and arm64 opportunities while it's there. | serverless-review, cdk-nag | No new cdk-nag findings; suggestions noted. |
+| 4 | 🧑 Release manager | Merges by wave: internal, then basic, then premium, then enterprise. | — | Waves merged in order internal → basic → premium → enterprise. |
+| 5 | ⚙️ CloudWatch Omni | Per-wave error and latency comparison; automatic rollback alarm. | Omni | Per-wave comparison is healthy; no rollbacks needed. |
+
+<details><summary>Troubleshoot 2 known errors</summary>
+
+| Step | Symptom | Cause | Fix |
 | --- | --- | --- | --- |
-| 1 | 🤖 Crew release-readiness bot | Inventories functions per account and stack with the AWS MCP Server, groups them by owner and risk, and plans waves. | AWS MCP Server, Kiro Crew |
-| 2 | 🤖 Kiro autonomous agent | One issue per stack: runtime bump, CDK migration and tests, then a PR. | Kiro autonomous agent |
-| 3 | 🤖 serverless-review skill | Checks timeouts, memory and arm64 opportunities while it's there. | serverless-review, cdk-nag |
-| 4 | 🧑 Release manager | Merges by wave: internal, then basic, then premium, then enterprise. | — |
-| 5 | ⚙️ CloudWatch Omni | Per-wave error and latency comparison; automatic rollback alarm. | Omni |
+| 2 | CDK major upgrade breaks synth | Removed or renamed constructs | Have the agent follow the CDK migration guide; pin the version per stack until green. |
+| 5 | Cold starts regress on the new runtime | Bundle size or init code | Enable SnapStart or tune memory; Lambda Power Tuning. |
+
+</details>
+
+### ✗ A wave regresses (failure)
+
+**When:** Premium wave error rate rises after the merge · **branches at step 5**
+
+| # | Who | Does | Checkpoint |
+| --- | --- | --- | --- |
+| 5.1 | ⚙️ CloudWatch Omni | Rollback alarm fires for the premium wave. | Alarm with stack list. |
+| 5.2 | ⚙️ Pipeline | Automatic rollback of that wave's stacks. | Previous versions restored. |
+| 5.3 | 🤖 Kiro autonomous agent | Investigates the diff and opens a fix PR. | Fix PR; wave re-queued. |
+
+**Path outcome:** Wave order and rollback alarms limit the blast radius.
 
 **Guardrails:** Wave order by tier · Rollback alarms · cdk-nag clean
 
@@ -654,12 +1158,34 @@ flowchart LR
   CHK --> SL{Security lead sign-off}
 ```
 
-| # | Who | Does | With |
+### ✓ Happy path
+
+| # | Who | Does | With | Checkpoint |
+| --- | --- | --- | --- | --- |
+| 1 | 🤖 Crew compliance bot | Weekly evidence collection: IAM Identity Center assignments, policy engine decisions, Kiro Crew audit logs, pipeline gate results and isolation test history. | AWS MCP Server, Kiro Crew | Evidence library updated this week, with timestamps per control. |
+| 2 | 🤖 Amazon Quick | Answers the questionnaire from the evidence library and policies, with citations. | Quick Research | Every answer has a citation to evidence or policy. |
+| 3 | 🤖 security agent (Kiro) | Flags answers whose evidence is stale or missing, and opens tasks. | threat-model skill | List of stale or missing evidence with owners. |
+| 4 | 🧑 Security lead | Reviews and signs off. | — | Sign-off recorded; questionnaire sent. |
+
+<details><summary>Troubleshoot 1 known errors</summary>
+
+| Step | Symptom | Cause | Fix |
 | --- | --- | --- | --- |
-| 1 | 🤖 Crew compliance bot | Weekly evidence collection: IAM Identity Center assignments, policy engine decisions, Kiro Crew audit logs, pipeline gate results and isolation test history. | AWS MCP Server, Kiro Crew |
-| 2 | 🤖 Amazon Quick | Answers the questionnaire from the evidence library and policies, with citations. | Quick Research |
-| 3 | 🤖 security agent (Kiro) | Flags answers whose evidence is stale or missing, and opens tasks. | threat-model skill |
-| 4 | 🧑 Security lead | Reviews and signs off. | — |
+| 2 | Answers without citations | Evidence library missing that control | Mark as 'needs evidence' instead of answering; never let the model answer from memory. |
+
+</details>
+
+### ✗ A control gap is found (failure)
+
+**When:** No evidence exists that isolation tests run on every release · **branches at step 3**
+
+| # | Who | Does | Checkpoint |
+| --- | --- | --- | --- |
+| 3.1 | 🧑 Security lead | Opens a remediation task with a due date. | Task tracked. |
+| 3.2 | ⚙️ Pipeline | Lab 49's isolation gate is added to every repo. | Gate active. |
+| 3.3 | 🤖 Crew compliance bot | Starts collecting the gate results as evidence. | New evidence stream. |
+
+**Path outcome:** Gaps found in questionnaires turn into controls, not promises.
 
 **Guardrails:** Answers must cite evidence · Human sign-off · Evidence store is read-only to agents
 

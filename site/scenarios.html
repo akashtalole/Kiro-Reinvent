@@ -58,7 +58,7 @@
       var agents = s.steps.filter(function (x) { return x.kind === "agent"; }).length;
       return '<a class="card" href="scenarios.html?id=' + encodeURIComponent(s.id) + '"><span class="lab-num">' + esc(s.domain) + "</span>" +
         "<h3>" + esc(s.title) + "</h3><p>" + esc(s.tagline) + '</p><div class="meta"><span class="chip ' + (s.complexity === "Expert" ? "warm" : "accent") + '">' +
-        esc(s.complexity) + '</span><span class="chip">' + s.steps.length + " steps · " + agents + ' agent</span><span class="chip">' + s.labs.length + " labs</span></div></a>";
+        esc(s.complexity) + '</span><span class="chip">' + s.steps.length + " steps · " + agents + ' agent</span><span class="chip">' + (1 + (s.paths || []).length) + " paths</span><span class=\"chip\">" + s.labs.length + " labs</span></div></a>";
     }
     function renderList() {
       ["dom-row", "cx-row", "per-row"].forEach(function (id, i) {
@@ -88,11 +88,9 @@
           s.personas.map(function (p) { return '<span class="chip">' + esc(p) + "</span>"; }).join("") + "</div>" +
         '<div class="sc-trigger"><b>Trigger</b><span>' + esc(s.trigger) + "</span></div>" +
         '<h2 class="sc-h">Flow</h2><div class="md sc-flow"><div class="mermaid" id="sc-diagram"></div></div>' +
-        '<div class="sc-grid"><div><h2 class="sc-h">How it unfolds</h2><ol class="tl">' + s.steps.map(function (st) {
-          var k = KIND[st.kind];
-          return '<li class="tl-' + st.kind + '"><div class="tl-head"><span class="chip ' + k[1] + '">' + k[0] + '</span><b>' + esc(st.actor) + "</b></div>" +
-            "<p>" + esc(st.action) + "</p>" + (st.tools && st.tools.length ? '<div class="tl-tools">' + st.tools.map(function (t) { return "<code>" + esc(t) + "</code>"; }).join(" ") + "</div>" : "") + "</li>";
-        }).join("") + "</ol></div>" +
+        '<h2 class="sc-h">Choose your path</h2><div id="path-tabs" class="path-tabs" role="tablist"></div>' +
+        '<div class="sc-grid"><div><div id="path-head" class="path-head"></div><ol class="steps-v" id="path-steps"></ol>' +
+        '<div class="progress-bar"><span id="path-progress"></span><button class="chip" type="button" id="path-reset">Reset</button></div></div>' +
         '<div><h2 class="sc-h">Controls &amp; results</h2>' +
         '<div class="aside-box"><h4>Guardrails</h4><ul class="sc-list">' + s.guardrails.map(function (g) { return "<li>" + esc(g) + "</li>"; }).join("") + "</ul></div>" +
         '<div class="aside-box" style="margin-top:12px"><h4>Outcome</h4><p style="margin:0">' + esc(s.outcome) + '</p></div>' +
@@ -104,6 +102,57 @@
           s.services.map(function (x) { return '<span class="chip">' + esc(x) + "</span>"; }).join("") + "</div>" +
         '<nav class="pager"><a class="prev" href="scenarios.html"><small>← All scenarios</small>Back to the catalog</a>' +
         '<a class="next" href="scenarios.html?id=' + encodeURIComponent(next.id) + '"><small>Next scenario →</small>' + esc(next.title) + "</a></nav>";
+      var PT = { happy: ["✓ Happy path", "ok"], alternate: ["↪ Alternate", "accent"], failure: ["✗ Failure path", "warm"], edge: ["◇ Edge case", "accent"] };
+      var paths = [{ id: "happy", type: "happy", name: "Everything goes right", when: s.trigger, branchesAt: 1, steps: s.steps, outcome: s.outcome }].concat(s.paths || []);
+      var storeKey = "krl-sc-" + s.id;
+      function loadDone() { try { return JSON.parse(localStorage.getItem(storeKey) || "{}"); } catch (e) { return {}; } }
+      function saveDone(v) { try { localStorage.setItem(storeKey, JSON.stringify(v)); } catch (e) { /* storage unavailable */ } }
+      var done = loadDone();
+      var tabs = document.getElementById("path-tabs");
+      tabs.innerHTML = paths.map(function (p) {
+        return '<button type="button" role="tab" class="path-tab" data-path="' + esc(p.id) + '"><span class="chip ' + PT[p.type][1] + '">' + PT[p.type][0] +
+          "</span><span>" + esc(p.type === "happy" ? "Happy path" : p.name) + "</span></button>";
+      }).join("");
+      function stepNo(p, i) { return p.type === "happy" ? String(i + 1) : p.branchesAt + "." + (i + 1); }
+      function renderPath(pid) {
+        var p = paths.filter(function (x) { return x.id === pid; })[0] || paths[0];
+        tabs.querySelectorAll(".path-tab").forEach(function (b) { b.setAttribute("aria-selected", String(b.getAttribute("data-path") === p.id)); });
+        document.getElementById("path-head").innerHTML = p.type === "happy"
+          ? '<p><b>When:</b> ' + esc(p.when) + '</p>'
+          : '<p><b>When:</b> ' + esc(p.when) + '</p><p class="muted">Follows the happy path through step ' + (p.branchesAt - 1) +
+            ', then branches here <span class="chip">from step ' + p.branchesAt + "</span></p>";
+        document.getElementById("path-steps").innerHTML = p.steps.map(function (st, i) {
+          var k = KIND[st.kind], key = p.id + ":" + i, ts = st.troubleshoot || [];
+          return '<li class="step-v tl-' + st.kind + (done[key] ? " is-done" : "") + '"><div class="step-n">' + stepNo(p, i) + '</div><div class="step-body">' +
+            '<div class="tl-head"><span class="chip ' + k[1] + '">' + k[0] + "</span><b>" + esc(st.actor) + '</b><label class="done-toggle"><input type="checkbox" data-key="' + key + '"' + (done[key] ? " checked" : "") + "> Done</label></div>" +
+            "<p>" + esc(st.action) + "</p>" +
+            (st.tools && st.tools.length ? '<div class="tl-tools">' + st.tools.map(function (t) { return "<code>" + esc(t) + "</code>"; }).join(" ") + "</div>" : "") +
+            (st.checkpoint ? '<div class="checkpoint"><b>Checkpoint</b> ' + esc(st.checkpoint) + "</div>" : "") +
+            (ts.length ? '<details class="trouble"><summary>Troubleshoot <b>' + ts.length + "</b> known error" + (ts.length > 1 ? "s" : "") + " in this step</summary>" +
+              ts.map(function (t) { return '<div class="tr-item"><div><span class="tr-l">Symptom</span>' + esc(t.symptom) + '</div><div><span class="tr-l">Cause</span>' + esc(t.cause) +
+                '</div><div><span class="tr-l">Fix</span>' + esc(t.fix) + "</div></div>"; }).join("") + "</details>" : "") +
+            "</div></li>";
+        }).join("") + '<li class="step-v step-out"><div class="step-n">✓</div><div class="step-body"><b>Path outcome</b><p>' + esc(p.outcome) + "</p></div></li>";
+        updateProgress(p);
+        try { history.replaceState(null, "", "scenarios.html?id=" + encodeURIComponent(s.id) + (p.id !== "happy" ? "&path=" + encodeURIComponent(p.id) : "")); } catch (e) { /* ignore */ }
+        current = p;
+      }
+      var current = null;
+      function updateProgress(p) {
+        var n = p.steps.filter(function (st, i) { return done[p.id + ":" + i]; }).length;
+        document.getElementById("path-progress").textContent = n + " of " + p.steps.length + " steps done" + (n === p.steps.length ? " — path complete ✓" : "");
+      }
+      tabs.addEventListener("click", function (e) { var b = e.target.closest(".path-tab"); if (b) renderPath(b.getAttribute("data-path")); });
+      document.getElementById("path-steps").addEventListener("change", function (e) {
+        var cb = e.target.closest("input[data-key]"); if (!cb) return;
+        if (cb.checked) done[cb.getAttribute("data-key")] = 1; else delete done[cb.getAttribute("data-key")];
+        saveDone(done); cb.closest(".step-v").classList.toggle("is-done", cb.checked); updateProgress(current);
+      });
+      document.getElementById("path-reset").addEventListener("click", function () {
+        Object.keys(done).forEach(function (k) { if (k.indexOf(current.id + ":") === 0) delete done[k]; });
+        saveDone(done); renderPath(current.id);
+      });
+      renderPath(new URLSearchParams(location.search).get("path") || "happy");
       var d = document.getElementById("sc-diagram");
       function draw() {
         if (!window.mermaid) { d.textContent = s.diagram; return; }
