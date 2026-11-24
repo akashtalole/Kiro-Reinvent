@@ -326,3 +326,23 @@ dialog.search li small { color: var(--fg-faint); margin-left: auto; font-size: 1
 .arch-surfaces { margin-top: auto; padding-top: 12px; border-top: 1px dashed var(--border); }
 .arch-surfaces .arch-panel-lbl { margin: 4px 0 6px; }
 .arch-surfaces .arch-band-items { justify-content: flex-start; gap: 4px 8px; }
+
+/* ---------- scenarios ---------- */
+.sc-trigger { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; padding: 14px 16px; border-radius: var(--radius); background: var(--warm-soft); border-left: 3px solid var(--warm); margin-bottom: 26px; }
+.sc-trigger b { color: var(--warm); text-transform: uppercase; font-size: 12px; letter-spacing: .08em; }
+.sc-grid { display: grid; gap: 28px; grid-template-columns: 1fr; }
+@media (min-width: 1000px) { .sc-grid { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); } }
+.sc-h { font-size: 20px; margin: 0 0 14px; }
+.tl { list-style: none; margin: 0; padding: 0 0 0 18px; border-left: 2px solid var(--border); display: flex; flex-direction: column; gap: 14px; }
+.tl li { position: relative; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-elev); }
+.tl li::before { content: ""; position: absolute; left: -26px; top: 18px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg); }
+.tl li.tl-human::before { background: var(--warm); }
+.tl li.tl-system::before { background: var(--ok); }
+.tl-head { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.tl p { margin: 6px 0 0; color: var(--fg-muted); font-size: 15px; }
+.tl-tools { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+.tl-tools code { font-size: 12px; background: var(--bg-sunk); border: 1px solid var(--border); border-radius: 6px; padding: 1px 6px; }
+.sc-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+.sc-flow { margin-bottom: 30px; }
+.sc-flow .mermaid svg { max-width: 100% !important; height: auto; min-height: 260px; }
+@media (min-width: 1000px) { .sc-flow .mermaid { padding: 22px; } }

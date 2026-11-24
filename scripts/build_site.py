@@ -124,6 +124,40 @@ def collect_labs() -> list[dict]:
     return sorted(labs, key=lambda l: l["id"])
 
 
+SCENARIO_FIELDS = ["id", "title", "tagline", "domain", "complexity", "personas", "trigger", "steps",
+                   "guardrails", "outcome", "metrics", "labs", "services", "diagram"]
+
+
+def validate_scenarios(lab_ids: set[str]) -> int:
+    path = SITE_SRC / "data" / "scenarios.json"
+    if not path.exists():
+        return 0
+    data = json.loads(path.read_text(encoding="utf-8"))
+    errors, seen = [], set()
+    for sc in data["scenarios"]:
+        sid = sc.get("id", "?")
+        missing = [f for f in SCENARIO_FIELDS if f not in sc]
+        if missing:
+            errors.append(f"{sid}: missing {missing}")
+        if sid in seen:
+            errors.append(f"{sid}: duplicate id")
+        seen.add(sid)
+        if sc.get("domain") not in data["domains"]:
+            errors.append(f"{sid}: unknown domain {sc.get('domain')!r}")
+        if sc.get("complexity") not in ("Advanced", "Expert"):
+            errors.append(f"{sid}: complexity must be Advanced or Expert")
+        for lab in sc.get("labs", []):
+            if lab not in lab_ids:
+                errors.append(f"{sid}: references unknown lab {lab}")
+        for st in sc.get("steps", []):
+            if st.get("kind") not in ("agent", "human", "system"):
+                errors.append(f"{sid}: step kind must be agent|human|system")
+    if errors:
+        print("Scenario errors:\n  " + "\n  ".join(errors), file=sys.stderr)
+        sys.exit(1)
+    return len(data["scenarios"])
+
+
 def build() -> None:
     if OUT.exists():
         shutil.rmtree(OUT)
@@ -140,7 +174,8 @@ def build() -> None:
         encoding="utf-8",
     )
     (OUT / ".nojekyll").write_text("", encoding="utf-8")
-    print(f"Built {len(labs)} labs into {OUT.relative_to(ROOT)}/")
+    n_scen = validate_scenarios({l["id"] for l in labs})
+    print(f"Built {len(labs)} labs and {n_scen} scenarios into {OUT.relative_to(ROOT)}/")
 
 
 def main() -> None:
