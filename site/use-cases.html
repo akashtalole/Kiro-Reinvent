@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Use Cases · Kiro Reinvent</title>
+<meta name="description" content="What teams use Kiro, AWS MCP servers, Strands Agents, AgentCore and CloudWatch Omni for — every use case mapped to a hands-on lab and related scenarios.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%236b4cf6'/><text x='16' y='22' font-size='17' font-family='Arial' font-weight='700' fill='white' text-anchor='middle'>K</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body data-page="usecases">
+<main>
+  <section style="padding-top:40px">
+    <div class="wrap">
+      <div class="eyebrow">Use cases</div>
+      <h1 style="font-size:clamp(30px,4vw,44px)">What teams use this stack for</h1>
+      <p class="lede">Every use case maps to a lab you can run today, and to the advanced scenarios where it shows up end to end.</p>
+      <div class="toolbar">
+        <input class="searchbox" id="q" type="search" placeholder="Filter use cases — e.g. “cost”, “tenant”, “agents”, “policy”" aria-label="Filter use cases">
+        <div class="filter-row" id="kind-row"><span class="lbl">Type</span>
+          <button class="chip" data-v="">All</button><button class="chip" data-v="core">Core</button><button class="chip" data-v="emerging">Emerging</button>
+        </div>
+      </div>
+      <p class="muted" id="count"></p>
+      <div class="grid grid-3" id="uc-grid"></div>
+      <div class="card" style="margin-top:28px;background:var(--accent-soft)">
+        <h3>Want the full story?</h3>
+        <p>Advanced scenarios walk through use cases end to end, with a happy path, failure paths and edge cases. <a href="scenarios.html">Browse scenarios →</a></p>
+      </div>
+    </div>
+  </section>
+</main>
+<script src="assets/site.js"></script>
+<script>
+(function () {
+  var K = window.KRL, esc = K.esc;
+  var params = new URLSearchParams(location.search);
+  var state = { q: params.get("q") || "", kind: params.get("type") || "" };
+  document.getElementById("q").value = state.q;
+  Promise.all([K.getJSON("data/catalog.json"), K.getJSON("data/labs.json"), K.getJSON("data/scenarios.json").catch(function () { return { scenarios: [] }; })])
+  .then(function (res) {
+    var cat = res[0], byId = {}, scen = res[2].scenarios;
+    res[1].labs.forEach(function (l) { byId[l.id] = l; });
+    var items = cat.useCases.core.map(function (u) { return Object.assign({ kind: "core" }, u); })
+      .concat(cat.useCases.emerging.map(function (u) { return Object.assign({ kind: "emerging" }, u); }));
+    function related(lab) { return scen.filter(function (s) { return s.labs.indexOf(lab) >= 0; }).slice(0, 2); }
+    function render() {
+      document.querySelectorAll("#kind-row button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-v") === state.kind)); });
+      var terms = state.q.toLowerCase().split(/\s+/).filter(Boolean);
+      var hits = items.filter(function (u) {
+        if (state.kind && u.kind !== state.kind) return false;
+        var l = byId[u.lab] || {};
+        var hay = [u.title, u.text, l.title, l.category].concat(l.services || [], l.tags || []).join(" ").toLowerCase();
+        return terms.every(function (t) { return hay.indexOf(t) >= 0; });
+      });
+      document.getElementById("count").textContent = hits.length + " of " + items.length + " use cases";
+      document.getElementById("uc-grid").innerHTML = hits.length ? hits.map(function (u) {
+        var l = byId[u.lab], rel = related(u.lab);
+        return '<div class="card usecase"><span class="chip ' + (u.kind === "core" ? "ok" : "accent") + '" style="align-self:flex-start">' + (u.kind === "core" ? "Core" : "Emerging") + "</span>" +
+          '<h3 style="font-size:17px">' + esc(u.title) + "</h3><p>" + esc(u.text) + "</p>" +
+          (l ? '<a class="lablink" style="font-size:13px;font-family:var(--mono)" href="' + K.labHref(l) + '">Lab ' + l.id + " · " + esc(l.title) + " →</a>" : "") +
+          (rel.length ? '<div class="meta" style="flex-direction:column;align-items:flex-start;gap:4px"><span class="muted" style="font-size:12.5px">Seen in scenarios</span>' +
+            rel.map(function (s) { return '<a style="font-size:13.5px" href="scenarios.html?id=' + encodeURIComponent(s.id) + '">' + esc(s.title) + "</a>"; }).join("") + "</div>" : "") +
+          "</div>";
+      }).join("") : '<div class="empty" style="grid-column:1/-1">No use cases match.</div>';
+      var p = new URLSearchParams(); if (state.q) p.set("q", state.q); if (state.kind) p.set("type", state.kind);
+      try { history.replaceState(null, "", "use-cases.html" + (p.toString() ? "?" + p : "")); } catch (e) { /* ignore */ }
+    }
+    document.getElementById("q").addEventListener("input", function (e) { state.q = e.target.value; render(); });
+    document.getElementById("kind-row").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { state.kind = b.getAttribute("data-v"); render(); } });
+    render();
+  });
+})();
+</script>
+</body>
+</html>

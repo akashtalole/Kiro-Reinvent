@@ -55,28 +55,52 @@
   function nav(href, label, key) {
     return '<a href="' + href + '"' + (page === key ? ' aria-current="page"' : "") + ">" + label + "</a>";
   }
+  var PRIMARY = [
+    ["labs.html", "All labs", "labs"],
+    ["index.html#paths", "Learning paths", ""],
+    ["use-cases.html", "Use cases", "usecases"],
+    ["scenarios.html", "Scenarios", "scenarios"],
+    ["doc.html?doc=ai-first-saas-playbook", "AI-first SaaS", "aifirst"],
+    ["doc.html?doc=kiro-in-the-field", "From the field", "field"]
+  ];
+  var EXTRA = [
+    ["index.html", "Home", "home"],
+    ["doc.html?doc=landscape", "Landscape", "landscape"],
+    ["doc.html?doc=architecture-patterns", "Architecture patterns", "patterns"],
+    ["doc.html?doc=advanced-scenarios", "Scenarios (markdown)", "advanced-scenarios"],
+    ["doc.html?doc=setup", "Setup guide", "setup"],
+    [REPO, "GitHub repository", "github"]
+  ];
   var header = document.createElement("header");
   header.className = "site-header";
   header.innerHTML =
     '<div class="wrap">' +
     '<a class="brand" href="index.html"><span class="brand-mark">K</span><span>Kiro Reinvent Labs</span></a>' +
-    '<nav class="nav" aria-label="Primary">' +
-    nav("labs.html", "All labs", "labs") +
-    nav("index.html#paths", "Learning paths", "") +
-    nav("scenarios.html", "Scenarios", "scenarios") +
-    nav("doc.html?doc=ai-first-saas-playbook", "AI-first SaaS", "aifirst") +
-    nav("doc.html?doc=kiro-in-the-field", "From the field", "field") +
-    "</nav>" +
+    '<nav class="nav" aria-label="Primary">' + PRIMARY.map(function (x) { return nav(x[0], x[1], x[2]); }).join("") + "</nav>" +
     '<span class="header-spacer"></span>' +
     '<button class="search-btn" type="button" id="open-search" aria-label="Search labs">' +
     '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>' +
     '<span class="label">Search labs</span><kbd>Ctrl K</kbd></button>' +
+    '<button class="icon-btn menu-btn" type="button" id="menu-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav">' +
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>' +
     '<button class="icon-btn" type="button" id="theme-toggle" aria-label="Toggle colour theme" title="Toggle theme">' +
     '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>' +
-    '<a class="icon-btn" href="' + REPO + '" aria-label="GitHub repository" title="GitHub">' +
+    '<a class="icon-btn gh-btn" href="' + REPO + '" aria-label="GitHub repository" title="GitHub">' +
     '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.6 18.3 5 18.3 5c.7 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .5z"/></svg></a>' +
     "</div>";
+  var mnav = document.createElement("nav");
+  mnav.className = "mobile-nav"; mnav.id = "mobile-nav"; mnav.setAttribute("aria-label", "Menu"); mnav.hidden = true;
+  mnav.innerHTML = '<div class="wrap">' + PRIMARY.concat(EXTRA).map(function (x) { return nav(x[0], x[1], x[2]); }).join("") + "</div>";
+  header.appendChild(mnav);
   document.body.insertBefore(header, document.body.firstChild);
+  var menuBtn = header.querySelector("#menu-toggle");
+  function setMenu(open) {
+    mnav.hidden = !open; menuBtn.setAttribute("aria-expanded", String(open));
+    menuBtn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+  }
+  menuBtn.addEventListener("click", function () { setMenu(mnav.hidden); });
+  mnav.addEventListener("click", function (e) { if (e.target.closest("a")) setMenu(false); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !mnav.hidden) { setMenu(false); menuBtn.focus(); } });
 
   var footer = document.createElement("footer");
   footer.className = "site-footer";
@@ -86,7 +110,7 @@
     '<p style="max-width:360px">Hands-on labs for building end-to-end solutions with Kiro, AWS MCP servers, Strands Agents and Amazon Bedrock AgentCore.</p></div>' +
     "<div><h5>Learn</h5><ul>" +
     '<li><a href="labs.html">All labs</a></li><li><a href="index.html#paths">Learning paths</a></li>' +
-    '<li><a href="index.html#use-cases">Use cases</a></li><li><a href="scenarios.html">Advanced scenarios</a></li><li><a href="index.html#field">From the field</a></li><li><a href="doc.html?doc=setup">Setup guide</a></li></ul></div>' +
+    '<li><a href="use-cases.html">Use cases</a></li><li><a href="scenarios.html">Advanced scenarios</a></li><li><a href="index.html#field">From the field</a></li><li><a href="doc.html?doc=setup">Setup guide</a></li></ul></div>' +
     "<div><h5>Reference</h5><ul>" +
     '<li><a href="doc.html?doc=landscape">Product landscape</a></li><li><a href="doc.html?doc=architecture-patterns">Architecture patterns</a></li>' +
     '<li><a href="doc.html?doc=aws-mcp-catalog">AWS MCP catalog</a></li><li><a href="doc.html?doc=kiro-in-the-field">Kiro in the field</a></li><li><a href="doc.html?doc=ai-first-saas-playbook">AI-first SaaS playbook</a></li><li><a href="doc.html?doc=troubleshooting">Troubleshooting</a></li></ul></div>' +
