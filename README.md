@@ -128,20 +128,22 @@ Every lab is a folder with a README (scenario, diagram, steps, verify, clean up)
 
 ## Advanced use cases and scenarios
 
-The [**Scenarios**](https://akashtalole.github.io/Kiro-Reinvent/scenarios.html) page ([markdown version](docs/advanced-scenarios.md)) tells 16 end-to-end stories of an AI-first, multi-tenant SaaS team when things get hard. Each story shows the trigger, every step by agent, human or system, a flow diagram, guardrails, metrics to track, and the labs that teach each piece. You can filter them by domain, complexity and persona.
+The [**Scenarios**](https://akashtalole.github.io/Kiro-Reinvent/scenarios.html) page ([markdown version](docs/advanced-scenarios.md)) tells 24 end-to-end stories of an AI-first, multi-tenant SaaS team when things get hard. Each story shows the trigger, every step by agent, human or system, a flow diagram, guardrails, metrics to track, and the labs that teach each piece. You can filter them by domain, complexity and persona.
 
 | Domain | Scenarios |
 | --- | --- |
 | Tenant lifecycle | Zero-touch enterprise onboarding with SSO and data residency |
-| Reliability & operations | 2 a.m. noisy neighbour · multi-region failover game day · AWS + Azure incident in one Omni space |
-| Security & compliance | Fleet-wide CVE remediation · right to erasure across data, search and AI memory · continuous audit evidence |
-| AI engineering | Cross-tenant RAG leak caught in CI · model deprecation without a quality dip |
-| Cost & FinOps | Runaway agent spend capped by budgets · repackaging tiers from unit economics |
-| Delivery & SDLC | Customer ticket to deployed fix the same day · new AI feature from idea to GA in a sprint |
+| Reliability & operations | 2 a.m. noisy neighbour · Black Friday tier-aware capacity · multi-region failover game day · AWS + Azure incident in one Omni space |
+| Security & compliance | Prompt injection in an uploaded document · new AI transparency regulation · fleet-wide CVE remediation · right to erasure across data, search and AI memory · continuous audit evidence |
+| AI engineering | Cross-tenant RAG leak caught in CI · model deprecation without a quality dip · fine-tuned model for one enterprise tenant |
+| Cost & FinOps | Runaway agent spend capped by budgets · repackaging tiers from unit economics · quarterly cost optimization sweep |
+| Delivery & SDLC | Customer ticket to deployed fix the same day · new AI feature from idea to GA in a sprint · spec drift reconciliation |
 | Modernization | On-prem single-tenant installs into pooled SaaS · runtime end-of-life upgrade wave |
 | Integration & ecosystem | B2B agent-to-agent integration with a partner |
+| Agent governance | Kill switch and recovery when an agent misbehaves |
+| People & productivity | New engineer ships a tenant-safe change on day one |
 
-Like the tracks on a lab page, every scenario has a **✓ happy path** with a checkpoint on each step and collapsible *Troubleshoot N known errors* panels (symptom → cause → fix), plus **alternate paths**: ✗ failures, ◇ edge cases and ↪ variations. Each alternate path shows where it branches from the happy path and how it ends. Readers can tick steps as done and track their progress. That adds up to 45 paths and 36 known-error fixes.
+Like the tracks on a lab page, every scenario has a **✓ happy path** with a checkpoint on each step and collapsible *Troubleshoot N known errors* panels (symptom → cause → fix), plus **alternate paths**: ✗ failures, ◇ edge cases and ↪ variations. Each alternate path shows where it branches from the happy path and how it ends. Readers can tick steps as done and track their progress. That adds up to 66 paths and 44 known-error fixes.
 
 The scenarios live in `site/data/scenarios.json`. The build validates every lab reference, and CI checks that the markdown version is in sync.
 
@@ -179,6 +181,21 @@ Every post in the [AWS ML Blog's Kiro category](https://aws.amazon.com/blogs/mac
 ## Learning paths
 
 Eight role-based paths (essentials in an afternoon, field patterns from AWS, AI-first SaaS organization, Kiro power user, platform engineer, agent developer, security & governance, FinOps & operations) are listed on the [site](https://akashtalole.github.io/Kiro-Reinvent/#paths) and defined in [`site/data/catalog.json`](site/data/catalog.json).
+
+## Site URLs
+
+The site lives at **https://akashtalole.github.io/Kiro-Reinvent/**. The path is case-sensitive, so use a capital K and R: `/kiro-reinvent/` returns 404. Folder-style URLs work too:
+
+| URL | Opens |
+| --- | --- |
+| `/Kiro-Reinvent/labs/` | All labs |
+| `/Kiro-Reinvent/labs/03/` or `/labs/03-spec-driven-development/` | A lab, by number or slug |
+| `/Kiro-Reinvent/scenarios/` · `/scenarios/<id>/` | Scenarios |
+| `/Kiro-Reinvent/docs/<name>/` | A doc (e.g. `/docs/ai-first-saas-playbook/`) |
+| `/Kiro-Reinvent/paths/<id>/` | A learning path |
+| `/Kiro-Reinvent/quickstart/` · `/playbook/` | Shortcuts |
+
+Unknown or mistyped paths inside the site go to a smart 404 page. It redirects to the closest lab or scenario, or offers search.
 
 ## Run the site locally
 

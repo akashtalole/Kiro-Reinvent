@@ -105,7 +105,7 @@
     <div class="wrap">
       <div class="section-head">
         <div><div class="eyebrow">Advanced scenarios</div><h2>When things get hard</h2></div>
-        <p>End-to-end stories of an AI-first SaaS team: noisy neighbours at 2 a.m., cross-tenant leaks caught in CI, model end-of-life, fleet-wide CVEs, right-to-erasure, partner agents. <a href="scenarios.html">All scenarios →</a></p>
+        <p>End-to-end stories of an AI-first SaaS team, each with a happy path, failure paths and edge cases: prompt injection, noisy neighbours, Black Friday, cross-tenant leaks, new regulations, runaway agents. <a href="scenarios.html">All scenarios →</a></p>
       </div>
       <div class="grid grid-3" id="scenario-grid"></div>
     </div>
@@ -216,7 +216,7 @@
     document.getElementById("uc-emerging").innerHTML = uc(cat.useCases.emerging);
 
     K.getJSON("data/scenarios.json").then(function (sd) {
-      var featured = ["noisy-neighbour-2am", "rag-leak-caught", "model-deprecation-wave", "cve-fleet-remediation", "gdpr-erasure", "partner-agent-integration"];
+      var featured = ["prompt-injection-upload", "noisy-neighbour-2am", "black-friday-scale", "rag-leak-caught", "agent-fleet-killswitch", "eu-ai-act-transparency"];
       document.getElementById("scenario-grid").innerHTML = featured.map(function (id) { return sd.scenarios.filter(function (s) { return s.id === id; })[0]; })
         .filter(Boolean).map(function (s) {
           return '<a class="card" href="scenarios.html?id=' + encodeURIComponent(s.id) + '"><span class="lab-num">' + esc(s.domain) + "</span><h3>" + esc(s.title) +
