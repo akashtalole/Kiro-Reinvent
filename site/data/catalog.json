@@ -371,6 +371,26 @@
         "title": "A whole team on one governed Crew",
         "text": "Slack as the front door, bots owning triage, CI and releases, apps in the dev loop, and weekly metrics on whether it helps.",
         "lab": "61"
+      },
+      {
+        "title": "Ticket in, canary out",
+        "text": "A labelled issue flows from spec agent to parallel Kiro CLI builders, a verification mesh, the merge queue and a dark canary deploy with no human between label and production.",
+        "lab": "52"
+      },
+      {
+        "title": "Self-healing main branch",
+        "text": "A Crew bot bisects a red main, quarantines a flaky test with evidence and an expiry, and merges the fix through automated gates.",
+        "lab": "51"
+      },
+      {
+        "title": "Autonomy that is earned and lost",
+        "text": "A nightly job promotes or demotes each service's autonomy level from its error budget, revert and rollback rates, and the conductor reads it before dispatching work.",
+        "lab": "61"
+      },
+      {
+        "title": "Rollback-first production verifier",
+        "text": "After every deploy an agent compares SLOs and business metrics, rolls back on doubt, and files the root cause as the factory's next task.",
+        "lab": "56"
       }
     ]
   },

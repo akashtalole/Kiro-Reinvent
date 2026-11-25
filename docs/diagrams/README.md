@@ -6,6 +6,7 @@ Drawn with the [archify-aws](https://github.com/akashtalole/archify-aws) skill u
 | --- | --- | --- |
 | Multi-tenant runtime with AI features | `ai-first-saas-runtime.spec.json` | `.html` (interactive), `.svg`, `.png`, `.drawio` |
 | Build and operate with Kiro | `ai-first-saas-delivery.spec.json` | `.html` (interactive), `.svg`, `.png`, `.drawio` |
+| Frontier engineering: autonomous software factory | `frontier-factory.spec.json` | `.html` (interactive), `.svg`, `.png`, `.drawio` |
 | Kiro IDE and CLI: one agent harness | `kiro-harness.spec.json` | `.html` (interactive), `.svg`, `.png`, `.drawio` |
 | Kiro Crew components | `kiro-crew-architecture.spec.json` | `.html` (interactive), `.svg`, `.png`, `.drawio` |
 | Kiro Crew message flow (sequence) | `kiro-crew-message-flow.spec.json` | `.html` (interactive), `.svg`, `.png`, `.drawio` |
@@ -15,6 +16,7 @@ Regenerate from the archify-aws skill directory:
 ```bash
 node bin/archify-aws.mjs finalize <repo>/docs/diagrams/ai-first-saas-runtime.spec.json -o <repo>/docs/diagrams/ai-first-saas-runtime.html
 node bin/archify-aws.mjs finalize <repo>/docs/diagrams/ai-first-saas-delivery.spec.json -o <repo>/docs/diagrams/ai-first-saas-delivery.html
+node bin/archify-aws.mjs finalize <repo>/docs/diagrams/frontier-factory.spec.json -o <repo>/docs/diagrams/frontier-factory.html
 node bin/archify-aws.mjs finalize <repo>/docs/diagrams/kiro-harness.spec.json -o <repo>/docs/diagrams/kiro-harness.html
 node bin/archify-aws.mjs finalize <repo>/docs/diagrams/kiro-crew-architecture.spec.json -o <repo>/docs/diagrams/kiro-crew-architecture.html
 node bin/archify-aws.mjs finalize <repo>/docs/diagrams/kiro-crew-message-flow.spec.json -o <repo>/docs/diagrams/kiro-crew-message-flow.html

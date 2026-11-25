@@ -1,0 +1,265 @@
+{
+  "meta": {
+    "title": "Frontier engineering team — an autonomous software factory on AWS",
+    "subtitle": "Humans set intent and boundaries; Kiro Crew and headless Kiro CLI agents build, verify, ship and fix. Automated gates replace per-change approval; only irreversible actions stay human-gated",
+    "lens": [
+      "framework",
+      "generative-ai"
+    ],
+    "review": false,
+    "cost": {
+      "note": "Illustrative: one m7g.2xlarge Crew host, ~2,000 CodeBuild build-minutes and ~300 pipeline runs per month. Kiro usage is billed as Kiro credits, not shown here."
+    }
+  },
+  "root": {
+    "layout": "row",
+    "gap": 60,
+    "children": [
+      {
+        "id": "owners",
+        "icon": "users",
+        "label": "Intent owners",
+        "sublabel": "specs, boundaries, outcomes"
+      },
+      {
+        "id": "cloud",
+        "kind": "aws-cloud",
+        "layout": "row",
+        "gap": 70,
+        "children": [
+          {
+            "id": "factory",
+            "kind": "account",
+            "label": "Agent factory account",
+            "layout": "row",
+            "gap": 90,
+            "children": [
+              {
+                "id": "c1",
+                "kind": "stack",
+                "layout": "column",
+                "gap": 48,
+                "children": [
+                  {
+                    "id": "gh",
+                    "icon": "gen:git-repository",
+                    "label": "GitHub",
+                    "sublabel": "issues, specs, merge queue"
+                  },
+                  {
+                    "id": "crew",
+                    "icon": "ec2",
+                    "label": "Amazon EC2",
+                    "sublabel": "Kiro Crew conductor + bots"
+                  },
+                  {
+                    "id": "ledger",
+                    "icon": "dynamodb",
+                    "label": "Amazon DynamoDB",
+                    "sublabel": "work queue Crew polls"
+                  }
+                ]
+              },
+              {
+                "id": "c2",
+                "kind": "stack",
+                "layout": "column",
+                "gap": 48,
+                "children": [
+                  {
+                    "id": "bedrock",
+                    "icon": "bedrock",
+                    "label": "Amazon Bedrock",
+                    "sublabel": "independent reviewer models"
+                  },
+                  {
+                    "id": "builders",
+                    "icon": "gen:client",
+                    "label": "Kiro CLI workers",
+                    "sublabel": "headless, one worktree each"
+                  },
+                  {
+                    "id": "agw",
+                    "icon": "bedrock-agentcore",
+                    "label": "AgentCore Gateway",
+                    "sublabel": "tools behind Cedar policy"
+                  }
+                ]
+              },
+              {
+                "id": "c3",
+                "kind": "stack",
+                "layout": "column",
+                "gap": 48,
+                "children": [
+                  {
+                    "id": "secagent",
+                    "icon": "security-agent",
+                    "label": "AWS Security Agent",
+                    "sublabel": "design + PR review"
+                  },
+                  {
+                    "id": "verify",
+                    "icon": "codebuild",
+                    "label": "AWS CodeBuild",
+                    "sublabel": "verification mesh"
+                  },
+                  {
+                    "id": "inspector",
+                    "icon": "inspector",
+                    "label": "Amazon Inspector",
+                    "sublabel": "CVEs in deps + images"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "delivery",
+            "kind": "account",
+            "label": "Delivery account",
+            "layout": "column",
+            "gap": 48,
+            "children": [
+              {
+                "id": "appconfig",
+                "icon": "appconfig",
+                "label": "AWS AppConfig",
+                "sublabel": "feature flags, kill switch"
+              },
+              {
+                "id": "pipeline",
+                "icon": "codepipeline",
+                "label": "AWS CodePipeline",
+                "sublabel": "canary + auto-rollback"
+              },
+              {
+                "id": "devops",
+                "icon": "devops-agent",
+                "label": "AWS DevOps Agent",
+                "sublabel": "regression root cause"
+              }
+            ]
+          },
+          {
+            "id": "prod",
+            "kind": "account",
+            "label": "Production account",
+            "layout": "column",
+            "gap": 48,
+            "children": [
+              {
+                "id": "cw",
+                "icon": "cloudwatch",
+                "label": "Amazon CloudWatch",
+                "sublabel": "SLO alarms, Omni traces"
+              },
+              {
+                "id": "app",
+                "icon": "lambda",
+                "label": "AWS Lambda",
+                "sublabel": "the product"
+              },
+              {
+                "spacer": 64
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "edges": [
+    {
+      "from": "owners",
+      "to": "crew",
+      "step": 1,
+      "label": "intent",
+      "desc": "Humans write intent: a spec with testable acceptance criteria, a budget, and the boundary the work must stay inside."
+    },
+    {
+      "from": "crew",
+      "to": "builders",
+      "step": 2,
+      "label": "dispatch",
+      "desc": "The Crew conductor decomposes the spec and dispatches headless Kiro CLI workers, one isolated worktree each."
+    },
+    {
+      "from": "builders",
+      "to": "verify",
+      "step": 3,
+      "label": "PR",
+      "desc": "Workers self-verify locally, then open a pull request; CodeBuild runs the verification mesh: tests, property-based tests, mutation score, SAST, secret scan, cost diff."
+    },
+    {
+      "from": "verify",
+      "to": "pipeline",
+      "step": 4,
+      "label": "merge on green",
+      "desc": "When every automated gate and an independent AI review pass, the merge queue merges without a human click."
+    },
+    {
+      "from": "pipeline",
+      "to": "app",
+      "step": 5,
+      "label": "canary",
+      "desc": "Progressive delivery behind a feature flag with automatic rollback on SLO alarms."
+    },
+    {
+      "from": "app",
+      "to": "cw",
+      "step": 6,
+      "label": "telemetry",
+      "desc": "SLOs, traces and business metrics decide whether the change stays."
+    },
+    {
+      "from": "devops",
+      "to": "ledger",
+      "step": 7,
+      "label": "fix task",
+      "desc": "On a regression the pipeline rolls back first; DevOps Agent's root cause is written to the work ledger as a new fix task, which the Crew conductor picks up."
+    },
+    {
+      "from": "crew",
+      "to": "gh",
+      "style": "dashed",
+      "label": "issues, PRs"
+    },
+    {
+      "from": "builders",
+      "to": "bedrock",
+      "style": "dashed",
+      "label": "review"
+    },
+    {
+      "from": "builders",
+      "to": "agw",
+      "style": "dashed",
+      "label": "tools"
+    },
+    {
+      "from": "secagent",
+      "to": "verify",
+      "style": "dashed",
+      "label": "findings"
+    },
+    {
+      "from": "inspector",
+      "to": "verify",
+      "style": "dashed",
+      "label": "CVEs"
+    },
+    {
+      "from": "appconfig",
+      "to": "pipeline",
+      "style": "dashed",
+      "label": "flags"
+    },
+    {
+      "from": "cw",
+      "to": "devops",
+      "style": "dashed",
+      "label": "alarm"
+    }
+  ]
+}
