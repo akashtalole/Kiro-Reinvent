@@ -279,7 +279,7 @@ def write_pretty_urls(labs: list[dict]) -> int:
         write_stub(f"paths/{path['id']}", f"labs.html?path={path['id']}", path["title"]); n += 1
     aliases = {"quickstart": "lab.html?id=01-kiro-cli-quickstart", "playbook": "doc.html?doc=ai-first-saas-playbook",
                "field": "doc.html?doc=kiro-in-the-field", "landscape": "doc.html?doc=landscape", "paths": "index.html#paths",
-               "use-cases": "use-cases.html", "internals": "doc.html?doc=kiro-ide-cli-internals", "crew": "labs.html?product=Kiro+Crew", "frontier": "doc.html?doc=frontier-engineering-teams", "kiro-features": "doc.html?doc=kiro-features-in-this-repo", "guides": "guides.html", "deep-dives": "guides.html", "usecases": "use-cases.html", "site": "index.html"}
+               "use-cases": "use-cases.html", "internals": "doc.html?doc=kiro-ide-cli-internals", "crew": "labs.html?product=Kiro+Crew", "frontier": "doc.html?doc=frontier-engineering-teams", "kiro-features": "doc.html?doc=kiro-features-in-this-repo", "guides": "guides.html", "crew-use-cases": "use-cases.html?type=crew", "deep-dives": "guides.html", "usecases": "use-cases.html", "site": "index.html"}
     for k, v in aliases.items():
         write_stub(k, v, k.replace("-", " ").title()); n += 1
     return n
