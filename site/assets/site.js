@@ -60,6 +60,7 @@
     ["index.html#paths", "Learning paths", ""],
     ["use-cases.html", "Use cases", "usecases"],
     ["scenarios.html", "Scenarios", "scenarios"],
+    ["guides.html", "Guides", "guides"],
     ["doc.html?doc=ai-first-saas-playbook", "AI-first SaaS", "aifirst"],
     ["doc.html?doc=kiro-in-the-field", "From the field", "field"]
   ];
@@ -112,6 +113,7 @@
     '<li><a href="labs.html">All labs</a></li><li><a href="index.html#paths">Learning paths</a></li>' +
     '<li><a href="use-cases.html">Use cases</a></li><li><a href="scenarios.html">Advanced scenarios</a></li><li><a href="index.html#field">From the field</a></li><li><a href="doc.html?doc=setup">Setup guide</a></li></ul></div>' +
     "<div><h5>Reference</h5><ul>" +
+    '<li><a href="guides.html">All guides</a></li>' +
     '<li><a href="doc.html?doc=landscape">Product landscape</a></li><li><a href="doc.html?doc=architecture-patterns">Architecture patterns</a></li>' +
     '<li><a href="doc.html?doc=aws-mcp-catalog">AWS MCP catalog</a></li><li><a href="doc.html?doc=kiro-in-the-field">Kiro in the field</a></li><li><a href="doc.html?doc=frontier-engineering-teams">Frontier engineering teams</a></li><li><a href="doc.html?doc=kiro-features-in-this-repo">Kiro features in this repo</a></li><li><a href="doc.html?doc=kiro-ide-cli-internals">IDE vs CLI vs Crew</a></li><li><a href="doc.html?doc=kiro-crew-internals">Kiro Crew internals</a></li><li><a href="doc.html?doc=ai-first-saas-playbook">AI-first SaaS playbook</a></li><li><a href="doc.html?doc=troubleshooting">Troubleshooting</a></li></ul></div>' +
     "<div><h5>Contribute</h5><ul>" +

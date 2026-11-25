@@ -90,7 +90,7 @@ code, pre, kbd { font-family: var(--mono); }
 .mobile-nav a { display: block; padding: 10px 12px; border-radius: 10px; color: var(--fg); font-weight: 500; }
 .mobile-nav a:hover, .mobile-nav a[aria-current="page"] { background: var(--accent-soft); text-decoration: none; }
 @media (min-width: 1180px) { .mobile-nav { display: none; } }
-@media (min-width: 1240px) { .search-btn .label, .search-btn kbd { display: inline; } }
+@media (min-width: 1360px) { .search-btn .label, .search-btn kbd { display: inline; } }
 .search-btn, .icon-btn { flex: none; white-space: nowrap; }
 
 /* ---------- buttons, chips ---------- */
@@ -393,3 +393,8 @@ dialog.search li small { color: var(--fg-faint); margin-left: auto; font-size: 1
 /* reference architecture cards */
 .arch-card img { width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--border); background: #fff; }
 .md :not(pre) > code { overflow-wrap: anywhere; }
+
+/* Guides hub */
+.guide-section { padding-top: 28px; scroll-margin-top: 80px; }
+.guide-jump { margin-top: 18px; }
+.guide-jump a.chip:hover { text-decoration: none; background: var(--accent-soft); }
