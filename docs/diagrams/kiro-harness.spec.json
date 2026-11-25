@@ -1,0 +1,255 @@
+{
+  "meta": {
+    "title": "Kiro IDE and Kiro CLI — one agent harness",
+    "subtitle": "IDE, CLI and Kiro Crew are front ends to the same standalone V3 harness, reached over ACP. Sources: kiro.dev/docs, Nov 2026",
+    "review": false,
+    "cost": {
+      "note": "Kiro usage is billed as Kiro credits, not by the AWS account. The Amazon Bedrock line only illustrates where inference runs."
+    }
+  },
+  "root": {
+    "layout": "column",
+    "gap": 70,
+    "align": "center",
+    "children": [
+      {
+        "id": "mainrow",
+        "kind": "stack",
+        "layout": "row",
+        "gap": 60,
+        "children": [
+          {
+            "id": "dev",
+            "icon": "users",
+            "label": "Developer"
+          },
+          {
+            "id": "clients",
+            "kind": "generic",
+            "label": "Clients — all speak ACP",
+            "layout": "column",
+            "gap": 48,
+            "children": [
+              {
+                "id": "ide",
+                "icon": "gen:generic-application",
+                "label": "Kiro IDE",
+                "sublabel": "specs, diffs, checkpoints UI"
+              },
+              {
+                "id": "cli",
+                "icon": "gen:client",
+                "label": "Kiro CLI",
+                "sublabel": "chat, --no-interactive, acp"
+              },
+              {
+                "id": "crew",
+                "icon": "gen:chat",
+                "label": "Kiro Crew, JetBrains, Zed",
+                "sublabel": "drive kiro-cli acp"
+              }
+            ]
+          },
+          {
+            "id": "harness",
+            "kind": "generic",
+            "label": "Kiro agent harness (V3) — standalone process on your machine",
+            "layout": "row",
+            "gap": 90,
+            "children": [
+              {
+                "id": "h1",
+                "kind": "stack",
+                "layout": "column",
+                "gap": 48,
+                "children": [
+                  {
+                    "id": "context",
+                    "icon": "gen:document",
+                    "label": "Context assembly",
+                    "sublabel": "steering, specs, skills, memory"
+                  },
+                  {
+                    "id": "loop",
+                    "icon": "gen:gear",
+                    "label": "Agent loop",
+                    "sublabel": "plan, call tools, observe"
+                  },
+                  {
+                    "id": "ckpt",
+                    "icon": "gen:folders",
+                    "label": "Checkpoints + compaction",
+                    "sublabel": "per prompt; summarize at 80%"
+                  }
+                ]
+              },
+              {
+                "id": "h2",
+                "kind": "stack",
+                "layout": "column",
+                "gap": 48,
+                "children": [
+                  {
+                    "id": "hooks",
+                    "icon": "gen:json-script",
+                    "label": "Hooks",
+                    "sublabel": "Prompt Submit, Pre/Post Tool Use…"
+                  },
+                  {
+                    "spacer": 112
+                  },
+                  {
+                    "id": "perm",
+                    "icon": "gen:shield",
+                    "label": "Permission engine",
+                    "sublabel": "deny > ask > allow, kiroignore"
+                  }
+                ]
+              },
+              {
+                "id": "h3",
+                "kind": "stack",
+                "layout": "column",
+                "gap": 48,
+                "children": [
+                  {
+                    "id": "sub",
+                    "icon": "gen:toolkit",
+                    "label": "Subagents",
+                    "sublabel": "isolated context windows"
+                  },
+                  {
+                    "spacer": 112
+                  },
+                  {
+                    "id": "tools",
+                    "icon": "gen:toolkit",
+                    "label": "Built-in tools + MCP",
+                    "sublabel": "files, shell (sandboxed), web"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "cloud",
+            "kind": "aws-cloud",
+            "label": "AWS Cloud",
+            "layout": "column",
+            "gap": 48,
+            "children": [
+              {
+                "id": "idc",
+                "icon": "iam-identity-center",
+                "label": "AWS IAM Identity Center",
+                "sublabel": "or Builder ID, GitHub, Google, API key"
+              },
+              {
+                "id": "bedrock",
+                "icon": "bedrock",
+                "label": "Amazon Bedrock",
+                "sublabel": "Kiro service, Auto router"
+              },
+              {
+                "id": "mcp",
+                "icon": "gen:globe",
+                "label": "MCP servers",
+                "sublabel": "e.g. AWS MCP Server (remote)"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "kirohome",
+        "kind": "generic-dashed",
+        "label": "Configuration and state: .kiro/ (repo) and ~/.kiro/ (user)",
+        "layout": "row",
+        "gap": 120,
+        "children": [
+          {
+            "id": "cfg",
+            "icon": "gen:folders",
+            "label": ".kiro/ in the repo",
+            "sublabel": "steering, specs, agents, hooks, skills"
+          },
+          {
+            "id": "perms",
+            "icon": "gen:json-script",
+            "label": "permissions.yaml",
+            "sublabel": "user and workspace scopes"
+          },
+          {
+            "id": "sessions",
+            "icon": "gen:logs",
+            "label": "~/.kiro/sessions",
+            "sublabel": "resume, /sessions"
+          },
+          {
+            "id": "mem",
+            "icon": "gen:database",
+            "label": "~/.kiro/memories",
+            "sublabel": "shared by IDE and CLI"
+          }
+        ]
+      }
+    ]
+  },
+  "edges": [
+    {
+      "from": "dev",
+      "to": "cli",
+      "step": 1,
+      "label": "prompt",
+      "desc": "You type in the IDE chat or the CLI; both are clients of the same harness."
+    },
+    {
+      "from": "cli",
+      "to": "loop",
+      "step": 2,
+      "label": "ACP (stdio)",
+      "desc": "Local clients talk to the harness over the Agent Client Protocol (JSON-RPC over stdio), with Kiro-specific _kiro/ extensions for steering, specs, permission prompts and context tracking."
+    },
+    {
+      "from": "context",
+      "to": "loop",
+      "step": 3,
+      "label": "assemble",
+      "desc": "Prompt, history, steering and the active spec are always loaded; skills and powers load on demand; Prompt Submit hooks run."
+    },
+    {
+      "from": "loop",
+      "to": "bedrock",
+      "step": 4,
+      "label": "inference",
+      "desc": "The request goes to the chosen model or the Auto router. Kiro is powered by Amazon Bedrock with cross-region inference (US or EU profile)."
+    },
+    {
+      "from": "loop",
+      "to": "perm",
+      "step": 5,
+      "label": "tool call",
+      "desc": "Every tool call is checked against permission rules (deny > ask > allow) and kiroignore; Pre Tool Use hooks can block it."
+    },
+    {
+      "from": "perm",
+      "to": "tools",
+      "step": 6,
+      "label": "allowed",
+      "desc": "Allowed tools run; shell commands can run inside the local OS sandbox (Seatbelt or bwrap). Post Tool Use hooks run and results feed back into the loop."
+    },
+    {
+      "from": "tools",
+      "to": "mcp",
+      "step": 7,
+      "label": "MCP",
+      "desc": "MCP tools reach local (stdio) or remote servers, loaded on demand with tool search."
+    },
+    {
+      "from": "perm",
+      "to": "perms",
+      "style": "dashed",
+      "label": "rules"
+    }
+  ]
+}

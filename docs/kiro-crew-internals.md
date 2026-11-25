@@ -8,6 +8,8 @@ How Kiro Crew is built: the processes it runs, the parts inside its gateway, how
 
 ## The short version
 
+For how the IDE and CLI harness works and a side-by-side comparison, see [How Kiro IDE and Kiro CLI work](kiro-ide-cli-internals.md).
+
 Kiro Crew is **not** a new agent runtime. It is a **gateway**: one local Python asyncio process (aiohttp) that sits between you and `kiro-cli`. It drives many agent sessions at once through the **Agent Client Protocol (ACP)**, which is JSON-RPC 2.0 over stdio. It adds everything a single terminal session lacks: many concurrent sessions, chat surfaces, memory across sessions, schedules, autonomous tasks, subagents, and a tool gate the agent cannot switch off.
 
 There are three layers, and the difference between them matters:

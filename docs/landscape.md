@@ -30,6 +30,8 @@ Since Kiro CLI 3.0 the **V3 agent harness** is the default everywhere: IDE, CLI 
 | Autonomous agent (preview) | Label `kiro` or `/kiro` on an issue → PR; sandbox per task; learns from review | 14 |
 | Crew | Long-running, scheduled, multi-agent, channel-driven | 12, 13 |
 
+> Deep dive with a diagram and a comparison table: [How Kiro IDE and Kiro CLI work (and how Kiro Crew differs)](kiro-ide-cli-internals.md).
+
 ### 1.2 The configuration model (`.kiro/`)
 
 | Primitive | Path | What it's for |
