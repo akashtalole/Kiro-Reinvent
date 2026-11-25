@@ -1,0 +1,340 @@
+{
+  "meta": {
+    "title": "Kiro Crew — under the hood",
+    "subtitle": "One local gateway process multiplexes every surface onto kiro-cli agent sessions over ACP, adding memory, scheduling, orchestration and an un-disableable tool gate. Source: kirodotdev/KiroCrew docs/architecture/overview.md",
+    "lens": [
+      "framework"
+    ],
+    "review": false
+  },
+  "root": {
+    "layout": "column",
+    "gap": 70,
+    "align": "center",
+    "children": [
+      {
+        "id": "mainrow",
+        "kind": "stack",
+        "layout": "row",
+        "gap": 60,
+        "children": [
+          {
+            "id": "users",
+            "icon": "users",
+            "label": "You and your team"
+          },
+          {
+            "id": "surfaces",
+            "kind": "generic",
+            "label": "Surfaces",
+            "layout": "column",
+            "gap": 48,
+            "children": [
+              {
+                "id": "cli",
+                "icon": "gen:client",
+                "label": "kirocrew CLI",
+                "sublabel": "chat, cron, doctor"
+              },
+              {
+                "id": "dash",
+                "icon": "gen:generic-application",
+                "label": "Dashboard :5476",
+                "sublabel": "React SPA, Electron app"
+              },
+              {
+                "id": "chan",
+                "icon": "gen:chat",
+                "label": "Messaging channels",
+                "sublabel": "Slack, Teams, Discord…"
+              }
+            ]
+          },
+          {
+            "id": "gw",
+            "kind": "generic",
+            "label": "Kiro Crew gateway — one asyncio process (Python, aiohttp)",
+            "layout": "row",
+            "gap": 90,
+            "children": [
+              {
+                "id": "c1",
+                "kind": "stack",
+                "layout": "column",
+                "gap": 48,
+                "children": [
+                  {
+                    "id": "owner",
+                    "icon": "gen:shield",
+                    "label": "Owner lock",
+                    "sublabel": "sender allowlist"
+                  },
+                  {
+                    "id": "hooks",
+                    "icon": "gen:gear",
+                    "label": "HookManager",
+                    "sublabel": "auto-reply, transform, deny"
+                  },
+                  {
+                    "spacer": 64
+                  }
+                ]
+              },
+              {
+                "id": "c2",
+                "kind": "stack",
+                "layout": "column",
+                "gap": 48,
+                "children": [
+                  {
+                    "id": "cron",
+                    "icon": "gen:gear",
+                    "label": "Cron + Heartbeat",
+                    "sublabel": "every / at / cron, HEARTBEAT.md"
+                  },
+                  {
+                    "id": "session",
+                    "icon": "gen:server",
+                    "label": "SessionManager",
+                    "sublabel": "session pool, warm pool"
+                  },
+                  {
+                    "id": "context",
+                    "icon": "gen:document",
+                    "label": "Context assembly",
+                    "sublabel": "memory, skills, lessons"
+                  }
+                ]
+              },
+              {
+                "id": "c3",
+                "kind": "stack",
+                "layout": "column",
+                "gap": 48,
+                "children": [
+                  {
+                    "id": "tasks",
+                    "icon": "gen:toolkit",
+                    "label": "TaskRunner + subagents",
+                    "sublabel": "plan, retry, spawn_run"
+                  },
+                  {
+                    "id": "acp",
+                    "icon": "gen:sdk",
+                    "label": "ACP client",
+                    "sublabel": "JSON-RPC 2.0 over stdio"
+                  },
+                  {
+                    "id": "gate",
+                    "icon": "gen:shield",
+                    "label": "PreToolUse gate",
+                    "sublabel": "deny rules, POLICY ∩ PROFILE"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "harness",
+            "kind": "generic",
+            "label": "ACP harness — kiro-cli acp (KAS v3 engine)",
+            "layout": "column",
+            "gap": 48,
+            "children": [
+              {
+                "id": "tools",
+                "icon": "gen:toolkit",
+                "label": "Built-in tools",
+                "sublabel": "shell, files, grep in OS sandbox"
+              },
+              {
+                "id": "agent",
+                "icon": "gen:generic-application",
+                "label": "Agent process",
+                "sublabel": "one per session, --agent kirocrew"
+              },
+              {
+                "id": "cfg",
+                "icon": "gen:json-script",
+                "label": "Agent configs",
+                "sublabel": "~/.kiro/agents, kirocrew.json"
+              }
+            ]
+          },
+          {
+            "id": "remote",
+            "kind": "stack",
+            "layout": "column",
+            "gap": 48,
+            "children": [
+              {
+                "spacer": 160
+              },
+              {
+                "id": "llm",
+                "icon": "gen:internet",
+                "label": "Kiro service (LLM)",
+                "sublabel": "via harness sign-in"
+              },
+              {
+                "id": "mcprow",
+                "kind": "stack",
+                "layout": "row",
+                "gap": 80,
+                "children": [
+                  {
+                    "id": "mcpd",
+                    "icon": "gen:toolkit",
+                    "label": "MCP gateway daemon",
+                    "sublabel": "pooled MCP backends"
+                  },
+                  {
+                    "id": "ext",
+                    "icon": "gen:globe",
+                    "label": "External MCP servers",
+                    "sublabel": "AWS MCP, GitHub, Jira…"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "home",
+        "kind": "generic-dashed",
+        "label": "~/.kiro/crew data home",
+        "layout": "row",
+        "gap": 120,
+        "children": [
+          {
+            "id": "memory",
+            "icon": "gen:database",
+            "label": "Memory + knowledge",
+            "sublabel": "SQLite FTS5 + local vectors"
+          },
+          {
+            "id": "logs",
+            "icon": "gen:logs",
+            "label": "Session transcripts",
+            "sublabel": "JSONL, appended per turn"
+          },
+          {
+            "id": "policy",
+            "icon": "gen:json-script",
+            "label": "Governance files",
+            "sublabel": "security_policy.json (trust root)"
+          },
+          {
+            "id": "sel",
+            "icon": "gen:logs",
+            "label": "Security event log",
+            "sublabel": "HMAC hash-chained"
+          }
+        ]
+      }
+    ]
+  },
+  "edges": [
+    {
+      "from": "users",
+      "to": "dash",
+      "step": 1,
+      "label": "message",
+      "desc": "A person writes in the dashboard, a channel thread, or the CLI."
+    },
+    {
+      "from": "dash",
+      "to": "hooks",
+      "step": 2,
+      "label": "HTTP, WebSocket",
+      "desc": "Every surface reaches the same gateway; channel senders must pass the owner lock first."
+    },
+    {
+      "from": "owner",
+      "to": "hooks",
+      "style": "dashed",
+      "label": "channels"
+    },
+    {
+      "from": "hooks",
+      "to": "session",
+      "step": 3,
+      "label": "session_key",
+      "desc": "Hooks can auto-reply, transform, inject or block; the message is then routed to a session keyed by its origin (thread, slot, cron, subagent, task step)."
+    },
+    {
+      "from": "session",
+      "to": "context",
+      "step": 4,
+      "label": "assemble",
+      "desc": "Context assembly adds memory, skills, lessons, recent history and cross-session awareness within a token budget."
+    },
+    {
+      "from": "context",
+      "to": "memory",
+      "style": "dashed",
+      "label": "recall"
+    },
+    {
+      "from": "session",
+      "to": "acp",
+      "step": 5,
+      "label": "prompt",
+      "desc": "The session hands the enriched prompt to its ACP connection (warm or cold harness process)."
+    },
+    {
+      "from": "acp",
+      "to": "agent",
+      "step": 6,
+      "label": "ACP stdio",
+      "desc": "JSON-RPC 2.0 over stdio to kiro-cli acp; the harness owns the LLM connection, tools, MCP and compaction."
+    },
+    {
+      "from": "agent",
+      "to": "llm",
+      "step": 7,
+      "label": "inference",
+      "desc": "The harness streams tokens and tool calls from the model through its own authenticated connection."
+    },
+    {
+      "from": "acp",
+      "to": "gate",
+      "step": 8,
+      "label": "permission?",
+      "desc": "Before running a tool the harness asks permission over ACP; the ACP client consults Kiro Crew's own PreToolUse gate (deny rules, sensitive paths, governance ceiling POLICY ∩ PROFILE from trust-root files) and answers allow or deny. Decisions go to the hash-chained security event log.",
+      "arrow": "both"
+    },
+    {
+      "from": "agent",
+      "to": "tools",
+      "step": 9,
+      "label": "allowed",
+      "desc": "Allowed tools run inside the OS sandbox (Linux namespaces or macOS Seatbelt); output is redacted before it leaves."
+    },
+    {
+      "from": "agent",
+      "to": "mcpd",
+      "step": 10,
+      "label": "MCP",
+      "desc": "MCP tools go through Kiro Crew's pooled MCP gateway daemon, a separate process shared across sessions."
+    },
+    {
+      "from": "mcpd",
+      "to": "ext",
+      "style": "dashed",
+      "label": "proxy"
+    },
+    {
+      "from": "cron",
+      "to": "session",
+      "style": "dashed"
+    },
+    {
+      "from": "tasks",
+      "to": "session",
+      "style": "dashed",
+      "label": "open sessions"
+    }
+  ]
+}

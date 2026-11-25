@@ -113,7 +113,7 @@
     '<li><a href="use-cases.html">Use cases</a></li><li><a href="scenarios.html">Advanced scenarios</a></li><li><a href="index.html#field">From the field</a></li><li><a href="doc.html?doc=setup">Setup guide</a></li></ul></div>' +
     "<div><h5>Reference</h5><ul>" +
     '<li><a href="doc.html?doc=landscape">Product landscape</a></li><li><a href="doc.html?doc=architecture-patterns">Architecture patterns</a></li>' +
-    '<li><a href="doc.html?doc=aws-mcp-catalog">AWS MCP catalog</a></li><li><a href="doc.html?doc=kiro-in-the-field">Kiro in the field</a></li><li><a href="doc.html?doc=ai-first-saas-playbook">AI-first SaaS playbook</a></li><li><a href="doc.html?doc=troubleshooting">Troubleshooting</a></li></ul></div>' +
+    '<li><a href="doc.html?doc=aws-mcp-catalog">AWS MCP catalog</a></li><li><a href="doc.html?doc=kiro-in-the-field">Kiro in the field</a></li><li><a href="doc.html?doc=kiro-ide-cli-internals">IDE vs CLI vs Crew</a></li><li><a href="doc.html?doc=kiro-crew-internals">Kiro Crew internals</a></li><li><a href="doc.html?doc=ai-first-saas-playbook">AI-first SaaS playbook</a></li><li><a href="doc.html?doc=troubleshooting">Troubleshooting</a></li></ul></div>' +
     "<div><h5>Contribute</h5><ul>" +
     '<li><a href="' + REPO + '">GitHub</a></li><li><a href="doc.html?doc=authoring">Authoring guide</a></li>' +
     '<li><a href="' + REPO + '/tree/main/.kiro/skills/lab-creator">Lab-creator skill</a></li>' +

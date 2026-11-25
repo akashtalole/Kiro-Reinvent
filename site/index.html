@@ -113,6 +113,18 @@
         <a class="card arch-card" href="docs/diagrams/ai-first-saas-delivery.html"><img src="docs/diagrams/ai-first-saas-delivery.png" alt="Build and operate with Kiro: team, Kiro IDE and CLI, Kiro Crew, GitHub, GitHub Actions, CloudFormation, workload account, Security Agent, AWS MCP Server, CloudWatch Omni, DevOps Agent, Cost Explorer" loading="lazy">
           <h3>Build and operate with Kiro</h3><p>Personas → Kiro → gated CI → CloudFormation → workload, with MCP, Security Agent and DevOps Agent.</p><div class="meta"><span class="chip">13 nodes</span><span class="chip">6-step flow</span><span class="chip accent">Interactive →</span></div></a>
       </div>
+      <div class="section-head" style="margin-top:2.5rem">
+        <div><div class="eyebrow">Under the hood</div><h2>How Kiro IDE, CLI and Crew work inside</h2></div>
+        <p>The IDE and CLI are front ends to one agent harness. Kiro Crew is a gateway that drives many harness sessions over ACP and adds memory, schedules, orchestration and a tool gate the agent can't switch off. <a href="doc.html?doc=kiro-ide-cli-internals">IDE vs CLI vs Crew →</a> · <a href="doc.html?doc=kiro-crew-internals">Crew deep dive →</a></p>
+      </div>
+      <div class="grid grid-3">
+        <a class="card arch-card" href="docs/diagrams/kiro-harness.html"><img src="docs/diagrams/kiro-harness.png" alt="Kiro agent harness: Kiro IDE, Kiro CLI and Kiro Crew clients speak ACP to one V3 harness with context assembly, agent loop, hooks, permission engine, subagents, built-in tools, checkpoints; AWS IAM Identity Center, Amazon Bedrock, MCP servers; .kiro configuration and state" loading="lazy">
+          <h3>Kiro IDE and CLI: one harness</h3><p>Clients → ACP → agent loop → permissions → tools, with inference on Amazon Bedrock.</p><div class="meta"><span class="chip">18 nodes</span><span class="chip">7-step flow</span><span class="chip accent">Interactive →</span></div></a>
+        <a class="card arch-card" href="docs/diagrams/kiro-crew-architecture.html"><img src="docs/diagrams/kiro-crew-architecture.png" alt="Kiro Crew architecture: surfaces (CLI, dashboard, channels), gateway (owner lock, HookManager, SessionManager, context assembly, cron and heartbeat, TaskRunner and subagents, ACP client, PreToolUse gate), ACP harness (kiro-cli acp, built-in tools, agent configs), MCP gateway daemon, LLM, and the ~/.kiro/crew data home" loading="lazy">
+          <h3>Kiro Crew components</h3><p>Surfaces → gateway → ACP harness → model and MCP, with the data home underneath.</p><div class="meta"><span class="chip">22 nodes</span><span class="chip">10-step flow</span><span class="chip accent">Interactive →</span></div></a>
+        <a class="card arch-card" href="docs/diagrams/kiro-crew-message-flow.html"><img src="docs/diagrams/kiro-crew-message-flow.png" alt="Sequence diagram of one Kiro Crew message: surface, HookManager, SessionManager, context assembly, ACP client, kiro-cli acp, LLM, PreToolUse gate check for each tool call, MCP gateway daemon, stream back" loading="lazy">
+          <h3>One message, end to end</h3><p>Hooked, routed, enriched, sent over ACP, gated at every tool call, streamed back.</p><div class="meta"><span class="chip">Sequence</span><span class="chip">12 steps</span><span class="chip accent">Interactive →</span></div></a>
+      </div>
     </div>
   </section>
 

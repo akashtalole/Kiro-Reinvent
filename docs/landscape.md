@@ -30,6 +30,8 @@ Since Kiro CLI 3.0 the **V3 agent harness** is the default everywhere: IDE, CLI 
 | Autonomous agent (preview) | Label `kiro` or `/kiro` on an issue → PR; sandbox per task; learns from review | 14 |
 | Crew | Long-running, scheduled, multi-agent, channel-driven | 12, 13 |
 
+> Deep dive with a diagram and a comparison table: [How Kiro IDE and Kiro CLI work (and how Kiro Crew differs)](kiro-ide-cli-internals.md).
+
 ### 1.2 The configuration model (`.kiro/`)
 
 | Primitive | Path | What it's for |
@@ -46,6 +48,8 @@ Since Kiro CLI 3.0 the **V3 agent harness** is the default everywhere: IDE, CLI 
 **How the pieces divide the work.** Steering holds what is always true. A skill is how to do one thing. A power is how to do it plus the tools to do it. A hook is what must always happen. A custom agent is who does the job and what they're allowed to touch.
 
 ### 1.3 Kiro Crew
+
+> Deep dive with diagrams: [Kiro Crew under the hood](kiro-crew-internals.md).
 
 Kiro Crew started inside Amazon as *MeshClaw* and was open-sourced on 4 Aug 2026 at [`kirodotdev/KiroCrew`](https://github.com/kirodotdev/KiroCrew). It's a personal or team agent workspace that drives `kiro-cli` through the **Agent Client Protocol**, and it reuses your existing `.kiro` configuration. It includes:
 
