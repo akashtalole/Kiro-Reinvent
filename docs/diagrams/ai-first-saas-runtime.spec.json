@@ -1,0 +1,341 @@
+{
+  "meta": {
+    "title": "AI-first SaaS on AWS \u2014 multi-tenant runtime with AI features",
+    "subtitle": "Pooled tenants reach APIs and agents through one authenticated edge; every AI call is tenant-bound (inference profile, retrieval filter, memory namespace, Cedar tool policy) and observed in Amazon CloudWatch Omni",
+    "lens": [
+      "framework",
+      "generative-ai"
+    ],
+    "review": false,
+    "cost": {
+      "note": "Illustrative: 50 tenants, ~3M API requests and ~400k agent invocations per month. Replace usage with real numbers before quoting."
+    }
+  },
+  "root": {
+    "layout": "row",
+    "gap": 60,
+    "children": [
+      {
+        "id": "users",
+        "icon": "users",
+        "label": "Tenant users",
+        "sublabel": "web and mobile"
+      },
+      {
+        "id": "cloud",
+        "kind": "aws-cloud",
+        "layout": "row",
+        "gap": 80,
+        "children": [
+          {
+            "id": "edge",
+            "kind": "stack",
+            "layout": "column",
+            "gap": 48,
+            "children": [
+              {
+                "id": "waf",
+                "icon": "waf",
+                "label": "AWS WAF",
+                "sublabel": "rate rules per tier"
+              },
+              {
+                "id": "cf",
+                "icon": "cloudfront",
+                "label": "Amazon CloudFront"
+              },
+              {
+                "spacer": 64
+              }
+            ]
+          },
+          {
+            "id": "authn",
+            "kind": "stack",
+            "layout": "column",
+            "gap": 48,
+            "children": [
+              {
+                "id": "cognito",
+                "icon": "cognito",
+                "label": "Amazon Cognito",
+                "sublabel": "custom:tenantId claim"
+              },
+              {
+                "id": "apigw",
+                "icon": "api-gateway",
+                "label": "Amazon API Gateway",
+                "sublabel": "usage plan per tier"
+              },
+              {
+                "spacer": 64
+              }
+            ]
+          },
+          {
+            "id": "region",
+            "kind": "region",
+            "label": "AWS Region",
+            "layout": "column",
+            "gap": 56,
+            "align": "center",
+            "children": [
+              {
+                "id": "sec",
+                "kind": "generic",
+                "label": "Identity",
+                "layout": "row",
+                "gap": 80,
+                "children": [
+                  {
+                    "id": "iam",
+                    "icon": "identity-and-access-management",
+                    "label": "AWS Identity and Access Management",
+                    "sublabel": "tenant-scoped roles"
+                  }
+                ]
+              },
+              {
+                "id": "main",
+                "kind": "stack",
+                "layout": "row",
+                "gap": 90,
+                "children": [
+                  {
+                    "id": "svc-col",
+                    "kind": "stack",
+                    "layout": "column",
+                    "gap": 48,
+                    "children": [
+                      {
+                        "spacer": 160
+                      },
+                      {
+                        "id": "svc",
+                        "icon": "lambda",
+                        "label": "AWS Lambda",
+                        "sublabel": "tenant services"
+                      },
+                      {
+                        "id": "ddb",
+                        "icon": "dynamodb",
+                        "label": "Amazon DynamoDB",
+                        "sublabel": "pooled, PK TENANT#id"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "genai",
+                    "kind": "custom",
+                    "icon": "bedrock-agentcore",
+                    "label": "Generative AI \u2014 tenant-bound",
+                    "layout": "row",
+                    "gap": 90,
+                    "children": [
+                      {
+                        "id": "agent-col",
+                        "kind": "stack",
+                        "layout": "column",
+                        "gap": 48,
+                        "children": [
+                          {
+                            "id": "agw",
+                            "icon": "bedrock-agentcore",
+                            "label": "AgentCore Gateway",
+                            "sublabel": "MCP tools + Cedar Policy"
+                          },
+                          {
+                            "id": "runtime",
+                            "icon": "bedrock-agentcore",
+                            "label": "AgentCore Runtime",
+                            "sublabel": "Strands agent"
+                          },
+                          {
+                            "id": "kb",
+                            "icon": "bedrock",
+                            "label": "Amazon Bedrock Knowledge Bases",
+                            "sublabel": "filter tenantId"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "ctrl-col",
+                        "kind": "stack",
+                        "layout": "column",
+                        "gap": 48,
+                        "children": [
+                          {
+                            "id": "tools",
+                            "icon": "lambda",
+                            "label": "AWS Lambda",
+                            "sublabel": "tenant tools"
+                          },
+                          {
+                            "id": "guard",
+                            "icon": "bedrock",
+                            "label": "Amazon Bedrock Guardrails",
+                            "sublabel": "prompt attack, PII"
+                          },
+                          {
+                            "id": "memory",
+                            "icon": "bedrock-agentcore",
+                            "label": "AgentCore Memory",
+                            "sublabel": "/tenant/{id}/user/{id}"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "models",
+                        "icon": "bedrock",
+                        "label": "Amazon Bedrock",
+                        "sublabel": "per-tenant inference profiles"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "obs",
+                "kind": "generic",
+                "label": "Observability",
+                "layout": "row",
+                "gap": 80,
+                "children": [
+                  {
+                    "id": "cw",
+                    "icon": "cloudwatch",
+                    "label": "Amazon CloudWatch Omni",
+                    "sublabel": "tenant metrics, agent traces, evals"
+                  },
+                  {
+                    "id": "devops",
+                    "icon": "devops-agent",
+                    "label": "AWS DevOps Agent",
+                    "sublabel": "root cause"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "edges": [
+    {
+      "from": "users",
+      "to": "cf",
+      "step": 1,
+      "label": "HTTPS",
+      "desc": "Tenant users call the product over HTTPS through CloudFront."
+    },
+    {
+      "from": "waf",
+      "to": "cf",
+      "style": "dashed",
+      "label": "protects",
+      "arrow": "end"
+    },
+    {
+      "from": "cf",
+      "to": "apigw",
+      "step": 2,
+      "label": "HTTPS",
+      "desc": "CloudFront forwards API calls to API Gateway."
+    },
+    {
+      "from": "apigw",
+      "to": "cognito",
+      "style": "dashed",
+      "label": "JWT authorizer",
+      "desc": "API Gateway validates the Cognito JWT; custom:tenantId and tier come from the verified token."
+    },
+    {
+      "from": "apigw",
+      "to": "svc",
+      "step": 3,
+      "label": "tenant ctx",
+      "desc": "Requests reach tenant services with tenant context from the authorizer, never from the body."
+    },
+    {
+      "from": "svc",
+      "to": "ddb",
+      "step": 4,
+      "label": "LeadingKeys",
+      "desc": "Tenant data in a pooled table, isolated by TENANT#id keys and IAM LeadingKeys conditions."
+    },
+    {
+      "from": "svc",
+      "to": "runtime",
+      "step": 5,
+      "label": "invoke agent",
+      "desc": "AI features invoke a Strands agent on AgentCore Runtime with the tenant's identity."
+    },
+    {
+      "from": "runtime",
+      "to": "guard",
+      "step": 6,
+      "label": "screen",
+      "desc": "Prompts and responses pass Bedrock Guardrails (prompt-attack and PII filters)."
+    },
+    {
+      "from": "guard",
+      "to": "models",
+      "step": 7,
+      "label": "Converse",
+      "desc": "Model calls use the tenant's application inference profile for per-tenant cost and quotas."
+    },
+    {
+      "from": "runtime",
+      "to": "kb",
+      "step": 8,
+      "label": "retrieve",
+      "desc": "Retrieval always filters on tenantId metadata."
+    },
+    {
+      "from": "runtime",
+      "to": "agw",
+      "step": 9,
+      "label": "MCP",
+      "desc": "Tools are reached only through AgentCore Gateway, where Cedar policy checks tool, arguments and tenant claim."
+    },
+    {
+      "from": "agw",
+      "to": "tools",
+      "step": 10,
+      "label": "allowed calls",
+      "desc": "Permitted tool calls run in tenant tool Lambdas."
+    },
+    {
+      "from": "runtime",
+      "to": "memory",
+      "style": "dashed",
+      "label": "namespace"
+    },
+    {
+      "from": "svc",
+      "to": "cw",
+      "style": "dashed",
+      "label": "EMF"
+    },
+    {
+      "from": "runtime",
+      "to": "cw",
+      "style": "dashed",
+      "label": "OTel"
+    },
+    {
+      "from": "cw",
+      "to": "devops",
+      "style": "dashed",
+      "label": "investigate"
+    },
+    {
+      "from": "svc",
+      "to": "iam",
+      "style": "dashed",
+      "label": "session tags",
+      "desc": "Tenant services assume a tenant-scoped IAM role (session tag tenantId) that enforces dynamodb:LeadingKeys."
+    }
+  ]
+}

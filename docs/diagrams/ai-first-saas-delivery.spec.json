@@ -1,0 +1,239 @@
+{
+  "meta": {
+    "title": "AI-first SaaS on AWS \u2014 build and operate with Kiro",
+    "subtitle": "Every persona works through Kiro (specs, steering, skills, hooks); changes reach AWS only through gated CI and CloudFormation; agents read AWS through the AWS MCP Server; CloudWatch Omni and AWS DevOps Agent close the loop",
+    "lens": [
+      "framework"
+    ],
+    "review": false,
+    "cost": {
+      "note": "Covers only AWS services drawn here; Kiro subscriptions, GitHub and the workload itself (see the runtime diagram) are excluded."
+    }
+  },
+  "root": {
+    "layout": "row",
+    "gap": 60,
+    "children": [
+      {
+        "id": "personas",
+        "icon": "users",
+        "label": "AI-first team",
+        "sublabel": "PM, dev, QA, SRE, FinOps"
+      },
+      {
+        "id": "devenv",
+        "kind": "generic-dashed",
+        "label": "Developer tools (outside AWS)",
+        "layout": "row",
+        "gap": 72,
+        "children": [
+          {
+            "id": "kiro-col",
+            "kind": "stack",
+            "layout": "column",
+            "gap": 48,
+            "children": [
+              {
+                "id": "crew",
+                "icon": "gen:chat",
+                "label": "Kiro Crew",
+                "sublabel": "bots, schedules, Slack"
+              },
+              {
+                "id": "kiro",
+                "icon": "gen:client",
+                "label": "Kiro IDE and CLI",
+                "sublabel": "specs, skills, hooks"
+              },
+              {
+                "spacer": 64
+              }
+            ]
+          },
+          {
+            "id": "repo",
+            "icon": "gen:git-repository",
+            "label": "GitHub repository",
+            "sublabel": "code, .kiro/, specs"
+          },
+          {
+            "id": "ci",
+            "icon": "gen:generic-application",
+            "label": "GitHub Actions",
+            "sublabel": "AI-SDLC gates"
+          }
+        ]
+      },
+      {
+        "id": "cloud",
+        "kind": "aws-cloud",
+        "layout": "row",
+        "gap": 110,
+        "children": [
+          {
+            "id": "deploy-col",
+            "kind": "stack",
+            "layout": "column",
+            "gap": 48,
+            "children": [
+              {
+                "id": "idc",
+                "icon": "iam-identity-center",
+                "label": "AWS IAM Identity Center",
+                "sublabel": "workforce SSO"
+              },
+              {
+                "id": "cfn",
+                "icon": "cloudformation",
+                "label": "AWS CloudFormation",
+                "sublabel": "CDK stacks"
+              },
+              {
+                "id": "mcp",
+                "icon": "gen:generic-application",
+                "label": "AWS MCP Server",
+                "sublabel": "Agent Toolkit, SigV4"
+              }
+            ]
+          },
+          {
+            "id": "account",
+            "kind": "account",
+            "label": "Workload account",
+            "layout": "column",
+            "gap": 48,
+            "children": [
+              {
+                "id": "secagent",
+                "icon": "security-agent",
+                "label": "AWS Security Agent",
+                "sublabel": "PR + design review, pen tests"
+              },
+              {
+                "id": "app",
+                "icon": "bedrock-agentcore",
+                "label": "SaaS workload",
+                "sublabel": "see runtime diagram"
+              },
+              {
+                "spacer": 64
+              }
+            ]
+          },
+          {
+            "id": "obs-col",
+            "kind": "stack",
+            "layout": "column",
+            "gap": 48,
+            "children": [
+              {
+                "id": "devops",
+                "icon": "devops-agent",
+                "label": "AWS DevOps Agent",
+                "sublabel": "root cause"
+              },
+              {
+                "id": "cw",
+                "icon": "cloudwatch",
+                "label": "Amazon CloudWatch Omni",
+                "sublabel": "tenant + agent telemetry"
+              },
+              {
+                "id": "cost",
+                "icon": "cost-explorer",
+                "label": "AWS Cost Explorer",
+                "sublabel": "tenantId cost tags"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "edges": [
+    {
+      "from": "personas",
+      "to": "kiro",
+      "step": 1,
+      "label": "intent",
+      "desc": "Each persona works through its Kiro agent and skills; requests become EARS specs."
+    },
+    {
+      "from": "kiro",
+      "to": "repo",
+      "step": 2,
+      "label": "PR",
+      "desc": "Kiro implements spec tasks and opens pull requests (Implements: spec#task)."
+    },
+    {
+      "from": "repo",
+      "to": "ci",
+      "step": 3,
+      "label": "on PR",
+      "desc": "CI runs the spec gate, tenant-isolation tests, AI tenancy review and AI cost diff; humans merge."
+    },
+    {
+      "from": "ci",
+      "to": "cfn",
+      "step": 4,
+      "label": "cdk deploy",
+      "desc": "Only merged changes deploy, via CDK to CloudFormation, with an OIDC role."
+    },
+    {
+      "from": "cfn",
+      "to": "app",
+      "step": 5,
+      "label": "stacks",
+      "desc": "CloudFormation updates the multi-tenant workload."
+    },
+    {
+      "from": "app",
+      "to": "cw",
+      "step": 6,
+      "label": "telemetry",
+      "desc": "Per-tenant metrics, agent traces and online evaluations land in CloudWatch Omni."
+    },
+    {
+      "from": "idc",
+      "to": "kiro",
+      "style": "dashed",
+      "label": "SSO"
+    },
+    {
+      "from": "kiro",
+      "to": "mcp",
+      "style": "dashed",
+      "label": "read-only ops"
+    },
+    {
+      "from": "mcp",
+      "to": "app",
+      "style": "dashed",
+      "label": "describe, list"
+    },
+    {
+      "from": "crew",
+      "to": "repo",
+      "style": "dashed",
+      "label": "issues, PRs"
+    },
+    {
+      "from": "secagent",
+      "to": "app",
+      "style": "dashed",
+      "label": "pen test"
+    },
+    {
+      "from": "cw",
+      "to": "devops",
+      "style": "dashed",
+      "label": "investigate"
+    },
+    {
+      "from": "app",
+      "to": "cost",
+      "style": "dashed",
+      "label": "tagged spend"
+    }
+  ]
+}

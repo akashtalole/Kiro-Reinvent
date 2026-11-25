@@ -234,6 +234,9 @@ def build() -> None:
     (OUT / "docs").mkdir(exist_ok=True)
     for md in DOCS_SRC.glob("*.md"):
         shutil.copy2(md, OUT / "docs" / md.name)
+    diagrams = DOCS_SRC / "diagrams"
+    if diagrams.is_dir():  # archify-aws diagrams: interactive HTML, SVG, PNG, draw.io (receipts stay local)
+        shutil.copytree(diagrams, OUT / "docs" / "diagrams", ignore=shutil.ignore_patterns("*.receipt.json"))
     (OUT / "data").mkdir(exist_ok=True)
     (OUT / "data" / "labs.json").write_text(
         json.dumps({"categories": CATEGORIES, "levels": LEVELS, "labs": labs}, indent=2),
