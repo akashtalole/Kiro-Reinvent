@@ -6,3 +6,5 @@ __pycache__/
 *.pyc
 .DS_Store
 .env
+.archify-aws/
+docs/diagrams/*.receipt.json

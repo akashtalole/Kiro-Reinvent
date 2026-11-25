@@ -34,6 +34,24 @@ flowchart TB
   AIStack --> Obs --> Frontier --> Kiro
 ```
 
+### Reference architecture diagrams (AWS icons)
+
+Two diagrams drawn with official AWS Architecture Icons using the archify-aws skill. Open the interactive versions to explore them: click a node to see what it reaches, follow the numbered flow, and read the indicative cost tab.
+
+**1. Multi-tenant runtime with AI features.** Tenant users reach APIs and agents through one authenticated edge. Every AI call is tenant-bound: per-tenant inference profile, retrieval filter, memory namespace and Cedar tool policy. Everything is observed in Amazon CloudWatch Omni.
+
+![AI-first SaaS runtime on AWS](diagrams/ai-first-saas-runtime.png)
+
+[Interactive diagram](https://akashtalole.github.io/Kiro-Reinvent/docs/diagrams/ai-first-saas-runtime.html) · [SVG](https://akashtalole.github.io/Kiro-Reinvent/docs/diagrams/ai-first-saas-runtime.svg) · [draw.io](https://akashtalole.github.io/Kiro-Reinvent/docs/diagrams/ai-first-saas-runtime.drawio)
+
+**2. Build and operate with Kiro.** Every persona works through Kiro. Changes reach AWS only through gated CI and CloudFormation. Agents read AWS through the AWS MCP Server, and CloudWatch Omni with AWS DevOps Agent closes the loop.
+
+![AI-first SaaS delivery with Kiro](diagrams/ai-first-saas-delivery.png)
+
+[Interactive diagram](https://akashtalole.github.io/Kiro-Reinvent/docs/diagrams/ai-first-saas-delivery.html) · [SVG](https://akashtalole.github.io/Kiro-Reinvent/docs/diagrams/ai-first-saas-delivery.svg) · [draw.io](https://akashtalole.github.io/Kiro-Reinvent/docs/diagrams/ai-first-saas-delivery.drawio)
+
+> Kiro, Kiro Crew, GitHub and the AWS MCP Server have no official AWS icon, so they use generic icons. The cost tab is an indicative list-price estimate with default usage. Model inference and Knowledge Bases need real token volumes, so they are not estimated.
+
 | Layer | Services | Role in an AI-first SaaS |
 | --- | --- | --- |
 | Interfaces | Kiro (IDE/CLI/Web/mobile), Amazon Quick (business users), your product UI | Where people delegate work |
