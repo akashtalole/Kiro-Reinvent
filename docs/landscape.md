@@ -47,6 +47,8 @@ Since Kiro CLI 3.0 the **V3 agent harness** is the default everywhere: IDE, CLI 
 
 ### 1.3 Kiro Crew
 
+> Deep dive with diagrams: [Kiro Crew under the hood](kiro-crew-internals.md).
+
 Kiro Crew started inside Amazon as *MeshClaw* and was open-sourced on 4 Aug 2026 at [`kirodotdev/KiroCrew`](https://github.com/kirodotdev/KiroCrew). It's a personal or team agent workspace that drives `kiro-cli` through the **Agent Client Protocol**, and it reuses your existing `.kiro` configuration. It includes:
 
 - Desktop app, web dashboard and CLI (`kirocrew setup | doctor | gateway`)

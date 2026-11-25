@@ -1,0 +1,203 @@
+{
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Kiro Crew — one message, end to end",
+    "subtitle": "How a message is hooked, routed to a session, enriched, sent over ACP, gated at every tool call and streamed back. Source: kirodotdev/KiroCrew docs/architecture/overview.md",
+    "review": false
+  },
+  "participants": [
+    {
+      "id": "user",
+      "icon": "users",
+      "label": "You"
+    },
+    {
+      "id": "surface",
+      "icon": "gen:generic-application",
+      "label": "Surface",
+      "sublabel": "dashboard, channel, CLI"
+    },
+    {
+      "id": "hooks",
+      "icon": "gen:gear",
+      "label": "HookManager"
+    },
+    {
+      "id": "session",
+      "icon": "gen:server",
+      "label": "SessionManager"
+    },
+    {
+      "id": "context",
+      "icon": "gen:document",
+      "label": "Context assembly"
+    },
+    {
+      "id": "gate",
+      "icon": "gen:shield",
+      "label": "PreToolUse gate"
+    },
+    {
+      "id": "acp",
+      "icon": "gen:sdk",
+      "label": "ACP client"
+    },
+    {
+      "id": "agent",
+      "icon": "gen:generic-application",
+      "label": "kiro-cli acp",
+      "sublabel": "KAS v3 engine"
+    },
+    {
+      "id": "mcpd",
+      "icon": "gen:toolkit",
+      "label": "MCP gateway daemon"
+    },
+    {
+      "id": "llm",
+      "icon": "gen:internet",
+      "label": "Kiro service (LLM)"
+    }
+  ],
+  "groups": [
+    {
+      "kind": "generic",
+      "label": "Kiro Crew gateway",
+      "members": [
+        "hooks",
+        "session",
+        "context",
+        "gate",
+        "acp"
+      ]
+    },
+    {
+      "kind": "generic",
+      "label": "ACP harness",
+      "members": [
+        "agent"
+      ]
+    }
+  ],
+  "messages": [
+    {
+      "from": "user",
+      "to": "surface",
+      "label": "message",
+      "desc": "A person writes in the dashboard, a channel thread or the CLI."
+    },
+    {
+      "from": "surface",
+      "to": "hooks",
+      "label": "HTTP / WebSocket",
+      "desc": "Channel senders must pass the owner lock first."
+    },
+    {
+      "from": "hooks",
+      "to": "hooks",
+      "kind": "self",
+      "label": "auto-reply, transform, deny"
+    },
+    {
+      "from": "hooks",
+      "to": "session",
+      "label": "get_or_create(session_key)",
+      "desc": "The key encodes the origin: channel thread, dashboard slot, cron job, subagent or task step."
+    },
+    {
+      "from": "session",
+      "to": "context",
+      "label": "assemble"
+    },
+    {
+      "from": "context",
+      "to": "session",
+      "kind": "return",
+      "label": "memory, skills, lessons, history"
+    },
+    {
+      "from": "session",
+      "to": "acp",
+      "label": "prompt + context"
+    },
+    {
+      "from": "acp",
+      "to": "agent",
+      "label": "session/prompt (ACP stdio)",
+      "desc": "JSON-RPC 2.0 over stdio to kiro-cli acp, warm or cold process."
+    },
+    {
+      "from": "agent",
+      "to": "llm",
+      "label": "inference"
+    },
+    {
+      "from": "llm",
+      "to": "agent",
+      "kind": "return",
+      "label": "tokens + tool calls"
+    },
+    {
+      "from": "agent",
+      "to": "acp",
+      "label": "request_permission"
+    },
+    {
+      "from": "acp",
+      "to": "gate",
+      "label": "PreToolUse check",
+      "desc": "Deny rules, sensitive paths and the POLICY ∩ PROFILE ceiling; decisions are written to the hash-chained security event log."
+    },
+    {
+      "from": "gate",
+      "to": "acp",
+      "kind": "return",
+      "label": "allow / deny"
+    },
+    {
+      "from": "acp",
+      "to": "agent",
+      "kind": "return",
+      "label": "allow"
+    },
+    {
+      "from": "agent",
+      "to": "mcpd",
+      "label": "MCP tool call",
+      "desc": "Built-in tools run in the OS sandbox; MCP tools go through the pooled MCP gateway daemon."
+    },
+    {
+      "from": "mcpd",
+      "to": "agent",
+      "kind": "return",
+      "label": "result"
+    },
+    {
+      "from": "agent",
+      "to": "acp",
+      "kind": "return",
+      "label": "stream events",
+      "desc": "The harness streams text_chunk, tool_call and complete events back over ACP."
+    },
+    {
+      "from": "acp",
+      "to": "surface",
+      "kind": "return",
+      "label": "stream to surface"
+    },
+    {
+      "from": "session",
+      "to": "session",
+      "kind": "self",
+      "label": "append JSONL, consolidate memory (async)"
+    }
+  ],
+  "fragments": [
+    {
+      "kind": "loop",
+      "label": "each tool call",
+      "from": 10,
+      "to": 15
+    }
+  ]
+}

@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kiro Crew — one message, end to end — AWS architecture</title>
+<style>
+:root{--pbg:#f2f3f3;--card:#fff;--ink:#16191f;--muted:#545b64;--bd:#d5dbdb;--gap:#d13212;--consider:#b36b00;--ok:#1d8102}
+body.dark{--pbg:#0f1623;--card:#161E2D;--ink:#f2f3f3;--muted:#aab4c3;--bd:#2f3b4f;--gap:#ff6a4d;--consider:#f0a742;--ok:#4cc05a}
+*{box-sizing:border-box}body{margin:0;background:var(--pbg);color:var(--ink);font:14px/1.5 Arial,Helvetica,sans-serif}
+header{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px 20px;background:#232F3E;color:#fff;flex-wrap:wrap}
+header h1{margin:0;font-size:16px}header .tools{display:flex;gap:8px}
+button{font:inherit;padding:6px 12px;border:1px solid #fff6;background:transparent;color:#fff;border-radius:4px;cursor:pointer}button:hover{background:#fff2}
+main{max-width:1500px;margin:0 auto;padding:16px;display:grid;gap:16px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:16px}
+.card h2{margin:0 0 12px;font-size:16px}.card h2 small{font-weight:400;color:var(--muted);margin-left:8px;font-size:12px}
+.diagram{overflow:auto;padding:0}.diagram svg{display:block;max-width:none;height:auto}
+.steps{margin:0;padding:0;list-style:none;display:grid;gap:6px;grid-template-columns:repeat(auto-fill,minmax(320px,1fr))}
+.steps li{display:flex;gap:10px;align-items:center;padding:6px 8px;border-radius:4px;cursor:default}.steps li:hover{background:var(--pbg)}
+.n{flex:none;width:22px;height:22px;border-radius:50%;background:#000;color:#fff;font-weight:700;font-size:12px;display:grid;place-items:center}body.dark .n{background:#fff;color:#000}
+.pillars{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(420px,1fr))}
+.pillar{border:1px solid var(--bd);border-radius:6px;padding:12px}.pillar h3{margin:0 0 8px;font-size:14px;display:flex;justify-content:space-between;gap:8px}
+.pillar h3 a{color:inherit}.tally b{font-size:11px;margin-left:6px;font-weight:700}.tally .gap,.chip.gap{color:var(--gap)}.tally .consider,.chip.consider{color:var(--consider)}.tally .ok,.chip.ok{color:var(--ok)}
+.pillar ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}.pillar li{display:flex;gap:8px;align-items:flex-start;padding:6px;border-radius:4px}.pillar li:hover{background:var(--pbg)}
+.pillar li p{margin:2px 0 0;color:var(--muted);font-size:12.5px}.chip{flex:none;font-size:11px;font-weight:700;border:1px solid currentColor;border-radius:10px;padding:1px 8px;white-space:nowrap}
+.lens{font-size:10px;border:1px solid var(--bd);border-radius:8px;padding:0 6px;color:var(--muted)}
+footer{padding:8px 20px 24px;text-align:center;color:var(--muted);font-size:12px}
+
+.diagram{position:relative}
+#steptip{position:fixed;z-index:30;max-width:340px;padding:8px 10px;background:#232F3E;color:#fff;border:1px solid #ff9900;border-radius:6px;font:13px/1.4 Arial,sans-serif;pointer-events:none;box-shadow:0 4px 14px #0005}#steptip b{display:inline-grid;place-items:center;width:20px;height:20px;margin-right:8px;border-radius:50%;background:#ff9900;color:#000;font-size:12px}.steps li.hot{background:var(--pbg);outline:1px solid #ff9900}
+.aws .node{cursor:pointer}.aws .node.sel text{font-weight:700}.aws .node.sel use{filter:drop-shadow(0 0 6px #ff9900)}
+.aws .edge.route .eline,.aws .edge.hl .eline{stroke:#ff9900;stroke-width:3}
+.aws .edge.route .arw,.aws .edge.hl .arw{stroke:#ff9900}
+#passport{position:absolute;right:12px;top:12px;width:320px;max-height:calc(100% - 24px);overflow:auto;background:var(--card);color:var(--ink);border:1px solid var(--bd);border-radius:8px;box-shadow:0 6px 24px #0003;padding:12px 14px;z-index:5;font-size:13px}
+#passport h3{margin:0 0 2px;font-size:15px}#passport .sub{color:var(--muted);font-size:12px;margin-bottom:8px}
+#passport h4{margin:10px 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+#passport ul{list-style:none;margin:0;padding:0}#passport li a{display:block;padding:3px 6px;border-radius:4px;color:inherit;text-decoration:none;cursor:pointer}#passport li a:hover{background:var(--pbg)}
+#passport .row{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+#passport button,#bar button,.menu button{background:transparent;color:inherit;border:1px solid var(--bd);border-radius:4px;padding:3px 8px;font:inherit;cursor:pointer}
+#passport button:hover,#bar button:hover,.menu button:hover{background:var(--pbg)}
+#passport .x{position:absolute;right:8px;top:6px;border:0;font-size:16px}
+#bar{display:none;padding:8px 14px;border-bottom:1px solid var(--bd);font-size:13px;gap:10px;align-items:center;flex-wrap:wrap}#bar.on{display:flex}
+#bar b{color:#b36b00}
+.overlay{position:fixed;inset:0;background:#0006;display:none;align-items:flex-start;justify-content:center;padding-top:12vh;z-index:20}.overlay.on{display:flex}
+.panel{background:var(--card);color:var(--ink);border:1px solid var(--bd);border-radius:8px;width:min(520px,92vw);box-shadow:0 12px 40px #0006;padding:12px}
+.panel input{width:100%;font:inherit;padding:8px 10px;border:1px solid var(--bd);border-radius:6px;background:var(--pbg);color:inherit}
+.panel ul{list-style:none;margin:8px 0 0;padding:0;max-height:50vh;overflow:auto}.panel li{padding:6px 8px;border-radius:4px;cursor:pointer;display:flex;justify-content:space-between;gap:8px}
+.panel li.on,.panel li:hover{background:var(--pbg)}.panel li small{color:var(--muted)}
+.panel kbd{border:1px solid var(--bd);border-bottom-width:2px;border-radius:4px;padding:0 6px;font:12px monospace;background:var(--pbg)}
+.panel table{width:100%;border-collapse:collapse}.panel td{padding:4px 6px;border-top:1px solid var(--bd)}
+.menu{position:relative}.menu .items{display:none;position:absolute;right:0;top:34px;background:var(--card);color:var(--ink);border:1px solid var(--bd);border-radius:6px;padding:4px;z-index:10;min-width:180px;box-shadow:0 6px 24px #0004}
+.menu.open .items{display:grid}.menu .items button{text-align:left;border:0}
+body.present header,body.present .card:not(.diagram),body.present #bar,body.present footer{display:none}
+body.present main{max-width:none;padding:0}body.present .diagram{border:0;border-radius:0;height:100vh;display:grid;place-items:center;overflow:hidden}
+body.present .diagram svg.aws{width:100vw;height:100vh}
+
+
+.tabs{display:flex;gap:4px;max-width:1500px;margin:12px auto 0;padding:0 16px;border-bottom:1px solid var(--bd)}
+.tabs button{color:var(--ink);border:1px solid transparent;border-bottom:0;border-radius:6px 6px 0 0;background:transparent;padding:8px 16px}
+.tabs button[aria-selected=true]{background:var(--card);border-color:var(--bd);font-weight:700;margin-bottom:-1px}
+.tab{display:none;gap:16px}.tab.on{display:grid}
+.tiles{display:flex;gap:12px;flex-wrap:wrap;margin:8px 0}.tile{border:1px solid var(--bd);border-radius:6px;padding:10px 16px;min-width:120px}.tile b{display:block;font-size:22px}.tile span{color:var(--muted);font-size:12px}
+.tile.crit b{color:#d13212}.tile.high b{color:#e07b00}.tile.med b{color:#b36b00}.tile.low b{color:#1d8102}
+.bars{display:grid;gap:6px}.bar{display:grid;grid-template-columns:200px 1fr auto;gap:10px;align-items:center}.bar i{display:block;height:14px;background:#ED7100;border-radius:2px}
+.scroll{overflow:auto}.tbl{border-collapse:collapse;width:100%;font-size:13px}.tbl th,.tbl td{border-bottom:1px solid var(--bd);padding:6px 8px;text-align:left;vertical-align:top}.tbl th{position:sticky;top:0;background:var(--card)}.r{text-align:right!important;white-space:nowrap}
+.mini{display:inline-block;height:6px;background:#ED712066;margin-right:6px;vertical-align:middle;max-width:80px}
+.lines{margin:4px 0;padding-left:18px}.tbl tr[data-node]{cursor:pointer}.tbl tr.sel{background:var(--pbg)}
+.src{font-size:11px;border:1px solid var(--bd);border-radius:8px;padding:0 6px}.src.default{color:var(--consider)}.src.spec{color:var(--ok)}
+.st,.rk{font-size:11px;font-weight:700;border:1px solid currentColor;border-radius:10px;padding:1px 8px;white-space:nowrap}
+.st.ok{color:var(--ok)}.st.part{color:var(--consider)}.st.bad{color:var(--gap)}.st.na,.st.cd{color:var(--muted)}
+.rk.critical{color:#d13212}.rk.high{color:#e07b00}.rk.medium{color:#b36b00}.rk.low{color:#1d8102}
+.banner{background:#d1321215;border:1px solid var(--gap);border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:12.5px}
+.wa h3{margin:20px 0 8px;font-size:14px}.wa h3 small,.card h3 small{font-weight:400;color:var(--muted)}
+.finding{border:1px solid var(--bd);border-left:4px solid var(--muted);border-radius:4px;padding:8px 12px;margin:8px 0}.finding.critical{border-left-color:#d13212}.finding.high{border-left-color:#e07b00}.finding.medium{border-left-color:#b36b00}.finding.low{border-left-color:#1d8102}.finding p{margin:4px 0}
+.quads{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}.quad{border:1px solid var(--bd);border-radius:6px;padding:8px 12px}.quad h4{margin:0 0 4px}.quad ul{margin:0;padding-left:18px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}.filters select,.filters input{font:inherit;padding:4px 8px;background:var(--card);color:var(--ink);border:1px solid var(--bd);border-radius:4px}
+.muted{color:var(--muted)}ul.plain{list-style:none;padding:0;display:grid;gap:6px}.tog{display:inline-flex;gap:6px;align-items:center;margin-top:6px}
+.costtag text{font:700 12px Arial;fill:#fff;text-anchor:middle}.costtag rect{fill:#ED7100}
+
+</style></head>
+<body class="">
+<header><h1>Kiro Crew — one message, end to end</h1><div class="tools"><button id="find" title="Find a node (/)">Find</button><button id="present" title="Presentation (p)">Present</button><button id="guide" title="Shortcuts (?)">Guide</button><button id="theme" title="Theme (t)">Light / dark</button><span class="menu"><button>Export ▾</button><span class="items"><button data-x="copy">Copy PNG</button><button data-x="png">Download PNG</button><button data-x="jpeg">Download JPEG</button><button data-x="webp">Download WebP</button><button data-x="svg">Download SVG (light + dark)</button><button data-x="drawio">Download draw.io (.drawio)</button></span></span></div></header>
+<div id="bar"></div>
+<nav class="tabs" role="tablist"><button role="tab" data-tab="diagram" aria-selected="true">Diagram</button><button role="tab" data-tab="cost" aria-selected="false">Cost <small>$0/mo</small></button></nav>
+<main>
+<div class="tab on" id="tab-diagram"><section class="card diagram" id="stage"><svg xmlns="http://www.w3.org/2000/svg" class="aws theme-light" viewBox="0 0 1980 1500" width="1980" height="1500" role="img" aria-label="Kiro Crew — one message, end to end">
+<title>Kiro Crew — one message, end to end</title>
+<style>.aws{--bg:#ffffff;--fg:#000000;--muted:#545b64;--line:#232F3E;--halo:#ffffff;--badge:#000000;--badgeFg:#ffffff}
+.aws.theme-dark{--bg:#161E2D;--fg:#ffffff;--muted:#aab4c3;--line:#d5dbdb;--halo:#161E2D;--badge:#ffffff;--badgeFg:#000000}
+.aws .bg{fill:var(--bg)}
+.aws text{font-family:Arial,Helvetica,sans-serif;fill:var(--fg)}
+.aws .title{font-size:22px;font-weight:700}
+.aws .subtitle{font-size:13px;fill:var(--muted)}
+.aws .glabel,.aws .nlabel,.aws .elabel{font-size:12px}
+.aws .nsub{font-size:10.5px;fill:var(--muted)}
+.aws .elabel{paint-order:stroke;stroke:var(--halo);stroke-width:4px;stroke-linejoin:round}
+.aws .eline{stroke:var(--line)}
+.aws .arw{fill:none;stroke:var(--line);stroke-width:1.6}
+.aws .badge circle{fill:var(--badge)}.aws .badge circle.hit{fill:transparent}.aws .badge{cursor:help}.aws .badge:hover circle:not(.hit){stroke:#ff9900;stroke-width:3}
+.aws .badge text{fill:var(--badgeFg);font-weight:700;font-size:12px}
+.aws .only-dark{display:none}.aws.theme-dark .only-dark{display:inline}.aws.theme-dark .only-light{display:none}
+.aws.theme-dark .grect[data-fill-dark="none"]{fill:none}
+.aws .dim{opacity:.18}.aws .hl .eline{stroke-width:3}
+.aws .edge,.aws .node{transition:opacity .12s}
+.aws .life{stroke:var(--muted);stroke-width:1;stroke-dasharray:3 4;opacity:.7}
+.aws .asyncdot{fill:var(--line)}
+.aws .note rect{fill:none;stroke:var(--muted);stroke-width:1.25}.aws .note text{font-size:11.5px}
+.aws .frag rect{stroke:var(--muted);stroke-width:1.25}.aws .fragtab{fill:var(--bg);stroke:var(--muted);stroke-width:1.25}
+.aws .fraglabel{font-size:11px;font-weight:700}.aws .fragelse{stroke:var(--muted);stroke-dasharray:6 4}</style>
+<defs><marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path class="arw" d="M1.5 1.5 L8.5 5 L1.5 8.5"/></marker><symbol id="gen-Users" viewBox="0 0 48 48"><g id="gen-Users__Icon-Resource_General-Resource_Res_Users_48" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M28.639,9.286 C28.639,6.371 31.052,4 34.019,4 C36.985,4 39.397,6.371 39.397,9.286 C39.397,12.201 36.985,14.572 34.019,14.572 C31.052,14.572 28.639,12.201 28.639,9.286 L28.639,9.286 Z M40.163,16.334 C39.516,15.932 38.833,15.6 38.128,15.333 C40.098,14.023 41.397,11.802 41.397,9.286 C41.397,5.269 38.087,2 34.019,2 C29.95,2 26.639,5.269 26.639,9.286 C26.639,11.796 27.932,14.014 29.895,15.325 C28.614,15.808 27.41,16.515 26.349,17.425 L27.652,18.943 C29.434,17.414 31.689,16.572 34,16.572 C35.802,16.572 37.569,17.077 39.109,18.033 C41.849,19.735 43.647,22.725 43.953,26 L34,26 L34,28 L45,28 C45.553,28 46,27.553 46,27 C46,22.657 43.764,18.57 40.163,16.334 L40.163,16.334 Z M8.639,9.286 C8.639,6.371 11.052,4 14.019,4 C16.985,4 19.397,6.371 19.397,9.286 C19.397,12.201 16.985,14.572 14.019,14.572 C11.052,14.572 8.639,12.201 8.639,9.286 L8.639,9.286 Z M14,26 L4.046,26 C4.53,20.717 8.81,16.572 14,16.572 C15.802,16.572 17.569,17.077 19.109,18.033 C19.541,18.302 19.958,18.608 20.349,18.943 L21.652,17.426 C21.184,17.024 20.684,16.657 20.163,16.334 C19.516,15.932 18.833,15.6 18.128,15.333 C20.098,14.023 21.397,11.802 21.397,9.286 C21.397,5.269 18.087,2 14.019,2 C9.95,2 6.639,5.269 6.639,9.286 C6.639,11.801 7.937,14.023 9.907,15.332 C5.302,17.071 2,21.638 2,27 C2,27.553 2.448,28 3,28 L14,28 L14,26 Z M14.046,44 C14.53,38.717 18.81,34.572 24,34.572 C25.802,34.572 27.569,35.077 29.109,36.033 C31.849,37.735 33.647,40.725 33.953,44 L14.046,44 Z M18.639,27.286 C18.639,24.371 21.052,22 24.019,22 C26.985,22 29.397,24.371 29.397,27.286 C29.397,30.201 26.985,32.572 24.019,32.572 C21.052,32.572 18.639,30.201 18.639,27.286 L18.639,27.286 Z M30.163,34.334 C29.516,33.932 28.833,33.6 28.128,33.333 C30.098,32.023 31.397,29.802 31.397,27.286 C31.397,23.269 28.087,20 24.019,20 C19.95,20 16.639,23.269 16.639,27.286 C16.639,29.801 17.937,32.023 19.907,33.332 C15.302,35.071 12,39.638 12,45 C12,45.553 12.448,46 13,46 L35,46 C35.553,46 36,45.553 36,45 C36,40.657 33.764,36.57 30.163,34.334 L30.163,34.334 Z" id="gen-Users__Fill-1" fill="#242F3E"></path>
+    </g></symbol><symbol id="gen-Generic-Application" viewBox="0 0 48 48"><g id="gen-Generic-Application__Icon-Resource_General-Resource_Res_Generic-Application_48" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M37,35 L46,35 L46,37 L37,37 L37,46 L35,46 L35,37 L26,37 L26,35 L35,35 L35,26 L37,26 L37,35 Z M4,44 L20,44 L20,28 L4,28 L4,44 Z M21,26 L3,26 C2.447,26 2,26.448 2,27 L2,45 C2,45.552 2.447,46 3,46 L21,46 C21.553,46 22,45.552 22,45 L22,27 C22,26.448 21.553,26 21,26 L21,26 Z M28,20 L44,20 L44,4 L28,4 L28,20 Z M45,2 L27,2 C26.447,2 26,2.448 26,3 L26,21 C26,21.552 26.447,22 27,22 L45,22 C45.553,22 46,21.552 46,21 L46,3 C46,2.448 45.553,2 45,2 L45,2 Z M4,20 L20,20 L20,4 L4,4 L4,20 Z M21,2 L3,2 C2.447,2 2,2.448 2,3 L2,21 C2,21.552 2.447,22 3,22 L21,22 C21.553,22 22,21.552 22,21 L22,3 C22,2.448 21.553,2 21,2 L21,2 Z" id="gen-Generic-Application__Fill-1" fill="#232F3D"></path>
+    </g></symbol><symbol id="gen-Gear" viewBox="0 0 48 48"><g id="gen-Gear__Icon-Resource_General-Resource_Res_Gear_48" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M24.006,31.814 C19.7,31.814 16.197,28.311 16.197,24.005 C16.197,19.7 19.7,16.197 24.006,16.197 C28.312,16.197 31.815,19.7 31.815,24.005 C31.815,28.311 28.312,31.814 24.006,31.814 L24.006,31.814 Z M24.006,14.197 C18.598,14.197 14.197,18.597 14.197,24.005 C14.197,29.414 18.598,33.814 24.006,33.814 C29.414,33.814 33.815,29.414 33.815,24.005 C33.815,18.597 29.414,14.197 24.006,14.197 L24.006,14.197 Z M44.012,27.749 L40.484,27.749 C40.03,27.749 39.634,28.053 39.517,28.491 C39.147,29.884 38.556,30.893 37.871,32.061 C37.641,32.454 37.706,32.954 38.029,33.275 L40.521,35.751 L35.722,40.521 L33.223,38.036 C32.902,37.717 32.407,37.653 32.017,37.88 L31.797,38.007 C30.622,38.688 29.774,39.18 28.494,39.516 C28.056,39.632 27.749,40.029 27.749,40.483 L27.749,44.011 L20.263,44.011 L20.263,40.485 C20.263,40.032 19.958,39.636 19.52,39.519 C18.145,39.153 17.153,38.606 15.904,37.876 C15.512,37.645 15.012,37.71 14.69,38.034 L12.219,40.522 L7.456,35.727 L9.938,33.229 C10.255,32.909 10.319,32.415 10.094,32.024 L9.985,31.838 C9.297,30.647 8.799,29.786 8.459,28.494 C8.344,28.055 7.946,27.749 7.492,27.749 L4,27.749 L4,20.262 L7.526,20.262 C7.979,20.262 8.376,19.957 8.492,19.519 C8.864,18.116 9.432,17.083 10.136,15.878 C10.365,15.485 10.301,14.986 9.979,14.665 L7.487,12.184 L12.282,7.407 L14.778,9.894 C15.099,10.214 15.594,10.277 15.985,10.051 L16.162,9.949 C17.359,9.255 18.223,8.753 19.518,8.413 C19.956,8.297 20.263,7.899 20.263,7.445 L20.263,4 L27.749,4 L27.749,7.51 C27.749,7.963 28.053,8.359 28.49,8.476 C29.761,8.816 30.61,9.318 31.783,10.011 L31.956,10.113 C32.352,10.347 32.853,10.282 33.176,9.954 L35.612,7.484 L40.317,12.252 L37.86,14.743 C37.545,15.063 37.482,15.554 37.705,15.943 C38.407,17.164 38.962,18.129 39.323,19.515 C39.439,19.955 39.836,20.262 40.291,20.262 L44.012,20.262 L44.012,27.749 Z M44.137,18.262 L41.038,18.262 C40.707,17.263 40.289,16.447 39.817,15.607 L41.827,13.57 C42.543,12.844 42.543,11.663 41.827,10.936 L36.947,5.989 C36.236,5.269 34.988,5.269 34.277,5.989 L32.299,7.995 C31.485,7.521 30.707,7.101 29.749,6.771 L29.749,3.875 C29.749,2.841 28.908,2 27.874,2 L20.138,2 C19.104,2 18.263,2.841 18.263,3.875 L18.263,6.702 C17.28,7.034 16.483,7.458 15.648,7.936 L13.606,5.902 C12.876,5.175 11.689,5.178 10.959,5.902 L5.986,10.856 C5.631,11.21 5.436,11.681 5.436,12.183 C5.436,12.686 5.631,13.157 5.986,13.513 L8.024,15.541 C7.544,16.394 7.116,17.248 6.78,18.262 L3.876,18.262 C2.842,18.262 2,19.104 2,20.137 L2,27.874 C2,28.907 2.842,29.749 3.876,29.749 L6.748,29.749 C7.08,30.731 7.502,31.527 7.98,32.362 L5.949,34.406 C5.227,35.134 5.227,36.32 5.95,37.048 L10.888,42.02 C11.241,42.377 11.714,42.574 12.217,42.574 L12.219,42.574 C12.722,42.574 13.194,42.377 13.55,42.02 L15.567,39.989 C16.435,40.48 17.269,40.898 18.263,41.23 L18.263,44.136 C18.263,45.169 19.104,46.011 20.138,46.011 L27.874,46.011 C28.908,46.011 29.749,45.169 29.749,44.136 L29.749,41.227 C30.731,40.895 31.523,40.472 32.356,39.994 L34.4,42.026 C35.128,42.752 36.314,42.751 37.044,42.026 L42.019,37.081 C42.376,36.727 42.573,36.253 42.573,35.75 C42.573,35.247 42.376,34.774 42.02,34.421 L39.986,32.401 C40.454,31.584 40.887,30.753 41.226,29.749 L44.137,29.749 C45.171,29.749 46.012,28.907 46.012,27.874 L46.012,20.137 C46.012,19.104 45.171,18.262 44.137,18.262 L44.137,18.262 Z" id="gen-Gear__Fill-6" fill="#232F3D"></path>
+    </g></symbol><symbol id="gen-Server" viewBox="0 0 48 48"><g id="gen-Server__Icon-Resource_General-Resource_Res_Traditional-server_48" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M15.437,21.52 L32.064,21.52 L32.064,19.52 L15.437,19.52 L15.437,21.52 Z M15.437,17.196 L32.064,17.196 L32.064,15.196 L15.437,15.196 L15.437,17.196 Z M15.437,12.762 L32.064,12.762 L32.064,10.762 L15.437,10.762 L15.437,12.762 Z M15.437,8.494 L32.064,8.494 L32.064,6.494 L15.437,6.494 L15.437,8.494 Z M13,44.013 L34.499,44.013 L34.499,4 L13,4 L13,44.013 Z M35.032,2 L12.468,2 C11.659,2 11,2.659 11,3.469 L11,44.545 C11,45.355 11.659,46.013 12.468,46.013 L35.032,46.013 C35.841,46.013 36.499,45.355 36.499,44.545 L36.499,3.469 C36.499,2.659 35.841,2 35.032,2 L35.032,2 Z" id="gen-Server__Fill-18" fill="#232F3D"></path>
+    </g></symbol><symbol id="gen-Document" viewBox="0 0 48 48"><g id="gen-Document__Icon-Resource_General-Resource_Res_Document_48" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M15,20 L28,20 L28,18 L15,18 L15,20 Z M15,34 L28,34 L28,32 L15,32 L15,34 Z M15,27 L32,27 L32,25 L15,25 L15,27 Z M10,44 L10.007,4 L28,4 L28,13 C28,13.552 28.447,14 29,14 L38,14 L38.025,44 L10,44 Z M30,5.414 L36.586,12 L30,12 L30,5.414 Z M39.707,12.293 L29.707,2.293 C29.52,2.105 29.266,2 29,2 L10,2 C8.822,2 8,2.822 8,4 L8,44 C8,45.14 8.859,46 10,46 L38.025,46 C39.151,46 40,45.14 40,44 L40,13 C40,12.735 39.895,12.48 39.707,12.293 L39.707,12.293 Z" id="gen-Document__Fill-1" fill="#232F3D"></path>
+    </g></symbol><symbol id="gen-Shield" viewBox="0 0 48 48"><g id="gen-Shield__Icon-Resource_General-Resource_Res_Shield_48" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M23.9722,38.4446 C17.8272,37.1896 13.8892,32.6366 12.2652,24.9076 C11.6072,21.7796 11.4482,18.7296 11.4732,16.2946 L35.0932,27.1966 C33.2092,33.5346 29.4802,37.3196 23.9722,38.4446 M23.9722,10.5696 C26.2622,12.3286 30.1532,14.3266 36.4402,15.0516 C36.5362,17.6856 36.4462,21.3246 35.6532,25.0276 C35.6382,25.0966 35.6202,25.1606 35.6052,25.2296 L13.0602,14.8236 C18.4282,13.9706 21.8802,12.1766 23.9722,10.5696 M37.4932,13.1506 C30.5552,12.5036 26.6652,10.2776 24.6232,8.5236 C24.2492,8.2026 23.6952,8.2026 23.3212,8.5236 C21.2782,10.2776 17.3872,12.5046 10.4482,13.1506 C9.9552,13.1966 9.5702,13.5966 9.5422,14.0906 C9.3902,16.8286 9.4002,20.9986 10.3082,25.3196 C12.1302,33.9906 16.6632,39.0796 23.7842,40.4456 C23.8462,40.4586 23.9092,40.4646 23.9722,40.4646 C24.0352,40.4646 24.0982,40.4586 24.1602,40.4456 C31.2432,39.0866 35.7682,34.0396 37.6092,25.4466 C38.5372,21.1106 38.5512,16.8786 38.3992,14.0916 C38.3722,13.5966 37.9872,13.1966 37.4932,13.1506 M23.9722,43.1236 C5.4772,39.9366 6.7502,15.9376 7.1932,11.1556 C17.7032,10.5966 22.2502,6.8236 23.9722,4.7566 C25.6942,6.8236 30.2412,10.5966 40.7512,11.1556 C41.1942,15.9376 42.4672,39.9366 23.9722,43.1236 M42.6442,10.0586 C42.5772,9.5766 42.1742,9.2126 41.6882,9.1956 C28.0302,8.7136 24.9052,2.6266 24.8792,2.5736 C24.7162,2.2236 24.3652,2.0036 23.9792,1.9996 L23.9702,1.9996 C23.5882,1.9996 23.2372,2.2216 23.0692,2.5656 C23.0392,2.6266 19.9142,8.7136 6.2562,9.1956 C5.7702,9.2126 5.3672,9.5766 5.3002,10.0586 C5.2572,10.3716 1.2552,41.4096 23.8092,45.1246 C23.8632,45.1336 23.9182,45.1376 23.9722,45.1376 C24.0262,45.1376 24.0812,45.1336 24.1352,45.1246 C46.6892,41.4096 42.6872,10.3716 42.6442,10.0586" id="gen-Shield__Fill-1" fill="#232F3D"></path>
+    </g></symbol><symbol id="gen-SDK" viewBox="0 0 48 48"><g id="gen-SDK__Icon-Resource_General-Resource_Res_SDK_48" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M25.225,43.35575 L25.225,35.17475 L33.837,30.20375 C34.147,30.02475 34.337,29.69475 34.337,29.33675 L34.337,19.22275 L41.45,15.11775 L41.45,33.98775 L25.225,43.35575 Z M7,15.11775 L14.113,19.22275 L14.113,29.33675 C14.113,29.69475 14.303,30.02475 14.613,30.20375 L23.225,35.17475 L23.225,43.35575 L7,33.98775 L7,15.11775 Z M25.225,24.58375 L32.337,20.47775 L32.337,28.75975 L25.225,32.86675 L25.225,24.58375 Z M16.113,20.47675 L23.225,24.58375 L23.225,32.86675 L16.113,28.75975 L16.113,20.47675 Z M24.225,22.75175 L17.259,18.72975 L24.225,14.70875 L31.191,18.72975 L24.225,22.75175 Z M24.225,4.15375 L40.331,13.45275 L33.191,17.57575 L24.725,12.68775 C24.416,12.50975 24.034,12.50975 23.725,12.68775 L15.259,17.57575 L8.119,13.45275 L24.225,4.15375 Z M42.95,12.65475 L24.725,2.13275 C24.416,1.95575 24.034,1.95575 23.725,2.13275 L5.5,12.65475 C5.191,12.83375 5,13.16375 5,13.52075 L5,34.56475 C5,34.92175 5.191,35.25175 5.5,35.43075 L23.725,45.95375 C23.879,46.04275 24.052,46.08675 24.225,46.08675 C24.398,46.08675 24.571,46.04275 24.725,45.95375 L42.95,35.43075 C43.259,35.25175 43.45,34.92175 43.45,34.56475 L43.45,13.52075 C43.45,13.16375 43.259,12.83375 42.95,12.65475 L42.95,12.65475 Z" id="gen-SDK__Fill-1" fill="#232F3D"></path>
+    </g></symbol><symbol id="gen-Toolkit" viewBox="0 0 48 48"><g id="gen-Toolkit__Icon-Resource_General-Resource_Res_Toolkit_48" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M32.438,34.203 L25.12,26.884 L26.957,25.047 L34.275,32.366 L32.438,34.203 Z M13.922,14.201 L14.273,13.85 L17.117,15.924 L15.996,17.045 L13.922,14.201 Z M27.664,22.926 C27.289,22.551 26.625,22.551 26.25,22.926 L25.331,23.845 L18.677,17.191 L19.357,16.512 C19.564,16.305 19.669,16.018 19.647,15.727 C19.625,15.435 19.475,15.169 19.239,14.997 L14.759,11.73 C14.362,11.441 13.812,11.483 13.463,11.831 L11.903,13.391 C11.554,13.74 11.511,14.29 11.802,14.687 L15.069,19.167 C15.241,19.403 15.507,19.553 15.799,19.575 C15.825,19.577 15.851,19.578 15.876,19.578 C16.141,19.578 16.395,19.474 16.584,19.285 L17.263,18.605 L23.917,25.259 L22.999,26.177 C22.608,26.567 22.608,27.2 22.999,27.591 L31.731,36.324 C31.918,36.512 32.172,36.617 32.438,36.617 C32.704,36.617 32.958,36.512 33.145,36.324 L36.396,33.073 C36.787,32.682 36.787,32.05 36.396,31.659 L27.664,22.926 Z M27.176,17.271 C26.874,15.72 27.359,14.077 28.492,12.944 C29.939,11.494 32.154,11.125 34,12.022 C34.29,12.164 34.495,12.437 34.548,12.756 C34.602,13.075 34.498,13.4 34.269,13.629 L32.786,15.112 L33.115,15.442 L34.596,13.961 C34.825,13.732 35.149,13.629 35.467,13.682 C35.786,13.734 36.059,13.937 36.201,14.227 C37.105,16.069 36.738,18.282 35.286,19.733 C34.133,20.886 32.517,21.364 30.953,21.05 L29.25,22.754 L27.836,21.34 L29.946,19.228 C30.214,18.959 30.613,18.867 30.976,18.989 C32.001,19.34 33.109,19.081 33.872,18.319 C34.315,17.876 34.584,17.311 34.666,16.72 L33.821,17.564 C33.633,17.752 33.379,17.857 33.114,17.857 L33.113,17.857 C32.847,17.857 32.593,17.752 32.406,17.563 L30.665,15.817 C30.275,15.427 30.275,14.794 30.666,14.404 L31.505,13.564 C30.913,13.646 30.348,13.916 29.906,14.358 C29.155,15.109 28.892,16.244 29.236,17.248 C29.359,17.609 29.266,18.01 28.997,18.279 L25.261,22.015 L23.847,20.6 L27.176,17.271 Z M22.828,29.18 L21.124,30.885 C21.425,32.438 20.938,34.082 19.8,35.213 C18.884,36.134 17.658,36.619 16.414,36.619 C15.696,36.619 14.971,36.458 14.296,36.126 C14.007,35.983 13.804,35.71 13.751,35.391 C13.699,35.073 13.802,34.749 14.031,34.521 L15.512,33.04 L15.185,32.713 L13.704,34.194 C13.475,34.423 13.147,34.524 12.834,34.474 C12.515,34.421 12.242,34.218 12.099,33.929 C11.193,32.088 11.561,29.875 13.014,28.423 C14.147,27.285 15.79,26.799 17.341,27.105 L20.674,23.773 L22.088,25.187 L18.348,28.927 C18.078,29.197 17.675,29.29 17.315,29.165 C16.312,28.817 15.179,29.08 14.43,29.835 C13.985,30.279 13.714,30.845 13.633,31.436 L14.478,30.592 C14.869,30.201 15.501,30.201 15.892,30.592 L17.633,32.333 C18.024,32.724 18.024,33.356 17.633,33.747 L16.787,34.594 C17.379,34.514 17.944,34.243 18.386,33.799 C19.143,33.046 19.408,31.913 19.064,30.907 C18.941,30.547 19.034,30.146 19.303,29.877 L21.414,27.766 L22.828,29.18 Z M41.243,34.008 L24.095,43.846 L7.003,33.915 L7.057,14.146 L24.204,4.308 L41.295,14.24 L41.243,34.008 Z M24.209,2 L5.061,12.986 L5,35.063 L24.089,46.154 L43.239,35.168 L43.299,13.092 L24.209,2 Z" id="gen-Toolkit__Fill-19" fill="#232F3D"></path>
+    </g></symbol><symbol id="gen-Internet" viewBox="0 0 48 48"><g id="gen-Internet__Icon-Resource_General-Resource_Res_Internet_48" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M34.59,29.7893333 L30.997,33.3813333 L30.997,21.7593333 L28.997,21.7593333 L28.997,33.2703333 L25.556,29.7733333 L24.13,31.1763333 L29.325,36.4553333 C29.513,36.6453333 29.768,36.7533333 30.034,36.7543333 L30.038,36.7543333 C30.303,36.7543333 30.558,36.6483333 30.745,36.4613333 L36.004,31.2033333 L34.59,29.7893333 Z M22.35,27.7243333 L23.764,26.3103333 L18.506,21.0523333 C18.319,20.8643333 18.065,20.7593333 17.799,20.7593333 L17.795,20.7593333 C17.528,20.7603333 17.274,20.8673333 17.086,21.0583333 L11.89,26.3363333 L13.316,27.7383333 L16.757,24.2433333 L16.757,37.5543333 L18.757,37.5543333 L18.757,24.1313333 L22.35,27.7243333 Z M20.333,37.5723333 L27.4,37.5793333 L27.402,35.5793333 L20.335,35.5723333 L20.333,37.5723333 Z M46.026,29.1303333 C46.026,31.6173333 45.272,33.6283333 43.783,35.1053333 C41.332,37.5403333 37.776,37.5903333 37.496,37.5903333 L37.484,37.5903333 L32.721,37.5853333 L32.723,35.5853333 L37.491,35.5903333 C37.531,35.5903333 40.489,35.5693333 42.385,33.6763333 C43.474,32.5883333 44.026,31.0593333 44.026,29.1303333 C44.026,27.9483333 43.701,26.1793333 40.896,24.4603333 C39.422,23.5573333 38.041,23.2593333 37.517,23.1743333 C36.986,23.0873333 36.622,22.5993333 36.685,22.0693333 C36.507,19.9743333 35.526,18.5083333 33.982,18.0403333 C32.647,17.6363333 31.218,18.1083333 30.337,19.2443333 C30.116,19.5313333 29.763,19.6773333 29.396,19.6203333 C29.036,19.5653333 28.736,19.3203333 28.61,18.9793333 C27.992,17.3143333 27.099,15.9173333 25.955,14.8233333 C24.545,13.4753333 20.675,10.5743333 15.204,12.7843333 C12.069,14.0513333 9.611,17.6893333 9.611,21.0673333 C9.611,21.4443333 9.635,21.8223333 9.682,22.1893333 C9.743,22.6733333 9.446,23.1313333 8.981,23.2723333 C8.943,23.2843333 8.903,23.2933333 8.865,23.3003333 C7.02,23.7643333 4,25.1573333 4,29.2983333 C4,32.4433333 5.799,34.1823333 7.308,35.0873333 C7.823,35.3963333 8.419,35.5603333 9.029,35.5613333 L15.181,35.5673333 L15.179,37.5673333 L9.028,37.5613333 C8.055,37.5603333 7.104,37.2983333 6.278,36.8023333 C4.681,35.8443333 2,33.5953333 2,29.2983333 C2,25.5833333 4.084,22.7513333 7.623,21.5793333 C7.615,21.4093333 7.611,21.2383333 7.611,21.0673333 C7.611,16.8633333 10.554,12.5053333 14.456,10.9303333 C19.001,9.09333332 23.817,10.0113333 27.338,13.3783333 C28.37,14.3643333 29.228,15.5503333 29.897,16.9143333 C31.234,15.9453333 32.938,15.6373333 34.562,16.1263333 C36.751,16.7903333 38.234,18.7233333 38.615,21.3603333 C39.748,21.6423333 40.925,22.1323333 41.941,22.7553333 C44.69,24.4383333 46.026,26.5243333 46.026,29.1303333 L46.026,29.1303333 Z" id="gen-Internet__Fill-10" fill="#232F3D"></path>
+    </g></symbol></defs>
+<rect class="bg" width="1980" height="1500"/>
+<text class="title" x="40" y="46">Kiro Crew — one message, end to end</text>
+<text class="subtitle" x="40" y="70">How a message is hooked, routed to a session, enriched, sent over ACP, gated at every tool call and streamed back. Source: kirodotdev/KiroCrew docs/architecture/overview.md</text>
+<g class="group"><rect x="428" y="116" width="934" height="1344" fill="none" stroke="#7D8998" stroke-width="1.25"/>
+<text class="glabel" x="438" y="136">Kiro Crew gateway</text>
+</g>
+<g class="group"><rect x="1378" y="116" width="174" height="1344" fill="none" stroke="#7D8998" stroke-width="1.25"/>
+<text class="glabel" x="1388" y="136">ACP harness</text>
+</g>
+<line class="life" x1="135" y1="276" x2="135" y2="1450"/>
+<line class="life" x1="325" y1="276" x2="325" y2="1450"/>
+<line class="life" x1="515" y1="276" x2="515" y2="1450"/>
+<line class="life" x1="705" y1="276" x2="705" y2="1450"/>
+<line class="life" x1="895" y1="276" x2="895" y2="1450"/>
+<line class="life" x1="1085" y1="276" x2="1085" y2="1450"/>
+<line class="life" x1="1275" y1="276" x2="1275" y2="1450"/>
+<line class="life" x1="1465" y1="276" x2="1465" y2="1450"/>
+<line class="life" x1="1655" y1="276" x2="1655" y2="1450"/>
+<line class="life" x1="1845" y1="276" x2="1845" y2="1450"/>
+<g class="frag"><rect x="993" y="896" width="754" height="342" fill="none"/><path class="fragtab" d="M993 896 h142 v18 l-8 8 h-134 z"/><text class="fraglabel" x="999" y="910">loop [each tool call]</text>
+</g>
+<g class="edge" data-from="user" data-to="surface" data-step="1" data-label="message" data-tip="A person writes in the dashboard, a channel thread or the CLI.">
+<path class="eline" fill="none" stroke-width="2" d="M135 339 H325" marker-end="url(#arw)"/>
+<text class="elabel" x="230" y="331" text-anchor="middle">message</text>
+<g class="badge"><title>1. A person writes in the dashboard, a channel thread or the CLI.</title><circle cx="135" cy="339" r="11"/><circle class="hit" cx="135" cy="339" r="16"/><text x="135" y="343.5" text-anchor="middle">1</text></g>
+</g>
+<g class="edge" data-from="surface" data-to="hooks" data-step="2" data-label="HTTP / WebSocket" data-tip="Channel senders must pass the owner lock first.">
+<path class="eline" fill="none" stroke-width="2" d="M325 393 H515" marker-end="url(#arw)"/>
+<text class="elabel" x="420" y="385" text-anchor="middle">HTTP / WebSocket</text>
+<g class="badge"><title>2. Channel senders must pass the owner lock first.</title><circle cx="325" cy="393" r="11"/><circle class="hit" cx="325" cy="393" r="16"/><text x="325" y="397.5" text-anchor="middle">2</text></g>
+</g>
+<g class="edge" data-from="hooks" data-to="hooks" data-step="3" data-label="auto-reply, transform, deny" data-tip="HookManager → HookManager (auto-reply, transform, deny)">
+<path class="eline" fill="none" stroke-width="2" d="M515 442 h40 v24 h-40" marker-end="url(#arw)"/>
+<text class="elabel" x="565" y="451">auto-reply,</text>
+<text class="elabel" x="565" y="465">transform, deny</text>
+<g class="badge"><title>3. HookManager → HookManager (auto-reply, transform, deny)</title><circle cx="537" cy="442" r="11"/><circle class="hit" cx="537" cy="442" r="16"/><text x="537" y="446.5" text-anchor="middle">3</text></g>
+</g>
+<g class="edge" data-from="hooks" data-to="session" data-step="4" data-label="get_or_create(session_key)" data-tip="The key encodes the origin: channel thread, dashboard slot, cron job, subagent or task step.">
+<path class="eline" fill="none" stroke-width="2" d="M515 515 H705" marker-end="url(#arw)"/>
+<text class="elabel" x="610" y="507" text-anchor="middle">get_or_create(session_key)</text>
+<g class="badge"><title>4. The key encodes the origin: channel thread, dashboard slot, cron job, subagent or task step.</title><circle cx="515" cy="515" r="11"/><circle class="hit" cx="515" cy="515" r="16"/><text x="515" y="519.5" text-anchor="middle">4</text></g>
+</g>
+<g class="edge" data-from="session" data-to="context" data-step="5" data-label="assemble" data-tip="SessionManager → Context assembly (assemble)">
+<path class="eline" fill="none" stroke-width="2" d="M705 569 H895" marker-end="url(#arw)"/>
+<text class="elabel" x="800" y="561" text-anchor="middle">assemble</text>
+<g class="badge"><title>5. SessionManager → Context assembly (assemble)</title><circle cx="705" cy="569" r="11"/><circle class="hit" cx="705" cy="569" r="16"/><text x="705" y="573.5" text-anchor="middle">5</text></g>
+</g>
+<g class="edge" data-from="context" data-to="session" data-step="6" data-label="memory, skills, lessons, history">
+<path class="eline" fill="none" stroke-width="2" stroke-dasharray="6 4" d="M895 630 H705" marker-end="url(#arw)"/>
+<text class="elabel" x="800" y="608" text-anchor="middle">memory, skills,</text>
+<text class="elabel" x="800" y="622" text-anchor="middle">lessons, history</text>
+</g>
+<g class="edge" data-from="session" data-to="acp" data-step="6" data-label="prompt + context" data-tip="SessionManager → ACP client (prompt + context)">
+<path class="eline" fill="none" stroke-width="2" d="M705 691 H1275" marker-end="url(#arw)"/>
+<text class="elabel" x="990" y="683" text-anchor="middle">prompt + context</text>
+<g class="badge"><title>6. SessionManager → ACP client (prompt + context)</title><circle cx="705" cy="691" r="11"/><circle class="hit" cx="705" cy="691" r="16"/><text x="705" y="695.5" text-anchor="middle">6</text></g>
+</g>
+<g class="edge" data-from="acp" data-to="agent" data-step="7" data-label="session/prompt (ACP stdio)" data-tip="JSON-RPC 2.0 over stdio to kiro-cli acp, warm or cold process.">
+<path class="eline" fill="none" stroke-width="2" d="M1275 752 H1465" marker-end="url(#arw)"/>
+<text class="elabel" x="1370" y="730" text-anchor="middle">session/prompt</text>
+<text class="elabel" x="1370" y="744" text-anchor="middle">(ACP stdio)</text>
+<g class="badge"><title>7. JSON-RPC 2.0 over stdio to kiro-cli acp, warm or cold process.</title><circle cx="1275" cy="752" r="11"/><circle class="hit" cx="1275" cy="752" r="16"/><text x="1275" y="756.5" text-anchor="middle">7</text></g>
+</g>
+<g class="edge" data-from="agent" data-to="llm" data-step="8" data-label="inference" data-tip="kiro-cli acp → Kiro service (LLM) (inference)">
+<path class="eline" fill="none" stroke-width="2" d="M1465 813 H1845" marker-end="url(#arw)"/>
+<text class="elabel" x="1655" y="805" text-anchor="middle">inference</text>
+<g class="badge"><title>8. kiro-cli acp → Kiro service (LLM) (inference)</title><circle cx="1465" cy="813" r="11"/><circle class="hit" cx="1465" cy="813" r="16"/><text x="1465" y="817.5" text-anchor="middle">8</text></g>
+</g>
+<g class="edge" data-from="llm" data-to="agent" data-step="9" data-label="tokens + tool calls">
+<path class="eline" fill="none" stroke-width="2" stroke-dasharray="6 4" d="M1845 867 H1465" marker-end="url(#arw)"/>
+<text class="elabel" x="1655" y="859" text-anchor="middle">tokens + tool calls</text>
+</g>
+<g class="edge" data-from="agent" data-to="acp" data-step="9" data-label="request_permission" data-tip="kiro-cli acp → ACP client (request_permission)">
+<path class="eline" fill="none" stroke-width="2" d="M1465 943 H1275" marker-end="url(#arw)"/>
+<text class="elabel" x="1370" y="935" text-anchor="middle">request_permission</text>
+<g class="badge"><title>9. kiro-cli acp → ACP client (request_permission)</title><circle cx="1465" cy="943" r="11"/><circle class="hit" cx="1465" cy="943" r="16"/><text x="1465" y="947.5" text-anchor="middle">9</text></g>
+</g>
+<g class="edge" data-from="acp" data-to="gate" data-step="10" data-label="PreToolUse check" data-tip="Deny rules, sensitive paths and the POLICY ∩ PROFILE ceiling; decisions are written to the hash-chained security event log.">
+<path class="eline" fill="none" stroke-width="2" d="M1275 997 H1085" marker-end="url(#arw)"/>
+<text class="elabel" x="1180" y="989" text-anchor="middle">PreToolUse check</text>
+<g class="badge"><title>10. Deny rules, sensitive paths and the POLICY ∩ PROFILE ceiling; decisions are written to the hash-chained security event log.</title><circle cx="1275" cy="997" r="11"/><circle class="hit" cx="1275" cy="997" r="16"/><text x="1275" y="1001.5" text-anchor="middle">10</text></g>
+</g>
+<g class="edge" data-from="gate" data-to="acp" data-step="11" data-label="allow / deny">
+<path class="eline" fill="none" stroke-width="2" stroke-dasharray="6 4" d="M1085 1051 H1275" marker-end="url(#arw)"/>
+<text class="elabel" x="1180" y="1043" text-anchor="middle">allow / deny</text>
+</g>
+<g class="edge" data-from="acp" data-to="agent" data-step="11" data-label="allow">
+<path class="eline" fill="none" stroke-width="2" stroke-dasharray="6 4" d="M1275 1105 H1465" marker-end="url(#arw)"/>
+<text class="elabel" x="1370" y="1097" text-anchor="middle">allow</text>
+</g>
+<g class="edge" data-from="agent" data-to="mcpd" data-step="11" data-label="MCP tool call" data-tip="Built-in tools run in the OS sandbox; MCP tools go through the pooled MCP gateway daemon.">
+<path class="eline" fill="none" stroke-width="2" d="M1465 1159 H1655" marker-end="url(#arw)"/>
+<text class="elabel" x="1560" y="1151" text-anchor="middle">MCP tool call</text>
+<g class="badge"><title>11. Built-in tools run in the OS sandbox; MCP tools go through the pooled MCP gateway daemon.</title><circle cx="1465" cy="1159" r="11"/><circle class="hit" cx="1465" cy="1159" r="16"/><text x="1465" y="1163.5" text-anchor="middle">11</text></g>
+</g>
+<g class="edge" data-from="mcpd" data-to="agent" data-step="12" data-label="result">
+<path class="eline" fill="none" stroke-width="2" stroke-dasharray="6 4" d="M1655 1213 H1465" marker-end="url(#arw)"/>
+<text class="elabel" x="1560" y="1205" text-anchor="middle">result</text>
+</g>
+<g class="edge" data-from="agent" data-to="acp" data-step="12" data-label="stream events">
+<path class="eline" fill="none" stroke-width="2" stroke-dasharray="6 4" d="M1465 1267 H1275" marker-end="url(#arw)"/>
+<text class="elabel" x="1370" y="1259" text-anchor="middle">stream events</text>
+</g>
+<g class="edge" data-from="acp" data-to="surface" data-step="12" data-label="stream to surface">
+<path class="eline" fill="none" stroke-width="2" stroke-dasharray="6 4" d="M1275 1321 H325" marker-end="url(#arw)"/>
+<text class="elabel" x="800" y="1313" text-anchor="middle">stream to surface</text>
+</g>
+<g class="edge" data-from="session" data-to="session" data-step="12" data-label="append JSONL, consolidate memory (async)" data-tip="SessionManager → SessionManager (append JSONL, consolidate memory (async))">
+<path class="eline" fill="none" stroke-width="2" d="M705 1377 h40 v24 h-40" marker-end="url(#arw)"/>
+<text class="elabel" x="755" y="1379">append JSONL,</text>
+<text class="elabel" x="755" y="1393">consolidate memory</text>
+<text class="elabel" x="755" y="1407">(async)</text>
+<g class="badge"><title>12. SessionManager → SessionManager (append JSONL, consolidate memory (async))</title><circle cx="727" cy="1377" r="11"/><circle class="hit" cx="727" cy="1377" r="16"/><text x="727" y="1381.5" text-anchor="middle">12</text></g>
+</g>
+<g class="node" data-id="user" data-label="You" data-service="Users" data-category="General"><title>You (Users)</title><use href="#gen-Users" x="103" y="164" width="64" height="64"/>
+<text class="nlabel" x="135" y="245" text-anchor="middle">You</text>
+</g>
+<g class="node" data-id="surface" data-label="Surface" data-service="Generic Application" data-category="General"><title>Surface (Generic Application)</title><use href="#gen-Generic-Application" x="293" y="164" width="64" height="64"/>
+<text class="nlabel" x="325" y="245" text-anchor="middle">Surface</text>
+<text class="nsub" x="325" y="259" text-anchor="middle">dashboard, channel, CLI</text>
+</g>
+<g class="node" data-id="hooks" data-label="HookManager" data-service="Gear" data-category="General"><title>HookManager (Gear)</title><use href="#gen-Gear" x="483" y="164" width="64" height="64"/>
+<text class="nlabel" x="515" y="245" text-anchor="middle">HookManager</text>
+</g>
+<g class="node" data-id="session" data-label="SessionManager" data-service="Server" data-category="General"><title>SessionManager (Server)</title><use href="#gen-Server" x="673" y="164" width="64" height="64"/>
+<text class="nlabel" x="705" y="245" text-anchor="middle">SessionManager</text>
+</g>
+<g class="node" data-id="context" data-label="Context assembly" data-service="Document" data-category="General"><title>Context assembly (Document)</title><use href="#gen-Document" x="863" y="164" width="64" height="64"/>
+<text class="nlabel" x="895" y="245" text-anchor="middle">Context assembly</text>
+</g>
+<g class="node" data-id="gate" data-label="PreToolUse gate" data-service="Shield" data-category="General"><title>PreToolUse gate (Shield)</title><use href="#gen-Shield" x="1053" y="164" width="64" height="64"/>
+<text class="nlabel" x="1085" y="245" text-anchor="middle">PreToolUse gate</text>
+</g>
+<g class="node" data-id="acp" data-label="ACP client" data-service="SDK" data-category="General"><title>ACP client (SDK)</title><use href="#gen-SDK" x="1243" y="164" width="64" height="64"/>
+<text class="nlabel" x="1275" y="245" text-anchor="middle">ACP client</text>
+</g>
+<g class="node" data-id="agent" data-label="kiro-cli acp" data-service="Generic Application" data-category="General"><title>kiro-cli acp (Generic Application)</title><use href="#gen-Generic-Application" x="1433" y="164" width="64" height="64"/>
+<text class="nlabel" x="1465" y="245" text-anchor="middle">kiro-cli acp</text>
+<text class="nsub" x="1465" y="259" text-anchor="middle">KAS v3 engine</text>
+</g>
+<g class="node" data-id="mcpd" data-label="MCP gateway daemon" data-service="Toolkit" data-category="General"><title>MCP gateway daemon (Toolkit)</title><use href="#gen-Toolkit" x="1623" y="164" width="64" height="64"/>
+<text class="nlabel" x="1655" y="245" text-anchor="middle">MCP gateway daemon</text>
+</g>
+<g class="node" data-id="llm" data-label="Kiro service (LLM)" data-service="Internet" data-category="General"><title>Kiro service (LLM) (Internet)</title><use href="#gen-Internet" x="1813" y="164" width="64" height="64"/>
+<text class="nlabel" x="1845" y="245" text-anchor="middle">Kiro service (LLM)</text>
+</g>
+</svg></section>
+<section class="card"><h2>Flow</h2><ol class="steps"><li data-step="1" data-from="user" data-to="surface"><span class="n">1</span><span>A person writes in the dashboard, a channel thread or the CLI.</span></li><li data-step="2" data-from="surface" data-to="hooks"><span class="n">2</span><span>Channel senders must pass the owner lock first.</span></li><li data-step="3" data-from="hooks" data-to="hooks"><span class="n">3</span><span>HookManager → HookManager (auto-reply, transform, deny)</span></li><li data-step="4" data-from="hooks" data-to="session"><span class="n">4</span><span>The key encodes the origin: channel thread, dashboard slot, cron job, subagent or task step.</span></li><li data-step="5" data-from="session" data-to="context"><span class="n">5</span><span>SessionManager → Context assembly (assemble)</span></li><li data-step="6" data-from="session" data-to="acp"><span class="n">6</span><span>SessionManager → ACP client (prompt + context)</span></li><li data-step="7" data-from="acp" data-to="agent"><span class="n">7</span><span>JSON-RPC 2.0 over stdio to kiro-cli acp, warm or cold process.</span></li><li data-step="8" data-from="agent" data-to="llm"><span class="n">8</span><span>kiro-cli acp → Kiro service (LLM) (inference)</span></li><li data-step="9" data-from="agent" data-to="acp"><span class="n">9</span><span>kiro-cli acp → ACP client (request_permission)</span></li><li data-step="10" data-from="acp" data-to="gate"><span class="n">10</span><span>Deny rules, sensitive paths and the POLICY ∩ PROFILE ceiling; decisions are written to the hash-chained security event log.</span></li><li data-step="11" data-from="agent" data-to="mcpd"><span class="n">11</span><span>Built-in tools run in the OS sandbox; MCP tools go through the pooled MCP gateway daemon.</span></li><li data-step="12" data-from="session" data-to="session"><span class="n">12</span><span>SessionManager → SessionManager (append JSONL, consolidate memory (async))</span></li></ol></section></div>
+<div class="tab" id="tab-cost"><section class="card"><h2>Cost estimate <small>us-east-1 · price list as of 2026-11-25 · from stated usage</small></h2>
+<div class="tiles"><div class="tile"><b>$0.00</b><span>per month</span></div><div class="tile"><b>$0.00</b><span>per year</span></div>
+<div class="tile"><b>0/10</b><span>components priced</span></div><div class="tile"><b>0</b><span>not priced (see below)</span></div></div>
+<p class="muted">Public on-demand AWS list prices from the AWS Price List. Excludes free tier, taxes, support plans, Savings Plans/Reserved Instances/Spot and enterprise discounts, and data transfer unless a node sets egressGbPerMonth. Monthly = 730 hours. Not a quote: confirm with the AWS Pricing Calculator.</p>
+
+<label class="tog"><input type="checkbox" id="costOverlay"> Show monthly cost on the diagram</label></section>
+<section class="card"><h2>By category</h2><div class="bars"></div></section>
+<section class="card"><h2>By component <small>click a row to highlight it on the diagram</small></h2><div class="scroll"><table class="tbl" id="costTable"><thead><tr><th>Component</th><th>Service</th><th>Status</th><th class="r">$ / month</th><th>Line items</th></tr></thead><tbody></tbody></table></div>
+</section>
+<section class="card"><h2>Assumptions <small>0 defaulted — replace them with your own numbers in each node's <code>usage</code></small></h2><div class="scroll"><table class="tbl"><thead><tr><th>Component</th><th>Assumption</th><th>Value</th><th>Source</th></tr></thead><tbody></tbody></table></div></section>
+<section class="card"><h2>Sensitivity &amp; what-if</h2><div class="tiles"><div class="tile"><b>$0.00</b><span>at 1× traffic</span></div><div class="tile"><b>$0.00</b><span>at 3× traffic</span></div><div class="tile"><b>$0.00</b><span>at 10× traffic</span></div></div>
+<p class="muted">No what-if options apply to these services.</p></section>
+<section class="card"><h2>Price list provenance</h2><p class="muted">Retrieved 2026-10-01T18:40:39.861Z from the public AWS Price List bulk API. Per-service publication dates:</p><p class="muted"></p><p class="muted">Only public on-demand rates are used. This is not a quote — confirm in the <a href="https://calculator.aws/" target="_blank" rel="noopener">AWS Pricing Calculator</a>.</p></section></div>
+
+</main>
+<footer>Generated by archify-aws · AWS Architecture Icons © Amazon Web Services, Inc. or its affiliates · Cost is an indicative estimate and the review is advisory</footer>
+<script type="application/json" id="drawio-data">"\u003cmxfile host=\"archify-aws\" agent=\"archify-aws\" version=\"1\">\n  \u003cdiagram name=\"Kiro Crew — one message, end to end\" id=\"LTWL20227AYv5SmfNVLF\">\n    \u003cmxGraphModel dx=\"1980\" dy=\"1500\" grid=\"1\" gridSize=\"10\" guides=\"1\" tooltips=\"1\" connect=\"1\" arrows=\"1\" fold=\"1\" page=\"1\" pageScale=\"1\" pageWidth=\"1980\" pageHeight=\"1500\" math=\"0\" shadow=\"0\">\n      \u003croot>\n        \u003cmxCell id=\"0\"/>\n        \u003cmxCell id=\"1\" parent=\"0\"/>\n\u003cmxCell id=\"title\" value=\"Kiro Crew — one message, end to end\" style=\"text;html=1;align=left;verticalAlign=top;fontSize=20;fontStyle=1;fontColor=#000000;whiteSpace=wrap;\" vertex=\"1\" parent=\"1\">\u003cmxGeometry x=\"40\" y=\"24\" width=\"1900\" height=\"30\" as=\"geometry\"/>\u003c/mxCell>\n\u003cmxCell id=\"subtitle\" value=\"How a message is hooked, routed to a session, enriched, sent over ACP, gated at every tool call and streamed back. Source: kirodotdev/KiroCrew docs/architecture/overview.md\" style=\"text;html=1;align=left;verticalAlign=top;fontSize=12;fontColor=#545B64;whiteSpace=wrap;\" vertex=\"1\" parent=\"1\">\u003cmxGeometry x=\"40\" y=\"56\" width=\"1900\" height=\"24\" as=\"geometry\"/>\u003c/mxCell>\n\u003cmxCell id=\"g-0\" value=\"Kiro Crew gateway\" style=\"fillColor=none;verticalAlign=top;fontStyle=0;whiteSpace=wrap;html=1;container=1;pointerEvents=0;collapsible=0;recursiveResize=0;strokeColor=#5A6C86;fontColor=#5A6C86;\" vertex=\"1\" parent=\"1\">\u003cmxGeometry x=\"428\" y=\"116\" width=\"934\" height=\"1344\" as=\"geometry\"/>\u003c/mxCell>\n\u003cmxCell id=\"g-1\" value=\"ACP harness\" style=\"fillColor=none;verticalAlign=top;fontStyle=0;whiteSpace=wrap;html=1;container=1;pointerEvents=0;collapsible=0;recursiveResize=0;strokeColor=#5A6C86;fontColor=#5A6C86;\" vertex=\"1\" parent=\"1\">\u003cmxGeometry x=\"1378\" y=\"116\" width=\"174\" height=\"1344\" as=\"geometry\"/>\u003c/mxCell>\n\u003cmxCell id=\"f-0\" value=\"loop [each tool call]\" style=\"shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;fontStyle=1;fontSize=11;width=142;height=20;\" vertex=\"1\" parent=\"1\">\u003cmxGeometry x=\"993\" y=\"896\" width=\"754\" height=\"342\" as=\"geometry\"/>\u003c/mxCell>\n\u003cmxCell id=\"life-user\" value=\"\" style=\"endArrow=none;dashed=1;html=1;strokeColor=#545B64;dashPattern=3 4;\" edge=\"1\" parent=\"1\">\u003cmxGeometry relative=\"1\" as=\"geometry\">\u003cmxPoint x=\"135\" y=\"276\" as=\"sourcePoint\"/>\u003cmxPoint x=\"135\" y=\"1450\" as=\"targetPoint\"/>\u003c/mxGeometry>\u003c/mxCell>\n\u003cmxCell id=\"life-surface\" value=\"\" style=\"endArrow=none;dashed=1;html=1;strokeColor=#545B64;dashPattern=3 4;\" edge=\"1\" parent=\"1\">\u003cmxGeometry relative=\"1\" as=\"geometry\">\u003cmxPoint x=\"325\" y=\"276\" as=\"sourcePoint\"/>\u003cmxPoint x=\"325\" y=\"1450\" as=\"targetPoint\"/>\u003c/mxGeometry>\u003c/mxCell>\n\u003cmxCell id=\"life-hooks\" value=\"\" style=\"endArrow=none;dashed=1;html=1;strokeColor=#545B64;dashPattern=3 4;\" edge=\"1\" parent=\"1\">\u003cmxGeometry relative=\"1\" as=\"geometry\">\u003cmxPoint x=\"515\" y=\"276\" as=\"sourcePoint\"/>\u003cmxPoint x=\"515\" y=\"1450\" as=\"targetPoint\"/>\u003c/mxGeometry>\u003c/mxCell>\n\u003cmxCell id=\"life-session\" value=\"\" style=\"endArrow=none;dashed=1;html=1;strokeColor=#545B64;dashPattern=3 4;\" edge=\"1\" parent=\"1\">\u003cmxGeometry relative=\"1\" as=\"geometry\">\u003cmxPoint x=\"705\" y=\"276\" as=\"sourcePoint\"/>\u003cmxPoint x=\"705\" y=\"1450\" as=\"targetPoint\"/>\u003c/mxGeometry>\u003c/mxCell>\n\u003cmxCell id=\"life-context\" value=\"\" style=\"endArrow=none;dashed=1;html=1;strokeColor=#545B64;dashPattern=3 4;\" edge=\"1\" parent=\"1\">\u003cmxGeometry relative=\"1\" as=\"geometry\">\u003cmxPoint x=\"895\" y=\"276\" as=\"sourcePoint\"/>\u003cmxPoint x=\"895\" y=\"1450\" as=\"targetPoint\"/>\u003c/mxGeometry>\u003c/mxCell>\n\u003cmxCell id=\"life-gate\" value=\"\" style=\"endArrow=none;dashed=1;html=1;strokeColor=#545B64;dashPattern=3 4;\" edge=\"1\" parent=\"1\">\u003cmxGeometry relative=\"1\" as=\"geometry\">\u003cmxPoint x=\"1085\" y=\"276\" as=\"sourcePoint\"/>\u003cmxPoint x=\"1085\" y=\"1450\" as=\"targetPoint\"/>\u003c/mxGeometry>\u003c/mxCell>\n\u003cmxCell id=\"life-acp\" value=\"\" style=\"endArrow=none;dashed=1;html=1;strokeColor=#545B64;dashPattern=3 4;\" edge=\"1\" parent=\"1\">\u003cmxGeometry relative=\"1\" as=\"geometry\">\u003cmxPoint x=\"1275\" y=\"276\" as=\"sourcePoint\"/>\u003cmxPoint x=\"1275\" y=\"1450\" as=\"targetPoint\"/>\u003c/mxGeometry>\u003c/mxCell>\n\u003cmxCell id=\"life-agent\" value=\"\" style=\"endArrow=none;dashed=1;html=1;strokeColor=#545B64;dashPattern=3 4;\" edge=\"1\" parent=\"1\">\u003cmxGeometry relative=\"1\" as=\"geometry\">\u003cmxPoint x=\"1465\" y=\"276\" as=\"sourcePoint\"/>\u003cmxPoint x=\"1465\" y=\"1450\" as=\"targetPoint\"/>\u003c/mxGeometry>\u003c/mxCell>\n\u003cmxCell id=\"life-mcpd\" value=\"\" style=\"endArrow=none;dashed=1;html=1;strokeColor=#545B64;dashPattern=3 4;\" edge=\"1\" parent=\"1\">\u003cmxGeometry relative=\"1\" as=\"geometry\">\u003cmxPoint x=\"1655\" y=\"276\" as=\"sourcePoint\"/>\u003cmxPoint x=\"1655\" y=\"1450\" as=\"targetPoint\"/>\u003c/mxGeometry>\u003c/mxCell>\n\u003cmxCell id=\"life-llm\" value=\"\" style=\"endArrow=none;dashed=1;html=1;strokeColor=#545B64;dashPattern=3 4;\" edge=\"1\" parent=\"1\">\u003cmxGeometry relative=\"1\" as=\"geometry\">\u003cmxPoint x=\"1845\" y=\"276\" as=\"sourcePoint\"/>\u003cmxPoint x=\"1845\" y=\"1450\" as=\"targetPoint\"/>\u003c/mxGeometry>\u003c/mxCell>\n\u003cmxCell id=\"m-0\" value=\"message\" style=\"html=1;rounded=0;strokeColor=#232F3E;strokeWidth=2;labelBackgroundColor=#ffffff;fontSize=11;fontColor=#232F3E;endArrow=open;endFill=0;endSize=8;verticalAlign=bottom;\" edge=\"1\" parent=\"1\">\u003cmxGeometry relative=\"1\" as=\"geometry\">\u003cmxPoint x=\"135\" y=\"339\" as=\"sourcePoint\"/>\u003cmxPoint x=\"325\" y=\"339\" as=\"targetPoint\"/>\u003c/mxGeometry>\u003c/mxCell>\n\u003cobject label=\"1\" tooltip=\"1. A person writes in the dashboard, a channel thread or the CLI.\" id=\"b-0\">\u003cmxCell style=\"ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000000;strokeColor=#ffffff;fontColor=#ffffff;fontStyle=1;fontSize=12;\" vertex=\"1\" parent=\"1\">\u003cmxGeometry x=\"124\" y=\"328\" width=\"22\" height=\"22\" as=\"geometry\"/>\u003c/mxCell>\u003c/object>\n\u003cmxCell id=\"m-1\" value=\"HTTP / WebSocket\" style=\"html=1;rounded=0;strokeColor=#232F3E;strokeWidth=2;labelBackgroundColor=#ffffff;fontSize=11;fontColor=#232F3E;endArrow=open;endFill=0;endSize=8;verticalAlign=bottom;\" edge=\"1\" parent=\"1\">\u003cmxGeometry relative=\"1\" as=\"geometry\">\u003cmxPoint x=\"325\" y=\"393\" as=\"sourcePoint\"/>\u003cmxPoint x=\"515\" y=\"393\" as=\"targetPoint\"/>\u003c/mxGeometry>\u003c/mxCell>\n\u003cobject label=\"2\" tooltip=\"2. Channel senders must pass the owner lock first.\" id=\"b-1\">\u003cmxCell style=\"ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000000;strokeColor=#ffffff;fontColor=#ffffff;fontStyle=1;fontSize=12;\" vertex=\"1\" parent=\"1\">\u003cmxGeometry x=\"314\" y=\"382\" width=\"22\" height=\"22\" as=\"geometry\"/>\u003c/mxCell>\u003c/object>\n\u003cmxCell id=\"m-2\" value=\"auto-reply, transform, deny\" style=\"html=1;rounded=0;strokeColor=#232F3E;strokeWidth=2;labelBackgroundColor=#ffffff;fontSize=11;fontColor=#232F3E;endArrow=open;endFill=0;endSize=8;edgeStyle=none;\" edge=\"1\" parent=\"1\">\u003cmxGeometry relative=\"1\" as=\"geometry\">\u003cmxPoint x=\"515\" y=\"442\" as=\"sourcePoint\"/>\u003cmxPoint x=\"515\" y=\"466\" as=\"targetPoint\"/>\u003cArray as=\"points\">\u003cmxPoint x=\"555\" y=\"442\"/>\u003cmxPoint x=\"555\" y=\"466\"/>\u003c/Array>\u003c/mxGeometry>\u003c/mxCell>\n\u003cobject label=\"3\" tooltip=\"3. HookManager → HookManager (auto-reply, transform, deny)\" id=\"b-2\">\u003cmxCell style=\"ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000000;strokeColor=#ffffff;fontColor=#ffffff;fontStyle=1;fontSize=12;\" vertex=\"1\" parent=\"1\">\u003cmxGeometry x=\"526\" y=\"431\" width=\"22\" height=\"22\" as=\"geometry\"/>\u003c/mxCell>\u003c/object>\n\u003cmxCell id=\"m-3\" value=\"get_or_create(session_key)\" style=\"html=1;rounded=0;strokeColor=#232F3E;strokeWidth=2;labelBackgroundColor=#ffffff;fontSize=11;fontColor=#232F3E;endArrow=open;endFill=0;endSize=8;verticalAlign=bottom;\" edge=\"1\" parent=\"1\">\u003cmxGeometry relative=\"1\" as=\"geometry\">\u003cmxPoint x=\"515\" y=\"515\" as=\"sourcePoint\"/>\u003cmxPoint x=\"705\" y=\"515\" as=\"targetPoint\"/>\u003c/mxGeometry>\u003c/mxCell>\n\u003cobject label=\"4\" tooltip=\"4. The key encodes the origin: channel thread, dashboard slot, cron job, subagent or task step.\" id=\"b-3\">\u003cmxCell style=\"ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000000;strokeColor=#ffffff;fontColor=#ffffff;fontStyle=1;fontSize=12;\" vertex=\"1\" parent=\"1\">\u003cmxGeometry x=\"504\" y=\"504\" width=\"22\" height=\"22\" as=\"geometry\"/>\u003c/mxCell>\u003c/object>\n\u003cmxCell id=\"m-4\" value=\"assemble\" style=\"html=1;rounded=0;strokeColor=#232F3E;strokeWidth=2;labelBackgroundColor=#ffffff;fontSize=11;fontColor=#232F3E;endArrow=open;endFill=0;endSize=8;verticalAlign=bottom;\" edge=\"1\" parent=\"1\">\u003cmxGeometry relative=\"1\" as=\"geometry\">\u003cmxPoint x=\"705\" y=\"569\" as=\"sourcePoint\"/>\u003cmxPoint x=\"895\" y=\"569\" as=\"targetPoint\"/>\u003c/mxGeometry>\u003c/mxCell>\n\u003cobject label=\"5\" tooltip=\"5. SessionManager → Context assembly (assemble)\" id=\"b-4\">\u003cmxCell style=\"ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000000;strokeColor=#ffffff;fontColor=#ffffff;fontStyle=1;fontSize=12;\" vertex=\"1\" parent=\"1\">\u003cmxGeometry x=\"694\" y=\"558\" width=\"22\" height=\"22\" as=\"geometry\"/>\u003c/mxCell>\u003c/object>\n\u003cmxCell id=\"m-5\" value=\"memory, skills, lessons, history\" style=\"html=1;rounded=0;strokeColor=#232F3E;strokeWidth=2;labelBackgroundColor=#ffffff;fontSize=11;fontColor=#232F3E;endArrow=open;endFill=0;endSize=8;dashed=1;verticalAlign=bottom;\" edge=\"1\" parent=\"1\">\u003cmxGeometry relative=\"1\" as=\"geometry\">\u003cmxPoint x=\"895\" y=\"630\" as=\"sourcePoint\"/>\u003cmxPoint x=\"705\" y=\"630\" as=\"targetPoint\"/>\u003c/mxGeometry>\u003c/mxCell>\n\u003cmxCell id=\"m-6\" value=\"prompt + context\" style=\"html=1;rounded=0;strokeColor=#232F3E;strokeWidth=2;labelBackgroundColor=#ffffff;fontSize=11;fontColor=#232F3E;endArrow=open;endFill=0;endSize=8;verticalAlign=bottom;\" edge=\"1\" parent=\"1\">\u003cmxGeometry relative=\"1\" as=\"geometry\">\u003cmxPoint x=\"705\" y=\"691\" as=\"sourcePoint\"/>\u003cmxPoint x=\"1275\" y=\"691\" as=\"targetPoint\"/>\u003c/mxGeometry>\u003c/mxCell>\n\u003cobject label=\"6\" tooltip=\"6. SessionManager → ACP client (prompt + context)\" id=\"b-6\">\u003cmxCell style=\"ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000000;strokeColor=#ffffff;fontColor=#ffffff;fontStyle=1;fontSize=12;\" vertex=\"1\" parent=\"1\">\u003cmxGeometry x=\"694\" y=\"680\" width=\"22\" height=\"22\" as=\"geometry\"/>\u003c/mxCell>\u003c/object>\n\u003cmxCell id=\"m-7\" value=\"session/prompt (ACP stdio)\" style=\"html=1;rounded=0;strokeColor=#232F3E;strokeWidth=2;labelBackgroundColor=#ffffff;fontSize=11;fontColor=#232F3E;endArrow=open;endFill=0;endSize=8;verticalAlign=bottom;\" edge=\"1\" parent=\"1\">\u003cmxGeometry relative=\"1\" as=\"geometry\">\u003cmxPoint x=\"1275\" y=\"752\" as=\"sourcePoint\"/>\u003cmxPoint x=\"1465\" y=\"752\" as=\"targetPoint\"/>\u003c/mxGeometry>\u003c/mxCell>\n\u003cobject label=\"7\" tooltip=\"7. JSON-RPC 2.0 over stdio to kiro-cli acp, warm or cold process.\" id=\"b-7\">\u003cmxCell style=\"ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000000;strokeColor=#ffffff;fontColor=#ffffff;fontStyle=1;fontSize=12;\" vertex=\"1\" parent=\"1\">\u003cmxGeometry x=\"1264\" y=\"741\" width=\"22\" height=\"22\" as=\"geometry\"/>\u003c/mxCell>\u003c/object>\n\u003cmxCell id=\"m-8\" value=\"inference\" style=\"html=1;rounded=0;strokeColor=#232F3E;strokeWidth=2;labelBackgroundColor=#ffffff;fontSize=11;fontColor=#232F3E;endArrow=open;endFill=0;endSize=8;verticalAlign=bottom;\" edge=\"1\" parent=\"1\">\u003cmxGeometry relative=\"1\" as=\"geometry\">\u003cmxPoint x=\"1465\" y=\"813\" as=\"sourcePoint\"/>\u003cmxPoint x=\"1845\" y=\"813\" as=\"targetPoint\"/>\u003c/mxGeometry>\u003c/mxCell>\n\u003cobject label=\"8\" tooltip=\"8. kiro-cli acp → Kiro service (LLM) (inference)\" id=\"b-8\">\u003cmxCell style=\"ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000000;strokeColor=#ffffff;fontColor=#ffffff;fontStyle=1;fontSize=12;\" vertex=\"1\" parent=\"1\">\u003cmxGeometry x=\"1454\" y=\"802\" width=\"22\" height=\"22\" as=\"geometry\"/>\u003c/mxCell>\u003c/object>\n\u003cmxCell id=\"m-9\" value=\"tokens + tool calls\" style=\"html=1;rounded=0;strokeColor=#232F3E;strokeWidth=2;labelBackgroundColor=#ffffff;fontSize=11;fontColor=#232F3E;endArrow=open;endFill=0;endSize=8;dashed=1;verticalAlign=bottom;\" edge=\"1\" parent=\"1\">\u003cmxGeometry relative=\"1\" as=\"geometry\">\u003cmxPoint x=\"1845\" y=\"867\" as=\"sourcePoint\"/>\u003cmxPoint x=\"1465\" y=\"867\" as=\"targetPoint\"/>\u003c/mxGeometry>\u003c/mxCell>\n\u003cmxCell id=\"m-10\" value=\"request_permission\" style=\"html=1;rounded=0;strokeColor=#232F3E;strokeWidth=2;labelBackgroundColor=#ffffff;fontSize=11;fontColor=#232F3E;endArrow=open;endFill=0;endSize=8;verticalAlign=bottom;\" edge=\"1\" parent=\"1\">\u003cmxGeometry relative=\"1\" as=\"geometry\">\u003cmxPoint x=\"1465\" y=\"943\" as=\"sourcePoint\"/>\u003cmxPoint x=\"1275\" y=\"943\" as=\"targetPoint\"/>\u003c/mxGeometry>\u003c/mxCell>\n\u003cobject label=\"9\" tooltip=\"9. kiro-cli acp → ACP client (request_permission)\" id=\"b-10\">\u003cmxCell style=\"ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000000;strokeColor=#ffffff;fontColor=#ffffff;fontStyle=1;fontSize=12;\" vertex=\"1\" parent=\"1\">\u003cmxGeometry x=\"1454\" y=\"932\" width=\"22\" height=\"22\" as=\"geometry\"/>\u003c/mxCell>\u003c/object>\n\u003cmxCell id=\"m-11\" value=\"PreToolUse check\" style=\"html=1;rounded=0;strokeColor=#232F3E;strokeWidth=2;labelBackgroundColor=#ffffff;fontSize=11;fontColor=#232F3E;endArrow=open;endFill=0;endSize=8;verticalAlign=bottom;\" edge=\"1\" parent=\"1\">\u003cmxGeometry relative=\"1\" as=\"geometry\">\u003cmxPoint x=\"1275\" y=\"997\" as=\"sourcePoint\"/>\u003cmxPoint x=\"1085\" y=\"997\" as=\"targetPoint\"/>\u003c/mxGeometry>\u003c/mxCell>\n\u003cobject label=\"10\" tooltip=\"10. Deny rules, sensitive paths and the POLICY ∩ PROFILE ceiling; decisions are written to the hash-chained security event log.\" id=\"b-11\">\u003cmxCell style=\"ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000000;strokeColor=#ffffff;fontColor=#ffffff;fontStyle=1;fontSize=12;\" vertex=\"1\" parent=\"1\">\u003cmxGeometry x=\"1264\" y=\"986\" width=\"22\" height=\"22\" as=\"geometry\"/>\u003c/mxCell>\u003c/object>\n\u003cmxCell id=\"m-12\" value=\"allow / deny\" style=\"html=1;rounded=0;strokeColor=#232F3E;strokeWidth=2;labelBackgroundColor=#ffffff;fontSize=11;fontColor=#232F3E;endArrow=open;endFill=0;endSize=8;dashed=1;verticalAlign=bottom;\" edge=\"1\" parent=\"1\">\u003cmxGeometry relative=\"1\" as=\"geometry\">\u003cmxPoint x=\"1085\" y=\"1051\" as=\"sourcePoint\"/>\u003cmxPoint x=\"1275\" y=\"1051\" as=\"targetPoint\"/>\u003c/mxGeometry>\u003c/mxCell>\n\u003cmxCell id=\"m-13\" value=\"allow\" style=\"html=1;rounded=0;strokeColor=#232F3E;strokeWidth=2;labelBackgroundColor=#ffffff;fontSize=11;fontColor=#232F3E;endArrow=open;endFill=0;endSize=8;dashed=1;verticalAlign=bottom;\" edge=\"1\" parent=\"1\">\u003cmxGeometry relative=\"1\" as=\"geometry\">\u003cmxPoint x=\"1275\" y=\"1105\" as=\"sourcePoint\"/>\u003cmxPoint x=\"1465\" y=\"1105\" as=\"targetPoint\"/>\u003c/mxGeometry>\u003c/mxCell>\n\u003cmxCell id=\"m-14\" value=\"MCP tool call\" style=\"html=1;rounded=0;strokeColor=#232F3E;strokeWidth=2;labelBackgroundColor=#ffffff;fontSize=11;fontColor=#232F3E;endArrow=open;endFill=0;endSize=8;verticalAlign=bottom;\" edge=\"1\" parent=\"1\">\u003cmxGeometry relative=\"1\" as=\"geometry\">\u003cmxPoint x=\"1465\" y=\"1159\" as=\"sourcePoint\"/>\u003cmxPoint x=\"1655\" y=\"1159\" as=\"targetPoint\"/>\u003c/mxGeometry>\u003c/mxCell>\n\u003cobject label=\"11\" tooltip=\"11. Built-in tools run in the OS sandbox; MCP tools go through the pooled MCP gateway daemon.\" id=\"b-14\">\u003cmxCell style=\"ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000000;strokeColor=#ffffff;fontColor=#ffffff;fontStyle=1;fontSize=12;\" vertex=\"1\" parent=\"1\">\u003cmxGeometry x=\"1454\" y=\"1148\" width=\"22\" height=\"22\" as=\"geometry\"/>\u003c/mxCell>\u003c/object>\n\u003cmxCell id=\"m-15\" value=\"result\" style=\"html=1;rounded=0;strokeColor=#232F3E;strokeWidth=2;labelBackgroundColor=#ffffff;fontSize=11;fontColor=#232F3E;endArrow=open;endFill=0;endSize=8;dashed=1;verticalAlign=bottom;\" edge=\"1\" parent=\"1\">\u003cmxGeometry relative=\"1\" as=\"geometry\">\u003cmxPoint x=\"1655\" y=\"1213\" as=\"sourcePoint\"/>\u003cmxPoint x=\"1465\" y=\"1213\" as=\"targetPoint\"/>\u003c/mxGeometry>\u003c/mxCell>\n\u003cmxCell id=\"m-16\" value=\"stream events\" style=\"html=1;rounded=0;strokeColor=#232F3E;strokeWidth=2;labelBackgroundColor=#ffffff;fontSize=11;fontColor=#232F3E;endArrow=open;endFill=0;endSize=8;dashed=1;verticalAlign=bottom;\" edge=\"1\" parent=\"1\">\u003cmxGeometry relative=\"1\" as=\"geometry\">\u003cmxPoint x=\"1465\" y=\"1267\" as=\"sourcePoint\"/>\u003cmxPoint x=\"1275\" y=\"1267\" as=\"targetPoint\"/>\u003c/mxGeometry>\u003c/mxCell>\n\u003cmxCell id=\"m-17\" value=\"stream to surface\" style=\"html=1;rounded=0;strokeColor=#232F3E;strokeWidth=2;labelBackgroundColor=#ffffff;fontSize=11;fontColor=#232F3E;endArrow=open;endFill=0;endSize=8;dashed=1;verticalAlign=bottom;\" edge=\"1\" parent=\"1\">\u003cmxGeometry relative=\"1\" as=\"geometry\">\u003cmxPoint x=\"1275\" y=\"1321\" as=\"sourcePoint\"/>\u003cmxPoint x=\"325\" y=\"1321\" as=\"targetPoint\"/>\u003c/mxGeometry>\u003c/mxCell>\n\u003cmxCell id=\"m-18\" value=\"append JSONL, consolidate memory (async)\" style=\"html=1;rounded=0;strokeColor=#232F3E;strokeWidth=2;labelBackgroundColor=#ffffff;fontSize=11;fontColor=#232F3E;endArrow=open;endFill=0;endSize=8;edgeStyle=none;\" edge=\"1\" parent=\"1\">\u003cmxGeometry relative=\"1\" as=\"geometry\">\u003cmxPoint x=\"705\" y=\"1377\" as=\"sourcePoint\"/>\u003cmxPoint x=\"705\" y=\"1401\" as=\"targetPoint\"/>\u003cArray as=\"points\">\u003cmxPoint x=\"745\" y=\"1377\"/>\u003cmxPoint x=\"745\" y=\"1401\"/>\u003c/Array>\u003c/mxGeometry>\u003c/mxCell>\n\u003cobject label=\"12\" tooltip=\"12. SessionManager → SessionManager (append JSONL, consolidate memory (async))\" id=\"b-18\">\u003cmxCell style=\"ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000000;strokeColor=#ffffff;fontColor=#ffffff;fontStyle=1;fontSize=12;\" vertex=\"1\" parent=\"1\">\u003cmxGeometry x=\"716\" y=\"1366\" width=\"22\" height=\"22\" as=\"geometry\"/>\u003c/mxCell>\u003c/object>\n\u003cmxCell id=\"n-user\" value=\"You\" style=\"sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#232F3D;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.users;\" vertex=\"1\" parent=\"1\">\u003cmxGeometry x=\"103\" y=\"164\" width=\"64\" height=\"64\" as=\"geometry\"/>\u003c/mxCell>\n\u003cmxCell id=\"n-surface\" value=\"Surface&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#545B64&quot;&gt;dashboard, channel, CLI&lt;/font&gt;\" style=\"sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#232F3D;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.generic_application;\" vertex=\"1\" parent=\"1\">\u003cmxGeometry x=\"293\" y=\"164\" width=\"64\" height=\"64\" as=\"geometry\"/>\u003c/mxCell>\n\u003cmxCell id=\"n-hooks\" value=\"HookManager\" style=\"sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#232F3D;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.gear;\" vertex=\"1\" parent=\"1\">\u003cmxGeometry x=\"483\" y=\"164\" width=\"64\" height=\"64\" as=\"geometry\"/>\u003c/mxCell>\n\u003cmxCell id=\"n-session\" value=\"SessionManager\" style=\"sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#232F3D;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.traditional_server;\" vertex=\"1\" parent=\"1\">\u003cmxGeometry x=\"673\" y=\"164\" width=\"64\" height=\"64\" as=\"geometry\"/>\u003c/mxCell>\n\u003cmxCell id=\"n-context\" value=\"Context assembly\" style=\"sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#232F3D;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.document;\" vertex=\"1\" parent=\"1\">\u003cmxGeometry x=\"863\" y=\"164\" width=\"64\" height=\"64\" as=\"geometry\"/>\u003c/mxCell>\n\u003cmxCell id=\"n-gate\" value=\"PreToolUse gate\" style=\"sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#232F3D;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.shield2;\" vertex=\"1\" parent=\"1\">\u003cmxGeometry x=\"1053\" y=\"164\" width=\"64\" height=\"64\" as=\"geometry\"/>\u003c/mxCell>\n\u003cmxCell id=\"n-acp\" value=\"ACP client\" style=\"sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#232F3D;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.external_sdk;\" vertex=\"1\" parent=\"1\">\u003cmxGeometry x=\"1243\" y=\"164\" width=\"64\" height=\"64\" as=\"geometry\"/>\u003c/mxCell>\n\u003cmxCell id=\"n-agent\" value=\"kiro-cli acp&lt;br&gt;&lt;font style=&quot;font-size:10px&quot; color=&quot;#545B64&quot;&gt;KAS v3 engine&lt;/font&gt;\" style=\"sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#232F3D;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.generic_application;\" vertex=\"1\" parent=\"1\">\u003cmxGeometry x=\"1433\" y=\"164\" width=\"64\" height=\"64\" as=\"geometry\"/>\u003c/mxCell>\n\u003cmxCell id=\"n-mcpd\" value=\"MCP gateway daemon\" style=\"sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#232F3D;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.external_toolkit;\" vertex=\"1\" parent=\"1\">\u003cmxGeometry x=\"1623\" y=\"164\" width=\"64\" height=\"64\" as=\"geometry\"/>\u003c/mxCell>\n\u003cmxCell id=\"n-llm\" value=\"Kiro service (LLM)\" style=\"sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#232F3D;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.internet;\" vertex=\"1\" parent=\"1\">\u003cmxGeometry x=\"1813\" y=\"164\" width=\"64\" height=\"64\" as=\"geometry\"/>\u003c/mxCell>\n      \u003c/root>\n    \u003c/mxGraphModel>\n  \u003c/diagram>\n\u003c/mxfile>\n"</script>
+<script>window.__archifyCost={};</script>
+<script>
+(()=>{
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const svg=$("svg.aws"),body=document.body,stage=$("#stage");
+if(!svg)return;
+const nodes=$$("svg.aws .node"),edges=$$("svg.aws .edge"),groups=$$("svg.aws .group");
+const info=new Map();
+nodes.forEach(n=>info.set(n.dataset.id,{id:n.dataset.id,label:n.dataset.label,service:n.dataset.service,category:n.dataset.category,el:n,kind:"node"}));
+groups.forEach(g=>{if(g.dataset.id&&!info.has(g.dataset.id))info.set(g.dataset.id,{id:g.dataset.id,label:g.dataset.label,service:"Group",category:"",el:g,kind:"group"})});
+const E=edges.map((el,i)=>({i,el,from:el.dataset.from,to:el.dataset.to,label:el.dataset.label||"",step:el.dataset.step||""}));
+const out=new Map(),inn=new Map();
+for(const e of E){(out.get(e.from)||out.set(e.from,[]).get(e.from)).push(e);(inn.get(e.to)||inn.set(e.to,[]).get(e.to)).push(e)}
+const name=id=>info.get(id)?.label||id;
+const state={focus:null,reach:null,route:null,theme:body.classList.contains("dark")?"dark":"light"};
+
+function reach(id,dir){ // authored reachability over directed relationships
+  const seenN=new Set([id]),seenE=new Set(),q=[id];
+  const walk=(adj,next)=>{const s=new Set([id]),qq=[id];while(qq.length){const c=qq.shift();for(const e of adj.get(c)||[]){seenE.add(e);const n=next(e);if(!s.has(n)){s.add(n);seenN.add(n);qq.push(n)}}}};
+  if(dir==="downstream"||dir==="both")walk(out,e=>e.to);
+  if(dir==="upstream"||dir==="both")walk(inn,e=>e.from);
+  return{nodes:seenN,edges:seenE};
+}
+function route(a,b){ // shortest directed path (fewest hops), resolved only from authored edges
+  if(!info.has(a)||!info.has(b))return{error:"unknown endpoint"};
+  const prev=new Map([[a,null]]),q=[a];
+  while(q.length){const c=q.shift();if(c===b)break;for(const e of out.get(c)||[])if(!prev.has(e.to)){prev.set(e.to,e);q.push(e.to)}}
+  if(!prev.has(b))return{error:"no directed route from "+name(a)+" to "+name(b)};
+  const path=[];let c=b;while(prev.get(c)){path.unshift(prev.get(c));c=prev.get(c).from}
+  return{path,nodes:new Set([a,...path.map(e=>e.to)]),edges:new Set(path)};
+}
+function clear(){nodes.concat(edges).forEach(e=>e.classList.remove("dim","hl","route","sel"))}
+function paint(nodeSet,edgeSet,cls){
+  nodes.forEach(n=>n.classList.toggle("dim",!nodeSet.has(n.dataset.id)));
+  edges.forEach((el,i)=>{const on=edgeSet.has(E[i]);el.classList.toggle("dim",!on);el.classList.toggle(cls,on)});
+}
+const bar=$("#bar");
+function say(html){bar.innerHTML=html;bar.classList.toggle("on",!!html)}
+function setHash(){
+  let h="";
+  if(state.route)h="#route="+state.route.join("~");
+  else if(state.focus)h="#focus="+state.focus+(state.reach?"&reach="+state.reach:"");
+  history.replaceState(null,"",location.pathname+location.search+h);
+}
+function render(){
+  clear();closePassport(false);
+  if(state.route){
+    const r=route(state.route[0],state.route[1]);
+    if(r.error){say("<span>"+r.error+"</span><button id=cl>Clear</button>");$("#cl").onclick=reset;return}
+    paint(r.nodes,r.edges,"route");
+    say("<span><b>Route</b> "+[state.route[0],...r.path.map(e=>e.to)].map(name).join(" → ")+" · "+r.path.length+" hop"+(r.path.length>1?"s":"")+" (authored relationships only)</span><button id=cl>Clear</button>");
+    $("#cl").onclick=reset;return;
+  }
+  if(state.focus&&info.has(state.focus)){
+    const f=info.get(state.focus);f.el.classList.add("sel");
+    if(state.reach){
+      const r=reach(state.focus,state.reach);paint(r.nodes,r.edges,"hl");f.el.classList.remove("dim");f.el.classList.add("sel");
+      say("<span><b>Reach "+state.reach+"</b> of "+name(state.focus)+": "+(r.nodes.size-1)+" node(s), "+r.edges.size+" relationship(s) — authored reachability, not runtime impact</span><button id=cl>Clear</button>");
+      $("#cl").onclick=reset;
+    }else{
+      const keep=new Set([state.focus]),ke=new Set();
+      for(const e of [...(out.get(state.focus)||[]),...(inn.get(state.focus)||[])]){keep.add(e.from);keep.add(e.to);ke.add(e)}
+      paint(keep,ke,"hl");say("");
+    }
+    openPassport(state.focus);
+  }else say("");
+}
+function reset(){state.focus=state.reach=state.route=null;setHash();render()}
+function focusOn(id,reachDir){state.route=null;state.focus=id;state.reach=reachDir||null;setHash();render()}
+
+// Passport
+const passport=document.createElement("div");passport.id="passport";passport.hidden=true;stage.appendChild(passport);
+function closePassport(clearFocus){passport.hidden=true;if(clearFocus){state.focus=state.reach=null;setHash();render()}}
+function openPassport(id){
+  const f=info.get(id);
+  const list=(arr,key)=>arr&&arr.length?"<ul>"+arr.map(e=>"<li><a data-go='"+e[key]+"'>"+(e.step?"<b>"+e.step+"</b> ":"")+name(e[key])+(e.label?" <small>· "+e.label+"</small>":"")+"</a></li>").join("")+"</ul>":"<div class=sub>none authored</div>";
+  passport.innerHTML="<button class=x aria-label=Close>×</button><h3>"+f.label+"</h3><div class=sub>"+f.service+(f.category?" · "+f.category:"")+" · <code>"+f.id+"</code></div>"
+   +"<h4>Upstream (calls this)</h4>"+list(inn.get(id),"from")+"<h4>Downstream (this calls)</h4>"+list(out.get(id),"to")
+   +"<div class=row><button data-r=downstream>Reach ↓</button><button data-r=upstream>Reach ↑</button><button data-r=both>Both</button><button data-rt>Route to…</button><button data-cp>Copy link</button></div>";
+  passport.hidden=false;
+  passport.querySelector(".x").onclick=()=>closePassport(true);
+  passport.querySelectorAll("[data-go]").forEach(a=>a.onclick=()=>focusOn(a.dataset.go,state.reach));
+  passport.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>focusOn(id,b.dataset.r));
+  passport.querySelector("[data-cp]").onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(location.href);say("<span>Link copied</span>");setTimeout(()=>{if(!state.route&&!state.reach)say("")},1200)};
+  passport.querySelector("[data-rt]").onclick=()=>openFinder("Route from "+f.label+" to…",t=>{state.focus=null;state.reach=null;state.route=[id,t.id];setHash();render()});
+}
+nodes.forEach(n=>n.addEventListener("click",ev=>{ev.stopPropagation();focusOn(n.dataset.id,state.reach)}));
+svg.addEventListener("click",e=>{if(e.target===svg||e.target.classList.contains("bg"))reset()});
+let hoverOn=false;
+nodes.forEach(n=>{n.addEventListener("mouseenter",()=>{if(state.focus||state.route)return;hoverOn=true;const id=n.dataset.id,keep=new Set([id]),ke=new Set();for(const e of [...(out.get(id)||[]),...(inn.get(id)||[])]){keep.add(e.from);keep.add(e.to);ke.add(e)}paint(keep,ke,"hl")});
+ n.addEventListener("mouseleave",()=>{if(hoverOn&&!state.focus&&!state.route){clear();hoverOn=false}})});
+// Numbered callouts: hover a number on the diagram to see the same description as the Flow list below.
+const tip=document.createElement("div");tip.id="steptip";tip.hidden=true;document.body.appendChild(tip);
+const stepLi=n=>$(".steps li[data-step='"+n+"']");
+function placeTip(ev){const w=tip.offsetWidth,h=tip.offsetHeight;let x=ev.clientX+14,y=ev.clientY+16;if(x+w>innerWidth-8)x=ev.clientX-w-14;if(y+h>innerHeight-8)y=ev.clientY-h-14;tip.style.left=Math.max(8,x)+"px";tip.style.top=Math.max(8,y)+"px"}
+edges.forEach(el=>{const b=el.querySelector(".badge");if(!b||!el.dataset.tip)return;const n=el.dataset.step;
+  const ti=b.querySelector("title");b.addEventListener("mouseenter",ev=>{if(ti&&ti.parentNode)ti.remove();tip.innerHTML="<b>"+n+"</b>";tip.appendChild(document.createTextNode(el.dataset.tip));tip.hidden=false;placeTip(ev);const li=stepLi(n);if(li)li.classList.add("hot");if(!state.focus&&!state.route){const e=E.find(x=>x.el===el);paint(new Set([e.from,e.to]),new Set([e]),"hl")}});
+  b.addEventListener("mousemove",placeTip);
+  b.addEventListener("mouseleave",()=>{if(ti&&!ti.parentNode)b.prepend(ti);tip.hidden=true;const li=stepLi(n);if(li)li.classList.remove("hot");if(!state.focus&&!state.route)clear()})});
+$$(".steps li").forEach(li=>{li.addEventListener("mouseenter",()=>{if(state.focus||state.route)return;const k=new Set([li.dataset.from,li.dataset.to]);const ke=new Set(E.filter(e=>k.has(e.from)&&k.has(e.to)));paint(k,ke,"hl")});li.addEventListener("mouseleave",()=>{if(!state.focus&&!state.route)clear()});li.addEventListener("click",()=>focusOn(li.dataset.from,"downstream"))});
+$$(".pillar li[data-nodes]").forEach(li=>{const ids=li.dataset.nodes.split(" ").filter(Boolean);if(!ids.length)return;li.addEventListener("mouseenter",()=>{if(state.focus||state.route)return;nodes.forEach(n=>n.classList.toggle("dim",!ids.includes(n.dataset.id)));edges.forEach(e=>e.classList.add("dim"))});li.addEventListener("mouseleave",()=>{if(!state.focus&&!state.route)clear()})});
+
+// Finder (also used to pick a route target)
+const fo=document.createElement("div");fo.className="overlay";fo.innerHTML="<div class=panel><input type=text placeholder='Find a node by label, service or id…' aria-label='Node finder'><ul></ul></div>";body.appendChild(fo);
+const fi=fo.querySelector("input"),fl=fo.querySelector("ul");let fpick=null,fsel=0,fres=[];
+function fRender(){const q=fi.value.trim().toLowerCase();fres=[...info.values()].filter(i=>!q||(i.label+" "+i.id+" "+i.service).toLowerCase().includes(q)).slice(0,30);fsel=Math.min(fsel,Math.max(0,fres.length-1));fl.innerHTML=fres.map((r,i)=>"<li class='"+(i===fsel?"on":"")+"' data-i='"+i+"'><span>"+r.label+"</span><small>"+r.service+" · "+r.id+"</small></li>").join("")||"<li><small>No matches</small></li>";fl.querySelectorAll("li[data-i]").forEach(li=>li.onclick=()=>choose(fres[+li.dataset.i]))}
+function choose(r){if(!r)return;closeOv();const cb=fpick;fpick=null;if(cb)cb(r);else{focusOn(r.id,null);r.el.scrollIntoView({block:"center",inline:"center",behavior:"smooth"})}}
+function openFinder(ph,cb){fpick=cb||null;fi.placeholder=ph||"Find a node by label, service or id…";fi.value="";fsel=0;fo.classList.add("on");fRender();fi.focus()}
+function closeOv(){$$(".overlay").forEach(o=>o.classList.remove("on"))}
+fi.addEventListener("input",()=>{fsel=0;fRender()});
+fi.addEventListener("keydown",e=>{if(e.key==="ArrowDown"){fsel=Math.min(fsel+1,fres.length-1);fRender();e.preventDefault()}else if(e.key==="ArrowUp"){fsel=Math.max(fsel-1,0);fRender();e.preventDefault()}else if(e.key==="Enter")choose(fres[fsel])});
+fo.addEventListener("click",e=>{if(e.target===fo)closeOv()});
+
+// Guide
+const go=document.createElement("div");go.className="overlay";go.innerHTML="<div class=panel><h3 style='margin:0 0 8px'>Diagram guide</h3><table>"
++"<tr><td><kbd>/</kbd> or <kbd>Ctrl/⌘ K</kbd></td><td>Find a node</td></tr><tr><td>Click a node</td><td>Focus it and open its Passport (upstream / downstream facts)</td></tr>"
++"<tr><td>Passport → Reach</td><td>Highlight everything authored downstream, upstream or both</td></tr><tr><td>Passport → Route to…</td><td>Shortest authored directed route to another node</td></tr>"
++"<tr><td><kbd>Esc</kbd></td><td>Clear focus / close panels</td></tr><tr><td><kbd>t</kbd></td><td>Toggle light / dark</td></tr><tr><td><kbd>p</kbd></td><td>Presentation stage</td></tr>"
++"<tr><td><kbd>?</kbd></td><td>This guide</td></tr><tr><td>URL <code>#focus=id&amp;reach=downstream</code></td><td>Deep link to a focus / reach</td></tr><tr><td>URL <code>#route=a~b</code></td><td>Deep link to a route</td></tr></table>"
++"<p style='color:var(--muted);font-size:12px;margin:8px 0 0'>Reach and Route follow only the relationships drawn in this diagram — authored reachability, not runtime causality.</p></div>";body.appendChild(go);
+go.addEventListener("click",e=>{if(e.target===go)closeOv()});
+
+// Theme, presentation
+function setTheme(t){state.theme=t;svg.classList.toggle("theme-dark",t==="dark");svg.classList.toggle("theme-light",t!=="dark");body.classList.toggle("dark",t==="dark")}
+function present(on){body.classList.toggle("present",on===undefined?!body.classList.contains("present"):on)}
+$("#theme")&&($("#theme").onclick=()=>setTheme(state.theme==="dark"?"light":"dark"));
+$("#find")&&($("#find").onclick=()=>openFinder());
+$("#guide")&&($("#guide").onclick=()=>go.classList.add("on"));
+$("#present")&&($("#present").onclick=()=>present());
+
+// Export (client-side; viewer state is stripped from every export)
+function cleanClone(){
+  const c=svg.cloneNode(true);
+  c.querySelectorAll(".dim,.hl,.route,.sel").forEach(e=>e.classList.remove("dim","hl","route","sel"));
+  c.removeAttribute("style");
+  return c;
+}
+function svgString(c){return new XMLSerializer().serializeToString(c)}
+function download(blob,fn){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=fn;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
+const base=(document.title||"architecture").replace(/[^\w-]+/g,"-").toLowerCase().slice(0,60);
+function raster(type,q,cb){
+  const c=cleanClone(),vb=svg.viewBox.baseVal,sc=2;
+  const img=new Image();img.onload=()=>{const cv=document.createElement("canvas");cv.width=vb.width*sc;cv.height=vb.height*sc;const x=cv.getContext("2d");x.fillStyle=state.theme==="dark"?"#161E2D":"#fff";x.fillRect(0,0,cv.width,cv.height);x.drawImage(img,0,0,cv.width,cv.height);cv.toBlob(cb,type,q)};
+  img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svgString(c));
+}
+const exp={
+  "svg":()=>{const c=cleanClone();const st=c.querySelector("style");
+    // dual-theme SVG: light by default, dark when the viewer's OS prefers it
+    c.setAttribute("class","aws theme-light");
+    st.textContent+="@media (prefers-color-scheme:dark){.aws.theme-light{--bg:#161E2D;--fg:#ffffff;--muted:#aab4c3;--line:#d5dbdb;--halo:#161E2D;--badge:#ffffff;--badgeFg:#000000}.aws.theme-light .only-dark{display:inline}.aws.theme-light .only-light{display:none}}";
+    download(new Blob([svgString(c)],{type:"image/svg+xml"}),base+".svg")},
+  "drawio":()=>{const el=document.getElementById("drawio-data");if(!el){say("<span>No draw.io data in this page</span>");return}download(new Blob([JSON.parse(el.textContent)],{type:"application/vnd.jgraph.mxfile"}),base+".drawio")},
+  "png":()=>raster("image/png",undefined,b=>download(b,base+".png")),
+  "jpeg":()=>raster("image/jpeg",.92,b=>download(b,base+".jpg")),
+  "webp":()=>raster("image/webp",.92,b=>download(b,base+".webp")),
+  "copy":()=>raster("image/png",undefined,b=>{navigator.clipboard&&window.ClipboardItem?navigator.clipboard.write([new ClipboardItem({"image/png":b})]).then(()=>say("<span>PNG copied</span>")):download(b,base+".png");setTimeout(()=>{if(!state.route&&!state.reach&&!state.focus)say("")},1400)})
+};
+const menu=$(".menu");
+if(menu){menu.querySelector("button").onclick=e=>{e.stopPropagation();menu.classList.toggle("open")};
+ menu.querySelectorAll(".items button").forEach(b=>b.onclick=()=>{menu.classList.remove("open");exp[b.dataset.x]()});
+ document.addEventListener("click",()=>menu.classList.remove("open"))}
+
+document.addEventListener("keydown",e=>{
+  const typing=/INPUT|TEXTAREA/.test(document.activeElement.tagName);
+  if(e.key==="Escape"){if($$(".overlay.on").length)closeOv();else if(body.classList.contains("present"))present(false);else reset();return}
+  if(typing)return;
+  if(e.key==="/"||((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k")){e.preventDefault();openFinder()}
+  else if(e.key==="?"){go.classList.add("on")}
+  else if(e.key==="t")setTheme(state.theme==="dark"?"light":"dark");
+  else if(e.key==="p")present();
+});
+
+// Deep links
+function fromHash(){
+  const h=location.hash.slice(1),p=new URLSearchParams(h.replace(/~/g,"%7E"));
+  state.focus=state.reach=state.route=null;
+  const r=p.get("route");
+  if(r){const[a,b]=decodeURIComponent(r).split("~");if(a&&b)state.route=[a,b]}
+  else if(p.get("focus")){state.focus=p.get("focus");const rd=p.get("reach");if(["downstream","upstream","both"].includes(rd))state.reach=rd}
+  render();
+}
+window.addEventListener("hashchange",fromHash);
+const q=new URLSearchParams(location.search);
+if(q.get("theme")==="dark"||q.get("theme")==="light")setTheme(q.get("theme"));
+if(q.get("present")==="1")present(true);
+fromHash();
+window.__archify={ready:true,nodes:nodes.length,edges:E.length,reach:(id,d)=>{const r=reach(id,d);return{nodes:[...r.nodes],edges:r.edges.size}},route:(a,b)=>{const r=route(a,b);return r.error?{error:r.error}:{nodes:[...r.nodes],hops:r.path.length}},focus:focusOn,state,export:exp};
+if(q.get("check")==="1"){ // machine-readable self-check used by finalize (never shown to readers)
+  const fs_=[...svg.querySelectorAll("text")].map(t=>parseFloat(getComputedStyle(t).fontSize)||0).filter(Boolean);
+  const scale=svg.getBoundingClientRect().width/(svg.viewBox.baseVal.width||1);
+  let selftest="ok";
+  try{const first=nodes[0]&&nodes[0].dataset.id;if(first){window.__archify.reach(first,"both");window.__archify.route(first,first)}}catch(e){selftest=String(e)}
+  const pre=document.createElement("pre");pre.id="archify-check";
+  pre.textContent=JSON.stringify({ready:true,nodes:nodes.length,edges:E.length,overflowX:Math.max(0,document.documentElement.scrollWidth-innerWidth),minFontPx:Math.round(Math.min(...fs_)*scale*10)/10,symbols:svg.querySelectorAll("symbol").length,badUse:[...svg.querySelectorAll("use")].filter(u=>!svg.querySelector(u.getAttribute("href"))).length,selftest});
+  body.appendChild(pre);
+}
+})();
+</script>
+<script>
+(function(){
+var tabs=[].slice.call(document.querySelectorAll(".tabs button")),panes=[].slice.call(document.querySelectorAll(".tab"));
+function show(n,push){tabs.forEach(function(b){b.setAttribute("aria-selected",b.dataset.tab===n)});panes.forEach(function(p){p.classList.toggle("on",p.id==="tab-"+n)});
+ if(push){try{var u=new URL(location.href);u.searchParams.set("tab",n);history.replaceState(null,"",u)}catch(e){}}}
+tabs.forEach(function(b){b.addEventListener("click",function(){show(b.dataset.tab,true)})});
+var q=new URLSearchParams(location.search).get("tab");if(q&&document.getElementById("tab-"+q))show(q,false);
+document.querySelectorAll(".filters").forEach(function(f){var t=document.getElementById(f.dataset.ledger),rows=[].slice.call(t.tBodies[0].rows),s=f.querySelector(".fs"),p=f.querySelector(".fp"),x=f.querySelector(".fq"),c=f.querySelector(".cnt");
+ function run(){var n=0,k=x.value.toLowerCase();rows.forEach(function(r){var ok=(!s.value||r.dataset.s===s.value)&&(!p.value||r.dataset.p===p.value)&&(!k||r.textContent.toLowerCase().indexOf(k)>=0);r.hidden=!ok;if(ok)n++});c.textContent=n+" of "+rows.length+" shown"}
+ [s,p].forEach(function(e){e.addEventListener("change",run)});x.addEventListener("input",run);run()});
+var ov=document.getElementById("costOverlay");
+function money(v){return v>=100?"$"+Math.round(v).toLocaleString("en-US"):"$"+v.toFixed(2)}
+if(ov)ov.addEventListener("change",function(){var NS="http://www.w3.org/2000/svg";document.querySelectorAll(".costtag").forEach(function(e){e.remove()});if(!ov.checked)return;var C=window.__archifyCost||{};
+ document.querySelectorAll(".node").forEach(function(n){var v=C[n.dataset.id];var u=n.querySelector("use");if(!v||!u)return;var x=+u.getAttribute("x")+ +u.getAttribute("width")/2,y=+u.getAttribute("y")+ +u.getAttribute("height")+4,t=money(v)+"/mo",w=t.length*7+10;
+  var g=document.createElementNS(NS,"g");g.setAttribute("class","costtag");var r=document.createElementNS(NS,"rect");r.setAttribute("x",x-w/2);r.setAttribute("y",y-2);r.setAttribute("width",w);r.setAttribute("height",16);r.setAttribute("rx",8);var tx=document.createElementNS(NS,"text");tx.setAttribute("x",x);tx.setAttribute("y",y+10);tx.textContent=t;g.appendChild(r);g.appendChild(tx);n.appendChild(g)})});
+document.querySelectorAll("#costTable tr[data-node]").forEach(function(r){r.addEventListener("click",function(){var id=r.dataset.node;show("diagram",true);var n=document.querySelector('.node[data-id="'+id+'"]');document.querySelectorAll("#costTable tr").forEach(function(t){t.classList.toggle("sel",t===r)});if(n){n.scrollIntoView({block:"center",inline:"center"});n.classList.add("pulse")}})});
+document.querySelectorAll(".finding[data-nodes]").forEach(function(a){var ids=a.dataset.nodes.split(" ").filter(Boolean);if(!ids.length)return;a.addEventListener("mouseenter",function(){document.querySelectorAll(".node").forEach(function(n){n.classList.toggle("dim",ids.indexOf(n.dataset.id)<0)})});a.addEventListener("mouseleave",function(){document.querySelectorAll(".node").forEach(function(n){n.classList.remove("dim")})})});
+})();</script></body></html>
