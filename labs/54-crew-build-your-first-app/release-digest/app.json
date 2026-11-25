@@ -1,0 +1,34 @@
+{
+  "name": "release-digest",
+  "version": "0.1.0",
+  "displayName": "Release Digest",
+  "description": "A weekday digest of what merged, what is blocked and what is risky in one repository, written by a dedicated agent that follows a team-owned skill.",
+  "author": "Kiro Reinvent Labs",
+  "license": "MIT",
+  "tags": ["release", "digest", "github"],
+  "highlights": [
+    "A release-digest agent with a narrow, read-only prompt",
+    "A release-digest skill the team edits like any other document",
+    "A weekday 08:45 schedule that you can pause from the Schedule page"
+  ],
+  "useCases": [
+    "When standup starts, read the release-digest summary of yesterday's merges, open blockers and risky diffs instead of scrolling GitHub",
+    "When the team changes what counts as risky, edit the release-digest skill and the next scheduled run follows it",
+    "When the week is quiet, pause the weekday-digest cron on the Schedule page without uninstalling the app"
+  ],
+  "agents": ["agents/release-digest.json"],
+  "skills": ["skills/release-digest"],
+  "crons": [
+    {
+      "name": "weekday-digest",
+      "cron_expr": "45 8 * * 1-5",
+      "timezone": "Europe/London",
+      "agent": "release-digest",
+      "message": "Use the release-digest skill for the repository named in the skill. Post the digest.",
+      "persistent_session": false
+    }
+  ],
+  "permissions": {
+    "cron": true
+  }
+}

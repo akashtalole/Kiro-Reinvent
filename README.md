@@ -126,9 +126,27 @@ Every lab is a folder with a README (scenario, diagram, steps, verify, clean up)
 | [49](labs/49-ai-sdlc-pipeline/README.md) | [The AI-first SDLC pipeline — every persona automated, humans at the gates](labs/49-ai-sdlc-pipeline/README.md) | Advanced | 90 min |
 | [50](labs/50-ai-engineering-platform/README.md) | [An AI engineering platform for SaaS — routing, prompt versions, canaries, release gates](labs/50-ai-engineering-platform/README.md) | Advanced | 75 min |
 
+### Kiro Crew track
+
+Labs 51–61 go deep on [Kiro Crew](https://kiro.dev/docs/crew/) ([source](https://github.com/kirodotdev/KiroCrew)): scheduling, Task Runner, workflows, apps, built-in engineering and ops apps, 24/7 hosting on AWS, governance, any agent harness, knowledge and memory, and a team capstone. On the site, filter labs, use cases and scenarios by **Product → Kiro Crew** ([direct link](https://akashtalole.github.io/Kiro-Reinvent/labs.html?product=Kiro+Crew)).
+
+| # | Lab | Level | Time |
+| --- | --- | --- | --- |
+| [51](labs/51-crew-scheduling-heartbeats-webhooks/README.md) | [Kiro Crew scheduling — cron jobs, heartbeats and webhooks](labs/51-crew-scheduling-heartbeats-webhooks/README.md) | Intermediate | 60 min |
+| [52](labs/52-crew-task-runner-overnight/README.md) | [Kiro Crew Task Runner — unattended, spec-driven work](labs/52-crew-task-runner-overnight/README.md) | Advanced | 90 min |
+| [53](labs/53-crew-workflows-pr-babysitting/README.md) | [Kiro Crew workflows and PR babysitting](labs/53-crew-workflows-pr-babysitting/README.md) | Advanced | 75 min |
+| [54](labs/54-crew-build-your-first-app/README.md) | [Build your first Kiro Crew app](labs/54-crew-build-your-first-app/README.md) | Intermediate | 60 min |
+| [55](labs/55-crew-engineering-apps/README.md) | [Kiro Crew engineering apps — triage, review, specs and auto-improvement](labs/55-crew-engineering-apps/README.md) | Intermediate | 75 min |
+| [56](labs/56-crew-ops-mission-control/README.md) | [Kiro Crew Ops Mission Control — an AI first responder for CloudWatch alarms](labs/56-crew-ops-mission-control/README.md) | Advanced | 75 min |
+| [57](labs/57-crew-24x7-on-aws/README.md) | [Run Kiro Crew 24/7 — service, Docker, or your own EC2 with kirocrew cloud](labs/57-crew-24x7-on-aws/README.md) | Intermediate | 60 min |
+| [58](labs/58-crew-governance-for-teams/README.md) | [Govern Kiro Crew for a team — sandbox, denied commands, policy ceiling and audit](labs/58-crew-governance-for-teams/README.md) | Advanced | 60 min |
+| [59](labs/59-crew-multi-harness-models/README.md) | [Kiro Crew with any agent harness — Kiro, Claude Code, Codex, OpenCode and local models](labs/59-crew-multi-harness-models/README.md) | Intermediate | 45 min |
+| [60](labs/60-crew-knowledge-research-memory/README.md) | [Kiro Crew knowledge, research campaigns and memory](labs/60-crew-knowledge-research-memory/README.md) | Intermediate | 50 min |
+| [61](labs/61-e2e-ai-first-team-on-crew/README.md) | [Capstone — an AI-first engineering team on Kiro Crew](labs/61-e2e-ai-first-team-on-crew/README.md) | Advanced | 1 day |
+
 ## Advanced use cases and scenarios
 
-The [**Scenarios**](https://akashtalole.github.io/Kiro-Reinvent/scenarios.html) page ([markdown version](docs/advanced-scenarios.md)) tells 24 end-to-end stories of an AI-first, multi-tenant SaaS team when things get hard. Each story shows the trigger, every step by agent, human or system, a flow diagram, guardrails, metrics to track, and the labs that teach each piece. You can filter them by domain, complexity and persona.
+The [**Scenarios**](https://akashtalole.github.io/Kiro-Reinvent/scenarios.html) page ([markdown version](docs/advanced-scenarios.md)) tells 24 end-to-end stories of an AI-first, multi-tenant SaaS team when things get hard. Each story shows the trigger, every step by agent, human or system, a flow diagram, guardrails, metrics to track, and the labs that teach each piece. You can filter them by product, domain, complexity and persona.
 
 | Domain | Scenarios |
 | --- | --- |

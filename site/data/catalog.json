@@ -45,7 +45,9 @@
         "17",
         "19",
         "35",
-        "39"
+        "39",
+        "51",
+        "57"
       ]
     },
     {
@@ -79,7 +81,8 @@
         "29",
         "30",
         "32",
-        "38"
+        "38",
+        "58"
       ]
     },
     {
@@ -91,7 +94,8 @@
         "15",
         "18",
         "19",
-        "35"
+        "35",
+        "56"
       ]
     },
     {
@@ -120,6 +124,27 @@
         "48",
         "49",
         "50"
+      ]
+    },
+    {
+      "id": "crew",
+      "title": "Kiro Crew operator",
+      "role": "Platform, SRE & team leads",
+      "blurb": "Run an always-on, governed Kiro Crew for a team: schedules, Task Runner, workflows, apps, bots, Ops Mission Control, 24/7 hosting on AWS, any agent harness, knowledge and memory.",
+      "labs": [
+        "12",
+        "13",
+        "51",
+        "52",
+        "53",
+        "54",
+        "55",
+        "56",
+        "57",
+        "58",
+        "59",
+        "60",
+        "61"
       ]
     }
   ],
@@ -184,6 +209,71 @@
         "title": "AI features that respect tenants",
         "text": "Per-tenant inference profiles, filtered RAG, scoped memory and hard token budgets.",
         "lab": "48"
+      },
+      {
+        "title": "Morning briefing before standup",
+        "text": "A weekday agent cron summarizes open PRs, red checks and assigned issues into a Slack DM, with --timezone set and no context piling up between runs.",
+        "lab": "51"
+      },
+      {
+        "title": "Zero-token watchers",
+        "text": "Script and command jobs check CI, disk or a status page without a model call, and only notify (or wake an agent) when something is wrong.",
+        "lab": "51"
+      },
+      {
+        "title": "Watch it until it changes",
+        "text": "A heartbeat line in HEARTBEAT.md watches a PR or deployment every 60 seconds and reports once the state changes, then clears itself.",
+        "lab": "51"
+      },
+      {
+        "title": "Overnight, spec-driven changes",
+        "text": "Task Runner turns a markdown spec into steps, runs each in a fresh session, tests, self-reviews and commits on its own branch for hours, pausing at force-approval steps.",
+        "lab": "52"
+      },
+      {
+        "title": "Fan-out audits with a judge",
+        "text": "An authored workflow runs one agent per file, a judge agent drops unreproducible findings, and the result lands as one versioned report.",
+        "lab": "53"
+      },
+      {
+        "title": "PR babysitting without burning turns",
+        "text": "monitor_watch watches a pull request through gh and wakes the agent only when CI or reviews change, until it is merge-ready.",
+        "lab": "53"
+      },
+      {
+        "title": "Package a team's agent as an app",
+        "text": "Ship an agent, a skill and a schedule as one app.json that teammates install from a folder or git URL.",
+        "lab": "54"
+      },
+      {
+        "title": "Issue triage that remembers",
+        "text": "Issue Radar summarizes and labels GitHub, GitLab or Azure DevOps issues and keeps investigation findings in a ledger so nothing is re-investigated.",
+        "lab": "55"
+      },
+      {
+        "title": "Reviews weighted by blast radius",
+        "text": "Code Review Sage reviews every changed file in an isolated session and publishes a prioritized Focus Report as a draft review only when you say so.",
+        "lab": "55"
+      },
+      {
+        "title": "An AI first responder for alarms",
+        "text": "Ops Mission Control claims CloudWatch alarms, investigates with your ambient AWS credentials, mirrors incidents to Slack and learns verified fixes.",
+        "lab": "56"
+      },
+      {
+        "title": "A team assistant that never sleeps",
+        "text": "Run Crew as a service, a signed container, or on your own EC2 instance launched with CloudFormation and reached over SSM with zero inbound ports.",
+        "lab": "57"
+      },
+      {
+        "title": "Controls the agent can't weaken",
+        "text": "Strict sandbox, denied commands, owner locks, a POLICY ∩ PROFILE ceiling distributed to every host, and a hash-chained audit log you can verify.",
+        "lab": "58"
+      },
+      {
+        "title": "Runbooks the agent actually reads",
+        "text": "Ingest runbooks and ADRs into the local knowledge library and get cited answers; corrections become lessons for every later session.",
+        "lab": "60"
       }
     ],
     "emerging": [
@@ -256,6 +346,31 @@
         "title": "Prompts shipped like code",
         "text": "Tier-aware routing, versioned prompts, canaries and eval-gated releases.",
         "lab": "50"
+      },
+      {
+        "title": "Start agent work from any system",
+        "text": "An authenticated webhook (Feature Preview) lets a deploy pipeline or ticketing tool start a Crew session with a message.",
+        "lab": "51"
+      },
+      {
+        "title": "Measured, keep-or-revert improvements",
+        "text": "Auto-Improvement proves a metric first, then keeps only fixes whose measured win clears the noise band, drafted as PRs.",
+        "lab": "55"
+      },
+      {
+        "title": "One workspace, any agent harness",
+        "text": "Switch new sessions between the Kiro harness, Claude Code, Codex or OpenCode with a local model, while memory, schedules and apps stay put.",
+        "lab": "59"
+      },
+      {
+        "title": "Unattended research campaigns",
+        "text": "Research Lab expands a question into sub-questions, sends agents to each, and stops when answered or stalled, ending in a shareable report.",
+        "lab": "60"
+      },
+      {
+        "title": "A whole team on one governed Crew",
+        "text": "Slack as the front door, bots owning triage, CI and releases, apps in the dev loop, and weekly metrics on whether it helps.",
+        "lab": "61"
       }
     ]
   },
