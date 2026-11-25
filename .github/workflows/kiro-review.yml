@@ -1,0 +1,50 @@
+# Headless Kiro CLI on every pull request: the read-only fact-checker agent reviews changed labs and docs.
+# Runs only when the repository secret KIRO_API_KEY is set (Kiro paid tier). Otherwise it skips cleanly.
+name: Kiro fact-check
+
+on:
+  pull_request:
+    paths: ["labs/**/*.md", "docs/**/*.md"]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: kiro-fact-check-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  fact-check:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      KIRO_API_KEY: ${{ secrets.KIRO_API_KEY }}
+    steps:
+      - name: Skip without a Kiro API key
+        if: env.KIRO_API_KEY == ''
+        run: echo "KIRO_API_KEY is not set; skipping the Kiro fact-check."
+      - uses: actions/checkout@v4
+        if: env.KIRO_API_KEY != ''
+        with:
+          fetch-depth: 0
+      - name: Install Kiro CLI
+        if: env.KIRO_API_KEY != ''
+        run: |
+          curl -fsSL https://cli.kiro.dev/install | bash
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Fact-check changed files (read-only agent)
+        if: env.KIRO_API_KEY != ''
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git diff --name-only "$BASE"...HEAD -- 'labs/**/*.md' 'docs/**/*.md' > /tmp/changed.txt
+          kiro-cli chat --no-interactive --agent fact-checker \
+            "Fact-check the files listed in /tmp/changed.txt. Output GitHub-flavoured markdown only: one table per file (claim | status | source | note), then the three most important fixes." \
+            > factcheck.md
+      - name: Post the report
+        if: env.KIRO_API_KEY != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh pr comment ${{ github.event.pull_request.number }} --body-file factcheck.md --edit-last || gh pr comment ${{ github.event.pull_request.number }} --body-file factcheck.md

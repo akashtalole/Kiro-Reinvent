@@ -148,6 +148,20 @@ Labs 51–61 go deep on [Kiro Crew](https://kiro.dev/docs/crew/) ([source](https
 
 The [frontier engineering teams playbook](docs/frontier-engineering-teams.md) shows how to run software engineering, AI engineering and the SDLC with agents doing the work and humans *on* the loop instead of in it. It is built on Kiro's [frontier engineering](https://kiro.dev/topics/frontier-engineering/) principles, with Kiro Crew, headless Kiro CLI and AWS. It includes an autonomy ladder (L0–L4) with automatic demotion, a verification mesh that replaces per-change approval, an irreversible-action list that stays human, a reference architecture across factory, delivery and production accounts, 16 advanced ideas, a scorecard and a 90-day rollout.
 
+### Built with Kiro features
+
+This repo uses every Kiro feature to build itself. That includes:
+- steering in `.kiro/steering`;
+- four least-privilege custom agents;
+- hooks: a secret scan, JSON checks, scenario sync, and "done means green";
+- specs with correctness properties;
+- workspace MCP servers (AWS Knowledge, AWS Pricing, Playwright);
+- a power in `powers/`;
+- Hypothesis property-based tests in `tests/`, which caught a real front-matter parser bug;
+- a headless Kiro CLI fact-check job in CI.
+
+See [Kiro features in this repo](docs/kiro-features-in-this-repo.md).
+
 ## Advanced use cases and scenarios
 
 The [**Scenarios**](https://akashtalole.github.io/Kiro-Reinvent/scenarios.html) page ([markdown version](docs/advanced-scenarios.md)) tells 24 end-to-end stories of an AI-first, multi-tenant SaaS team when things get hard. Each story shows the trigger, every step by agent, human or system, a flow diagram, guardrails, metrics to track, and the labs that teach each piece. You can filter them by product, domain, complexity and persona.

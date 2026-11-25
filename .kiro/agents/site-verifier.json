@@ -1,0 +1,21 @@
+{
+  "name": "site-verifier",
+  "description": "Builds the site and runs the property tests and browser checks before a change is called done. Can only write to _site/ and tmp.",
+  "prompt": "Build the site, run the tests, and check the pages a change touched in a real browser (Playwright MCP) at desktop and 390 px width under the /Kiro-Reinvent/ prefix. Report: build result, test result, console errors, horizontal-scroll problems and broken links. Do not edit source files; describe fixes instead.",
+  "tools": ["read", "shell", "@playwright"],
+  "includeMcpJson": false,
+  "mcpServers": {
+    "playwright": { "command": "npx", "args": ["-y", "@playwright/mcp@latest", "--headless"] }
+  },
+  "permissions": {
+    "rules": [
+      { "capability": "shell", "match": ["python3 scripts/build_site.py*", "python -m pytest*", "python3 scripts/gen_scenarios_md.py --check", "python -m compileall -q labs"], "effect": "allow" },
+      { "capability": "shell", "match": ["*"], "effect": "deny" },
+      { "capability": "fs_write", "match": ["**"], "exclude": ["_site/**", "/tmp/**"], "effect": "deny" }
+    ]
+  },
+  "resources": [
+    "file://.kiro/steering/structure.md",
+    "file://.kiro/steering/site-frontend.md"
+  ]
+}

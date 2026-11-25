@@ -1,0 +1,10 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "power-kiro-reinvent-authoring",
+  "version": "1.0.0",
+  "description": "Write, fact-check and illustrate hands-on labs about Kiro and AWS. Bundles the AWS Knowledge and AWS Pricing MCP servers with a fact-checking skill and an AWS diagram skill.",
+  "author": { "name": "Kiro Reinvent Labs" },
+  "keywords": ["lab", "tutorial", "workshop", "fact check", "verify claims", "aws diagram", "architecture diagram", "kiro docs", "aws pricing"],
+  "license": "MIT",
+  "repository": "https://github.com/akashtalole/Kiro-Reinvent"
+}
