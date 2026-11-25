@@ -1,0 +1,59 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Session briefing",
+      "description": "Start every session knowing what changed and what's uncommitted.",
+      "trigger": "SessionStart",
+      "action": { "type": "command", "command": "git status --short && git log --oneline -5" }
+    },
+    {
+      "name": "No secrets in a public repo",
+      "description": "Block writes containing AWS keys, private keys, GitHub/Slack tokens, Kiro Crew webhook tokens or a Kiro API key.",
+      "trigger": "PreToolUse",
+      "matcher": "write",
+      "action": { "type": "command", "command": "python3 scripts/hooks/secret_scan.py" },
+      "timeout": 10
+    },
+    {
+      "name": "Regenerate the scenarios doc",
+      "description": "docs/advanced-scenarios.md is generated; keep it in sync whenever scenarios.json is saved.",
+      "trigger": "PostFileSave",
+      "matcher": "^site/data/scenarios\\.json$",
+      "action": { "type": "command", "command": "python3 scripts/gen_scenarios_md.py" },
+      "timeout": 60
+    },
+    {
+      "name": "JSON must parse",
+      "trigger": "PostFileSave",
+      "matcher": "\\.json$",
+      "action": { "type": "command", "command": "python3 scripts/hooks/validate_json.py" },
+      "timeout": 30
+    },
+    {
+      "name": "Property tests on builder changes",
+      "description": "Any change to the builder or its tests reruns the Hypothesis properties.",
+      "trigger": "PostFileSave",
+      "matcher": "^(scripts/build_site\\.py|tests/.+\\.py)$",
+      "action": { "type": "command", "command": "python -m pytest tests -q -p no:cacheprovider" },
+      "timeout": 120
+    },
+    {
+      "name": "Use cases must match their lab",
+      "description": "When the catalog changes, have the agent check each new or edited use case against the lab it links to.",
+      "trigger": "PostFileSave",
+      "matcher": "^site/data/catalog\\.json$",
+      "action": {
+        "type": "agent",
+        "prompt": "site/data/catalog.json was saved. For every use case or learning-path entry that changed (git diff), open the lab it links to and confirm the lab actually teaches what the use case claims. Report mismatches; do not invent capabilities."
+      }
+    },
+    {
+      "name": "Done means green",
+      "description": "Before the agent stops: build the site, check the generated scenarios doc, and run the tests.",
+      "trigger": "Stop",
+      "action": { "type": "command", "command": "python3 scripts/build_site.py && python3 scripts/gen_scenarios_md.py --check && python -m pytest tests -q -p no:cacheprovider" },
+      "timeout": 180
+    }
+  ]
+}

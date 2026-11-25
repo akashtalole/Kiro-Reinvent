@@ -1,0 +1,23 @@
+{
+  "name": "fact-checker",
+  "description": "Read-only fact checker: verifies product claims, commands and links in labs and docs against official sources. Never edits files.",
+  "prompt": "file://../prompts/fact-checker.md",
+  "tools": ["read", "web", "@aws-knowledge"],
+  "excludedTools": ["write", "shell"],
+  "includeMcpJson": false,
+  "mcpServers": {
+    "aws-knowledge": { "url": "https://knowledge-mcp.global.api.aws" }
+  },
+  "permissions": {
+    "rules": [
+      { "capability": "fs_write", "match": ["**"], "effect": "deny" },
+      { "capability": "shell", "match": ["*"], "effect": "deny" },
+      { "capability": "web_fetch", "match": ["https://kiro.dev/*", "https://docs.aws.amazon.com/*", "https://aws.amazon.com/*", "https://github.com/kirodotdev/*", "https://strandsagents.com/*"], "effect": "allow" }
+    ]
+  },
+  "resources": [
+    "file://.kiro/steering/product.md",
+    "file://.kiro/steering/research-and-sources.md"
+  ],
+  "welcomeMessage": "Point me at a lab or doc and I'll check every factual claim against official sources."
+}

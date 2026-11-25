@@ -69,11 +69,31 @@ def products_for(services: list, explicit=None) -> list[str]:
             if any(re.search(rx, svc) and not (name == "Amazon Bedrock" and "AgentCore" in svc) for svc in services)]
 
 
+def split_list(inner: str) -> list[str]:
+    """Split a flow-list body on commas that are not inside quotes ("a, b" stays one item)."""
+    items, buf, quote = [], [], ""
+    for ch in inner:
+        if quote:
+            buf.append(ch)
+            if ch == quote:
+                quote = ""
+        elif ch in "\"'" and not "".join(buf).strip():
+            quote = ch
+            buf.append(ch)
+        elif ch == ",":
+            items.append("".join(buf))
+            buf = []
+        else:
+            buf.append(ch)
+    items.append("".join(buf))
+    return items
+
+
 def parse_scalar(raw: str):
     raw = raw.strip()
     if raw.startswith("[") and raw.endswith("]"):
         inner = raw[1:-1].strip()
-        return [parse_scalar(x) for x in inner.split(",")] if inner else []
+        return [parse_scalar(x) for x in split_list(inner)] if inner else []
     if len(raw) >= 2 and raw[0] == raw[-1] and raw[0] in "\"'":
         return raw[1:-1]
     if re.fullmatch(r"-?\d+", raw):
@@ -259,7 +279,7 @@ def write_pretty_urls(labs: list[dict]) -> int:
         write_stub(f"paths/{path['id']}", f"labs.html?path={path['id']}", path["title"]); n += 1
     aliases = {"quickstart": "lab.html?id=01-kiro-cli-quickstart", "playbook": "doc.html?doc=ai-first-saas-playbook",
                "field": "doc.html?doc=kiro-in-the-field", "landscape": "doc.html?doc=landscape", "paths": "index.html#paths",
-               "use-cases": "use-cases.html", "internals": "doc.html?doc=kiro-ide-cli-internals", "crew": "labs.html?product=Kiro+Crew", "usecases": "use-cases.html", "site": "index.html"}
+               "use-cases": "use-cases.html", "internals": "doc.html?doc=kiro-ide-cli-internals", "crew": "labs.html?product=Kiro+Crew", "frontier": "doc.html?doc=frontier-engineering-teams", "kiro-features": "doc.html?doc=kiro-features-in-this-repo", "usecases": "use-cases.html", "site": "index.html"}
     for k, v in aliases.items():
         write_stub(k, v, k.replace("-", " ").title()); n += 1
     return n
