@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guides · Kiro Reinvent</title>
+<meta name="description" content="Every deep dive, playbook, reference and interactive architecture diagram on Kiro Reinvent Labs in one place: frontier engineering teams, Kiro features, IDE vs CLI vs Crew, Kiro Crew internals and more.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%236b4cf6'/><text x='16' y='22' font-size='17' font-family='Arial' font-weight='700' fill='white' text-anchor='middle'>K</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body data-page="guides">
+<main>
+  <section style="padding-top:40px">
+    <div class="wrap">
+      <div class="eyebrow">Guides</div>
+      <h1 style="font-size:clamp(30px,4vw,44px)">Deep dives, playbooks and diagrams</h1>
+      <p class="lede">Everything that isn't a lab: how Kiro works inside, how to run teams on it, how this site uses every Kiro feature, and the interactive AWS architecture diagrams.</p>
+      <nav class="filter-row guide-jump" aria-label="Jump to a section">
+        <span class="lbl">Jump to</span>
+        <a class="chip" href="#playbooks">Playbooks</a>
+        <a class="chip" href="#under-the-hood">Under the hood</a>
+        <a class="chip" href="#build-with-kiro">Build with Kiro</a>
+        <a class="chip" href="#reference">Reference</a>
+        <a class="chip" href="#diagrams">Interactive diagrams</a>
+      </nav>
+    </div>
+  </section>
+
+  <section id="playbooks" class="guide-section">
+    <div class="wrap">
+      <div class="section-head"><div><div class="eyebrow">Playbooks</div><h2>How to run teams on Kiro and AWS</h2></div></div>
+      <div class="grid grid-3">
+        <a class="card" href="doc.html?doc=frontier-engineering-teams"><span class="chip accent" style="align-self:flex-start">New</span>
+          <h3>Frontier engineering teams</h3><p>Agents deliver software engineering, AI engineering and the SDLC; humans set intent and boundaries. Autonomy ladder, verification mesh, 16 advanced ideas, 90-day rollout.</p>
+          <div class="meta"><span class="chip">Kiro Crew</span><span class="chip">Kiro CLI</span><span class="chip">AWS</span></div></a>
+        <a class="card" href="doc.html?doc=ai-first-saas-playbook">
+          <h3>AI-first SaaS playbook</h3><p>Automate every persona's work in a multi-tenant SaaS: tenant lifecycle, tenant-aware observability with CloudWatch Omni, multi-tenant AI and the AI SDLC.</p>
+          <div class="meta"><span class="chip">Labs 45–50</span><span class="chip">2 diagrams</span></div></a>
+        <a class="card" href="doc.html?doc=kiro-in-the-field">
+          <h3>Kiro in the field</h3><p>Every AWS Machine Learning Blog post about Kiro, the pattern behind it, and the lab that teaches it.</p>
+          <div class="meta"><span class="chip">Field stories</span></div></a>
+      </div>
+    </div>
+  </section>
+
+  <section id="under-the-hood" class="guide-section">
+    <div class="wrap">
+      <div class="section-head"><div><div class="eyebrow">Under the hood</div><h2>How Kiro works inside</h2></div></div>
+      <div class="grid grid-2">
+        <a class="card" href="doc.html?doc=kiro-ide-cli-internals">
+          <h3>Kiro IDE vs CLI vs Crew</h3><p>One agent harness behind the IDE and CLI: ACP, the agent loop, context, tools, permissions, sandbox, hooks, models on Amazon Bedrock — and a side-by-side comparison with Kiro Crew.</p>
+          <div class="meta"><span class="chip">Comparison table</span><span class="chip">1 diagram</span></div></a>
+        <a class="card" href="doc.html?doc=kiro-crew-internals">
+          <h3>Kiro Crew under the hood</h3><p>The gateway's components, session lifecycle, memory, security layers and data home, from the open-source source code.</p>
+          <div class="meta"><span class="chip">2 diagrams</span><span class="chip">Open source</span></div></a>
+      </div>
+    </div>
+  </section>
+
+  <section id="build-with-kiro" class="guide-section">
+    <div class="wrap">
+      <div class="section-head"><div><div class="eyebrow">Build with Kiro</div><h2>Every Kiro feature, in practice</h2></div></div>
+      <div class="grid grid-3">
+        <a class="card" href="doc.html?doc=kiro-features-in-this-repo"><span class="chip accent" style="align-self:flex-start">New</span>
+          <h3>Kiro features in this repo</h3><p>Steering, custom agents, hooks, specs, MCP, property-based tests, a power and headless CLI — the real <code>.kiro/</code> setup that builds this site, plus a hands-on tour.</p>
+          <div class="meta"><span class="chip">8 features</span><span class="chip">PBT found a bug</span></div></a>
+        <a class="card" href="doc.html?doc=setup">
+          <h3>Setup guide</h3><p>Install Kiro and the tools the labs use, and sign in.</p></a>
+        <a class="card" href="doc.html?doc=troubleshooting">
+          <h3>Troubleshooting</h3><p>Fixes for the problems people hit most often in the labs.</p></a>
+        <a class="card" href="doc.html?doc=authoring">
+          <h3>Authoring guide</h3><p>How to write a lab: front matter, structure and verification rules.</p></a>
+      </div>
+    </div>
+  </section>
+
+  <section id="reference" class="guide-section">
+    <div class="wrap">
+      <div class="section-head"><div><div class="eyebrow">Reference</div><h2>Landscape, patterns and catalogs</h2></div></div>
+      <div class="grid grid-2">
+        <a class="card" href="doc.html?doc=landscape">
+          <h3>Product landscape</h3><p>Kiro, AWS MCP servers, Strands Agents and AgentCore: what each is, where it fits, and how they combine.</p></a>
+        <a class="card" href="doc.html?doc=architecture-patterns">
+          <h3>Architecture patterns</h3><p>Reusable patterns for agents on AWS, with the labs that build them.</p></a>
+        <a class="card" href="doc.html?doc=aws-mcp-catalog">
+          <h3>AWS MCP catalog</h3><p>The AWS MCP servers and what each one is good for.</p></a>
+        <a class="card" href="doc.html?doc=advanced-scenarios">
+          <h3>Scenarios (markdown)</h3><p>All advanced scenarios on one page, with happy, alternate and failure paths. <span class="muted">Interactive version: Scenarios tab.</span></p></a>
+      </div>
+    </div>
+  </section>
+
+  <section id="diagrams" class="guide-section">
+    <div class="wrap">
+      <div class="section-head"><div><div class="eyebrow">Interactive diagrams</div><h2>AWS architecture, drawn with official icons</h2></div>
+        <p>Each opens an interactive page with a numbered flow. AWS diagrams include an indicative cost tab.</p></div>
+      <div class="grid grid-3">
+        <a class="card arch-card" href="docs/diagrams/frontier-factory.html"><img src="docs/diagrams/frontier-factory.png" alt="Frontier engineering team: an autonomous software factory on AWS" loading="lazy"><h3>Autonomous software factory</h3><p>Frontier engineering team across factory, delivery and production accounts.</p></a>
+        <a class="card arch-card" href="docs/diagrams/kiro-harness.html"><img src="docs/diagrams/kiro-harness.png" alt="Kiro IDE and CLI share one agent harness" loading="lazy"><h3>Kiro IDE and CLI: one harness</h3><p>Clients over ACP, agent loop, permissions, tools, Bedrock inference.</p></a>
+        <a class="card arch-card" href="docs/diagrams/kiro-crew-architecture.html"><img src="docs/diagrams/kiro-crew-architecture.png" alt="Kiro Crew components" loading="lazy"><h3>Kiro Crew components</h3><p>Surfaces, gateway, ACP harness, MCP and the data home.</p></a>
+        <a class="card arch-card" href="docs/diagrams/kiro-crew-message-flow.html"><img src="docs/diagrams/kiro-crew-message-flow.png" alt="One Kiro Crew message, end to end" loading="lazy"><h3>One Crew message, end to end</h3><p>Sequence diagram with the per-tool-call gate.</p></a>
+        <a class="card arch-card" href="docs/diagrams/ai-first-saas-runtime.html"><img src="docs/diagrams/ai-first-saas-runtime.png" alt="Multi-tenant runtime with AI features" loading="lazy"><h3>Multi-tenant runtime with AI</h3><p>Tenant-bound AI calls, observed in CloudWatch Omni.</p></a>
+        <a class="card arch-card" href="docs/diagrams/ai-first-saas-delivery.html"><img src="docs/diagrams/ai-first-saas-delivery.png" alt="Build and operate with Kiro" loading="lazy"><h3>Build and operate with Kiro</h3><p>Personas, Kiro, gated CI, CloudFormation, Security and DevOps Agents.</p></a>
+      </div>
+    </div>
+  </section>
+</main>
+<script src="assets/site.js"></script>
+</body>
+</html>

@@ -20,7 +20,8 @@
   // mark the nav item before site.js builds the header
   (function () {
     var d = new URLSearchParams(location.search).get("doc") || "landscape";
-    document.body.setAttribute("data-page", d === "architecture-patterns" ? "patterns" : d === "kiro-in-the-field" ? "field" : d === "ai-first-saas-playbook" ? "aifirst" : d);
+    var GUIDES = ["frontier-engineering-teams", "kiro-features-in-this-repo", "kiro-ide-cli-internals", "kiro-crew-internals", "landscape", "architecture-patterns", "aws-mcp-catalog", "setup", "troubleshooting", "authoring", "advanced-scenarios"];
+    document.body.setAttribute("data-page", d === "kiro-in-the-field" ? "field" : d === "ai-first-saas-playbook" ? "aifirst" : GUIDES.indexOf(d) >= 0 ? "guides" : d);
   })();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
