@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "capabilities": {
+    "publish": {
+      "enabled": true,
+      "scopes": {
+        "destinations": {"mode": "allow", "allow": ["deploy-web-aws"]},
+        "regions": {"mode": "allow", "allow": ["us-east-1"]},
+        "audience": {"mode": "allow", "allow": ["public"]},
+        "accounts": {"mode": "allow", "allow": ["123456789012"]}
+      }
+    }
+  }
+}

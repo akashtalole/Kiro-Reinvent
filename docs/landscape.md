@@ -28,7 +28,7 @@ Since Kiro CLI 3.0 the **V3 agent harness** is the default everywhere: IDE, CLI 
 | CLI | Terminal, `--no-interactive` headless for CI (API-key auth), `kiro-cli acp` for editors | 01, 10, 11 |
 | Web (preview) | Specs in the browser, multi-repo sessions, GitHub/GitLab | 14 |
 | Autonomous agent (preview) | Label `kiro` or `/kiro` on an issue → PR; sandbox per task; learns from review | 14 |
-| Crew | Long-running, scheduled, multi-agent, channel-driven | 12, 13 |
+| Crew | Long-running, scheduled, multi-agent, channel-driven | 12, 13, 51–61 |
 
 > Deep dive with a diagram and a comparison table: [How Kiro IDE and Kiro CLI work (and how Kiro Crew differs)](kiro-ide-cli-internals.md).
 

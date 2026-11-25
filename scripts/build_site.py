@@ -43,6 +43,30 @@ CATEGORIES = [
     "AI-first SaaS",
 ]
 LEVELS = ["Beginner", "Intermediate", "Advanced"]
+# Product filter: derived from each lab's `services` (or an explicit `products:` list in front matter).
+PRODUCTS = [
+    ("Kiro IDE", r"^Kiro IDE"),
+    ("Kiro CLI", r"^Kiro CLI"),
+    ("Kiro Crew", r"Kiro Crew"),
+    ("Kiro Web & autonomous agent", r"^Kiro (Web|autonomous agent)"),
+    ("AWS MCP servers", r"MCP"),
+    ("Strands Agents", r"^Strands"),
+    ("AgentCore", r"AgentCore"),
+    ("Amazon Bedrock", r"Bedrock"),
+]
+PRODUCT_NAMES = [name for name, _ in PRODUCTS]
+
+
+def products_for(services: list, explicit=None) -> list[str]:
+    if explicit:
+        bad = [p for p in explicit if p not in PRODUCT_NAMES]
+        if bad:
+            print(f"Unknown products {bad}; use one of {PRODUCT_NAMES}", file=sys.stderr)
+            sys.exit(1)
+        return [p for p in PRODUCT_NAMES if p in explicit]
+    services = [str(x) for x in services or []]
+    return [name for name, rx in PRODUCTS
+            if any(re.search(rx, svc) and not (name == "Amazon Bedrock" and "AgentCore" in svc) for svc in services)]
 
 
 def parse_scalar(raw: str):
@@ -107,6 +131,7 @@ def collect_labs() -> list[dict]:
                 "duration": meta["duration"],
                 "summary": meta["summary"],
                 "services": meta.get("services", []),
+                "products": products_for(meta.get("services", []), meta.get("products")),
                 "tags": meta.get("tags", []),
                 "popular": str(meta.get("popular", "")).lower() == "true",
                 "files": files,
@@ -179,6 +204,22 @@ def validate_scenarios(lab_ids: set[str]) -> int:
     return len(data["scenarios"])
 
 
+def add_scenario_products(labs: list[dict]) -> None:
+    """Give each scenario in _site/data/scenarios.json the products of its labs and services."""
+    out = OUT / "data" / "scenarios.json"
+    if not out.exists():
+        return
+    by_id = {l["id"]: l for l in labs}
+    data = json.loads(out.read_text(encoding="utf-8"))
+    for sc in data["scenarios"]:
+        found = set(products_for(sc.get("services", [])))
+        for lab in sc.get("labs", []):
+            found.update(by_id.get(lab, {}).get("products", []))
+        sc["products"] = [p for p in PRODUCT_NAMES if p in found]
+    data["products"] = PRODUCT_NAMES
+    out.write_text(json.dumps(data, indent=2), encoding="utf-8")
+
+
 STUB = """<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title} · Kiro Reinvent Labs</title><meta name="robots" content="noindex">
@@ -218,7 +259,7 @@ def write_pretty_urls(labs: list[dict]) -> int:
         write_stub(f"paths/{path['id']}", f"labs.html?path={path['id']}", path["title"]); n += 1
     aliases = {"quickstart": "lab.html?id=01-kiro-cli-quickstart", "playbook": "doc.html?doc=ai-first-saas-playbook",
                "field": "doc.html?doc=kiro-in-the-field", "landscape": "doc.html?doc=landscape", "paths": "index.html#paths",
-               "use-cases": "use-cases.html", "internals": "doc.html?doc=kiro-ide-cli-internals", "usecases": "use-cases.html", "site": "index.html"}
+               "use-cases": "use-cases.html", "internals": "doc.html?doc=kiro-ide-cli-internals", "crew": "labs.html?product=Kiro+Crew", "usecases": "use-cases.html", "site": "index.html"}
     for k, v in aliases.items():
         write_stub(k, v, k.replace("-", " ").title()); n += 1
     return n
@@ -239,11 +280,12 @@ def build() -> None:
         shutil.copytree(diagrams, OUT / "docs" / "diagrams", ignore=shutil.ignore_patterns("*.receipt.json"))
     (OUT / "data").mkdir(exist_ok=True)
     (OUT / "data" / "labs.json").write_text(
-        json.dumps({"categories": CATEGORIES, "levels": LEVELS, "labs": labs}, indent=2),
+        json.dumps({"categories": CATEGORIES, "levels": LEVELS, "products": PRODUCT_NAMES, "labs": labs}, indent=2),
         encoding="utf-8",
     )
     (OUT / ".nojekyll").write_text("", encoding="utf-8")
     n_scen = validate_scenarios({l["id"] for l in labs})
+    add_scenario_products(labs)
     n_urls = write_pretty_urls(labs)
     print(f"Built {len(labs)} labs, {n_scen} scenarios and {n_urls} pretty URLs into {OUT.relative_to(ROOT)}/")
 

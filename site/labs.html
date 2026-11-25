@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>All Labs · Kiro Reinvent</title>
-<meta name="description" content="Search and filter every Kiro Reinvent lab by topic, level and learning path.">
+<meta name="description" content="Search and filter every Kiro Reinvent lab by product, topic, level and learning path.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%236b4cf6'/><text x='16' y='22' font-size='17' font-family='Arial' font-weight='700' fill='white' text-anchor='middle'>K</text></svg>">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
 <link rel="stylesheet" href="assets/site.css">
@@ -19,6 +19,7 @@
       <div id="path-banner"></div>
       <div class="toolbar">
         <input class="searchbox" id="q" type="search" placeholder="Filter by title, service or tag — e.g. “memory”, “Cedar”, “CDK”" aria-label="Filter labs">
+        <div class="filter-row" id="prod-row"><span class="lbl">Product</span></div>
         <div class="filter-row" id="cat-row"><span class="lbl">Topic</span></div>
         <div class="filter-row" id="lvl-row"><span class="lbl">Level</span></div>
       </div>
@@ -31,7 +32,8 @@
 (function () {
   var K = window.KRL, esc = K.esc;
   var params = new URLSearchParams(location.search);
-  var state = { q: params.get("q") || "", category: params.get("category") || "", level: params.get("level") || "", path: params.get("path") || "" };
+  var state = { q: params.get("q") || "", category: params.get("category") || "", level: params.get("level") || "", product: params.get("product") || "", path: params.get("path") || "" };
+  var ROWS = { "prod-row": "product", "cat-row": "category", "lvl-row": "level" };
   var qEl = document.getElementById("q");
   qEl.value = state.q;
 
@@ -49,12 +51,13 @@
         state[key] = b.getAttribute("data-v"); update();
       });
     }
+    chipRow(document.getElementById("prod-row"), data.products || [], "product");
     chipRow(document.getElementById("cat-row"), data.categories, "category");
     chipRow(document.getElementById("lvl-row"), data.levels, "level");
 
     function update() {
-      ["cat-row", "lvl-row"].forEach(function (id) {
-        var key = id === "cat-row" ? "category" : "level";
+      Object.keys(ROWS).forEach(function (id) {
+        var key = ROWS[id];
         document.querySelectorAll("#" + id + " button").forEach(function (b) {
           b.setAttribute("aria-pressed", String(b.getAttribute("data-v") === state[key]));
         });
@@ -67,7 +70,8 @@
       var hits = list.filter(function (l) {
         if (state.category && l.category !== state.category) return false;
         if (state.level && l.level !== state.level) return false;
-        var hay = [l.id, l.title, l.summary, l.category].concat(l.services || [], l.tags || []).join(" ").toLowerCase();
+        if (state.product && (l.products || []).indexOf(state.product) < 0) return false;
+        var hay = [l.id, l.title, l.summary, l.category].concat(l.services || [], l.tags || [], l.products || []).join(" ").toLowerCase();
         return terms.every(function (t) { return hay.indexOf(t) !== -1; });
       });
       document.getElementById("count").textContent = hits.length + " of " + labs.length + " labs";

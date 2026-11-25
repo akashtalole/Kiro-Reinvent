@@ -149,5 +149,16 @@ Generated agent JSON is written to `~/.kiro/agents/`, because that is where kiro
 - [Lab 12 – Kiro Crew workspace](../labs/12-kiro-crew-workspace/README.md)
 - [Lab 13 – Kiro Crew bots](../labs/13-kiro-crew-bots/README.md)
 - [Lab 35 – End-to-end SRE crew](../labs/35-e2e-sre-crew/README.md)
+- [Lab 51 – Kiro Crew scheduling — cron jobs, heartbeats and webhooks](../labs/51-crew-scheduling-heartbeats-webhooks/README.md)
+- [Lab 52 – Kiro Crew Task Runner — unattended, spec-driven work](../labs/52-crew-task-runner-overnight/README.md)
+- [Lab 53 – Kiro Crew workflows and PR babysitting](../labs/53-crew-workflows-pr-babysitting/README.md)
+- [Lab 54 – Build your first Kiro Crew app](../labs/54-crew-build-your-first-app/README.md)
+- [Lab 55 – Kiro Crew engineering apps — triage, review, specs and auto-improvement](../labs/55-crew-engineering-apps/README.md)
+- [Lab 56 – Kiro Crew Ops Mission Control — an AI first responder for CloudWatch alarms](../labs/56-crew-ops-mission-control/README.md)
+- [Lab 57 – Run Kiro Crew 24/7 — service, Docker, or your own EC2 with kirocrew cloud](../labs/57-crew-24x7-on-aws/README.md)
+- [Lab 58 – Govern Kiro Crew for a team — sandbox, denied commands, policy ceiling and audit](../labs/58-crew-governance-for-teams/README.md)
+- [Lab 59 – Kiro Crew with any agent harness — Kiro, Claude Code, Codex, OpenCode and local models](../labs/59-crew-multi-harness-models/README.md)
+- [Lab 60 – Kiro Crew knowledge, research campaigns and memory](../labs/60-crew-knowledge-research-memory/README.md)
+- [Lab 61 – Capstone — an AI-first engineering team on Kiro Crew](../labs/61-e2e-ai-first-team-on-crew/README.md)
 
 Sources: [`docs/architecture/overview.md`](https://github.com/kirodotdev/KiroCrew/blob/main/docs/architecture/overview.md), [`docs/system-specs/modules/`](https://github.com/kirodotdev/KiroCrew/tree/main/docs/system-specs/modules) (session, subagent, taskrunner, heartbeat, crew-mode, providers, cloud, mcp-gateway-daemon-lifecycle), [`src/kiro_crew/agent_sdk/backends.py`](https://github.com/kirodotdev/KiroCrew/blob/main/src/kiro_crew/agent_sdk/backends.py). Details change quickly in this project, so check the repository for the current behaviour.
