@@ -28,7 +28,8 @@
         "15",
         "40",
         "41",
-        "42"
+        "42",
+        "62"
       ]
     },
     {
@@ -274,6 +275,11 @@
         "title": "Runbooks the agent actually reads",
         "text": "Ingest runbooks and ADRs into the local knowledge library and get cited answers; corrections become lessons for every later session.",
         "lab": "60"
+      },
+      {
+        "title": "Skills that carry platform rules",
+        "text": "Package each platform's easy-to-break rules (signed Ring webhooks, Alexa+ add-on limits, Bee citations, 10-foot TV UI) as skills with scripts that load only when relevant, and lint them on every save.",
+        "lab": "62"
       }
     ],
     "emerging": [
@@ -391,6 +397,145 @@
         "title": "Rollback-first production verifier",
         "text": "After every deploy an agent compares SLOs and business metrics, rolls back on doubt, and files the root cause as the factory's next task.",
         "lab": "56"
+      },
+      {
+        "title": "Routing evals for skills",
+        "text": "Keep prompts that should and shouldn't trigger each skill, measure routing precision and recall, and fix descriptions instead of bodies when skills misfire.",
+        "lab": "62"
+      }
+    ],
+    "crew": [
+      {
+        "title": "Pick up where you left off, anywhere",
+        "text": "Start a task in a Slack thread on your phone, continue it in the dashboard or desktop app, and finish from the CLI. It's the same Crew session, memory and lessons on every surface.",
+        "lab": "12",
+        "persona": "Developer"
+      },
+      {
+        "title": "Corrections that stick",
+        "text": "Say “no, always run the frontend checks first” once. Crew saves it as a lesson and applies it in later sessions, and `kirocrew learn list` shows what it learned.",
+        "lab": "60",
+        "persona": "Developer"
+      },
+      {
+        "title": "Framework upgrade marathon",
+        "text": "Hand the Task Runner a spec for a major-version upgrade. It works step by step on its own branch with tests after each step, commits what passes, and retries or replans what doesn't.",
+        "lab": "52",
+        "persona": "Developer"
+      },
+      {
+        "title": "Move your workspace in one command",
+        "text": "Snapshot every piece of Crew state (memory, schedules, apps, knowledge) and restore it on a new laptop or a remote EC2 crew with `kirocrew snapshot` and `kirocrew restore --dry-run`.",
+        "lab": "60",
+        "persona": "Developer"
+      },
+      {
+        "title": "Parallel research before a design decision",
+        "text": "Ask Crew to compare three libraries or AWS services in parallel. Each subagent researches one option in isolation, and the results come back as one comparison you can save as an artifact.",
+        "lab": "12",
+        "persona": "Architect"
+      },
+      {
+        "title": "Flaky-test hunter",
+        "text": "A Build health bot watches CI history, separates flaky failures from real ones with evidence, and proposes a quarantine with an expiry instead of silently retrying forever.",
+        "lab": "13",
+        "persona": "QA engineer"
+      },
+      {
+        "title": "Release readiness, owned by a bot",
+        "text": "A Release readiness bot runs the checklist (changelog, open blockers, CI status, migration notes) and reports in Slack, comment-only until it earns more trust.",
+        "lab": "13",
+        "persona": "Release manager"
+      },
+      {
+        "title": "From a Slack thread to an approved spec",
+        "text": "Spec Builder turns a feature discussion into Requirements → Design → Tasks you review in-app, then hands the approved plan to an execution session.",
+        "lab": "55",
+        "persona": "Product manager"
+      },
+      {
+        "title": "Docs that never drift",
+        "text": "A weekly workflow runs one agent per docs page to find outdated commands and broken links, a judge agent drops anything it can't reproduce, and one report lists what's left.",
+        "lab": "53",
+        "persona": "Tech writer"
+      },
+      {
+        "title": "On-call handover that writes itself",
+        "text": "Ops Mission Control's Handover tab lists what is waiting on a person, what stopped without a diagnosis and what keeps recurring, ready for the next responder.",
+        "lab": "56",
+        "persona": "SRE / on-call"
+      },
+      {
+        "title": "Cross-repo incident investigation",
+        "text": "When an incident spans services, Crew sends one subagent per repository to read recent changes and logs in parallel, then merges their findings into one timeline.",
+        "lab": "53",
+        "persona": "SRE / on-call"
+      },
+      {
+        "title": "Route work to the right specialist",
+        "text": "Define crews with their own agent, model, memory and trigger phrases. The orchestrator uses `select_crew` to send each request to the crew whose triggers match.",
+        "lab": "13",
+        "persona": "Engineering manager"
+      },
+      {
+        "title": "Onboarding buddy in Slack",
+        "text": "New hires ask Crew questions in Slack. Answers come from the runbooks and ADRs in the knowledge library, with citations, so the same five questions stop reaching the team.",
+        "lab": "60",
+        "persona": "Engineering manager"
+      },
+      {
+        "title": "Weekly engineering digest",
+        "text": "A Friday cron collects merged PRs, cycle time and open blockers from GitHub and posts a short digest to the team channel, with each claim linked.",
+        "lab": "51",
+        "persona": "Engineering manager"
+      },
+      {
+        "title": "A team crew on your own AWS account",
+        "text": "Launch Crew on EC2 with `kirocrew cloud launch`: a CloudFormation stack, sign-in over SSM, no inbound ports and no AWS keys stored by Crew.",
+        "lab": "57",
+        "persona": "Platform engineer"
+      },
+      {
+        "title": "Many crews, one hub",
+        "text": "Register remote crews under Settings → Remote Crew and manage them from one dashboard (multi-instance is a Preview feature).",
+        "lab": "57",
+        "persona": "Platform engineer"
+      },
+      {
+        "title": "Ship your team's agent as an app",
+        "text": "Package an agent, a skill and a schedule as one `app.json` that every teammate installs from a git URL. Fix it once and everyone gets the update.",
+        "lab": "54",
+        "persona": "Platform engineer"
+      },
+      {
+        "title": "One policy, every host",
+        "text": "Publish a `security_policy.json` ceiling at an internal URL and point every Crew host at it with `KIROCREW_POLICY_URL`. Profiles can narrow it but never widen it.",
+        "lab": "58",
+        "persona": "Security & compliance"
+      },
+      {
+        "title": "Audit evidence on demand",
+        "text": "Every tool call and approval lands in an HMAC-chained security event log. `kirocrew security verify` proves the chain is intact and `security events` shows the decisions.",
+        "lab": "58",
+        "persona": "Security & compliance"
+      },
+      {
+        "title": "Assistant on a local model",
+        "text": "Run new sessions on OpenCode with a local LM Studio or Ollama model for sensitive or offline work, while schedules, memory and the policy gate stay the same.",
+        "lab": "59",
+        "persona": "Security & compliance"
+      },
+      {
+        "title": "Cost sentinel",
+        "text": "A scheduled bot reads AWS Billing data through MCP, explains day-over-day changes and pings the owner only when spend moves outside the expected range.",
+        "lab": "13",
+        "persona": "FinOps"
+      },
+      {
+        "title": "Publish a prototype to your own AWS account",
+        "text": "Crew keeps versioned artifacts with live previews and can deploy one to your own AWS account. A publish policy limits destinations, Regions and accounts.",
+        "lab": "58",
+        "persona": "Solutions architect"
       }
     ]
   },

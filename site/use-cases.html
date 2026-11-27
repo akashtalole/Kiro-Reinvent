@@ -20,8 +20,9 @@
         <input class="searchbox" id="q" type="search" placeholder="Filter use cases — e.g. “cost”, “tenant”, “agents”, “policy”" aria-label="Filter use cases">
         <div class="filter-row" id="prod-row"><span class="lbl">Product</span></div>
         <div class="filter-row" id="kind-row"><span class="lbl">Type</span>
-          <button class="chip" data-v="">All</button><button class="chip" data-v="core">Core</button><button class="chip" data-v="emerging">Emerging</button>
+          <button class="chip" data-v="">All</button><button class="chip" data-v="core">Core</button><button class="chip" data-v="emerging">Emerging</button><button class="chip" data-v="crew">Kiro Crew</button>
         </div>
+        <div class="filter-row" id="per-row" hidden><span class="lbl">Persona</span></div>
       </div>
       <p class="muted" id="count"></p>
       <div class="grid grid-3" id="uc-grid"></div>
@@ -37,14 +38,23 @@
 (function () {
   var K = window.KRL, esc = K.esc;
   var params = new URLSearchParams(location.search);
-  var state = { q: params.get("q") || "", kind: params.get("type") || "", product: params.get("product") || "" };
+  var state = { q: params.get("q") || "", kind: params.get("type") || "", product: params.get("product") || "", persona: params.get("persona") || "" };
+  var KINDS = { core: ["Core", "ok"], emerging: ["Emerging", "accent"], crew: ["Kiro Crew", "warm"] };
+  function rich(t) { return esc(t).replace(/`([^`]+)`/g, "<code>$1</code>"); }
   document.getElementById("q").value = state.q;
   Promise.all([K.getJSON("data/catalog.json"), K.getJSON("data/labs.json"), K.getJSON("data/scenarios.json").catch(function () { return { scenarios: [] }; })])
   .then(function (res) {
     var cat = res[0], byId = {}, scen = res[2].scenarios;
     res[1].labs.forEach(function (l) { byId[l.id] = l; });
     var items = cat.useCases.core.map(function (u) { return Object.assign({ kind: "core" }, u); })
-      .concat(cat.useCases.emerging.map(function (u) { return Object.assign({ kind: "emerging" }, u); }));
+      .concat(cat.useCases.emerging.map(function (u) { return Object.assign({ kind: "emerging" }, u); }))
+      .concat((cat.useCases.crew || []).map(function (u) { return Object.assign({ kind: "crew" }, u); }));
+    var personas = [];
+    items.forEach(function (u) { if (u.persona && personas.indexOf(u.persona) < 0) personas.push(u.persona); });
+    var perRow = document.getElementById("per-row");
+    perRow.insertAdjacentHTML("beforeend", '<button class="chip" data-v="">All</button>' + personas.map(function (v) {
+      return '<button class="chip" data-v="' + esc(v) + '">' + esc(v) + "</button>"; }).join(""));
+    perRow.addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { state.persona = b.getAttribute("data-v"); render(); } });
     function prods(u) { return u.products || (byId[u.lab] || {}).products || []; }
     var prodRow = document.getElementById("prod-row");
     prodRow.insertAdjacentHTML("beforeend", '<button class="chip" data-v="">All</button>' + (res[1].products || []).map(function (v) {
@@ -54,25 +64,31 @@
     function render() {
       document.querySelectorAll("#kind-row button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-v") === state.kind)); });
       document.querySelectorAll("#prod-row button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-v") === state.product)); });
+      perRow.hidden = state.kind !== "crew";
+      if (perRow.hidden) state.persona = "";
+      document.querySelectorAll("#per-row button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-v") === state.persona)); });
       var terms = state.q.toLowerCase().split(/\s+/).filter(Boolean);
       var hits = items.filter(function (u) {
         if (state.kind && u.kind !== state.kind) return false;
         if (state.product && prods(u).indexOf(state.product) < 0) return false;
+        if (state.persona && u.persona !== state.persona) return false;
         var l = byId[u.lab] || {};
-        var hay = [u.title, u.text, l.title, l.category].concat(l.services || [], l.tags || [], prods(u)).join(" ").toLowerCase();
+        var hay = [u.title, u.text, u.persona || "", l.title, l.category].concat(l.services || [], l.tags || [], prods(u)).join(" ").toLowerCase();
         return terms.every(function (t) { return hay.indexOf(t) >= 0; });
       });
       document.getElementById("count").textContent = hits.length + " of " + items.length + " use cases";
       document.getElementById("uc-grid").innerHTML = hits.length ? hits.map(function (u) {
         var l = byId[u.lab], rel = related(u.lab);
-        return '<div class="card usecase"><span class="chip ' + (u.kind === "core" ? "ok" : "accent") + '" style="align-self:flex-start">' + (u.kind === "core" ? "Core" : "Emerging") + "</span>" +
-          '<h3 style="font-size:17px">' + esc(u.title) + "</h3><p>" + esc(u.text) + "</p>" +
+        var kd = KINDS[u.kind];
+        return '<div class="card usecase"><div class="meta" style="margin:0"><span class="chip ' + kd[1] + '">' + kd[0] + "</span>" +
+          (u.persona ? '<span class="chip">' + esc(u.persona) + "</span>" : "") + "</div>" +
+          '<h3 style="font-size:17px">' + esc(u.title) + "</h3><p>" + rich(u.text) + "</p>" +
           (l ? '<a class="lablink" style="font-size:13px;font-family:var(--mono)" href="' + K.labHref(l) + '">Lab ' + l.id + " · " + esc(l.title) + " →</a>" : "") +
           (rel.length ? '<div class="meta" style="flex-direction:column;align-items:flex-start;gap:4px"><span class="muted" style="font-size:12.5px">Seen in scenarios</span>' +
             rel.map(function (s) { return '<a style="font-size:13.5px" href="scenarios.html?id=' + encodeURIComponent(s.id) + '">' + esc(s.title) + "</a>"; }).join("") + "</div>" : "") +
           "</div>";
       }).join("") : '<div class="empty" style="grid-column:1/-1">No use cases match.</div>';
-      var p = new URLSearchParams(); if (state.q) p.set("q", state.q); if (state.kind) p.set("type", state.kind); if (state.product) p.set("product", state.product);
+      var p = new URLSearchParams(); if (state.q) p.set("q", state.q); if (state.kind) p.set("type", state.kind); if (state.product) p.set("product", state.product); if (state.persona) p.set("persona", state.persona);
       try { history.replaceState(null, "", "use-cases.html" + (p.toString() ? "?" + p : "")); } catch (e) { /* ignore */ }
     }
     document.getElementById("q").addEventListener("input", function (e) { state.q = e.target.value; render(); });

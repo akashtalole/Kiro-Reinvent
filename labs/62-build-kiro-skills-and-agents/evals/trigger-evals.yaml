@@ -1,0 +1,31 @@
+# Routing evals: does the right skill load for a prompt, and stay quiet otherwise?
+# Run each prompt in a fresh Kiro session and record which skill (if any) was loaded.
+ring-webhook-verifier:
+  should_trigger:
+    - "My Ring webhook endpoint keeps rejecting deliveries, can you check the signature code?"
+    - "Write tests for the Ring button_press webhook handler"
+    - "Replay this saved Ring delivery against my endpoint"
+  should_not_trigger:
+    - "Add a doorbell icon to the settings page"
+    - "Verify the GitHub webhook signature"
+alexa-addon-preflight:
+  should_trigger:
+    - "Is my addon.json ready to deploy?"
+    - "Alexa+ rejected my add-on, what's wrong?"
+    - "Check my MCP endpoint before alexa-ai deploy"
+  should_not_trigger:
+    - "Write an Alexa skill using the old ASK SDK"
+    - "Deploy the CDK stack"
+bee-to-spec:
+  should_trigger:
+    - "Spec this conversation from my Bee this morning"
+    - "Turn yesterday's Bee recording about dark mode into requirements"
+  should_not_trigger:
+    - "Write requirements for the login page"
+    - "Summarise my meeting notes"
+vega-tv-ui-review:
+  should_trigger:
+    - "Review the home screen of my Fire TV app for D-pad navigation"
+    - "Is this Vega OS screen ready for the demo?"
+  should_not_trigger:
+    - "Review the mobile layout of the website"

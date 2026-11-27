@@ -1,0 +1,9 @@
+{
+  "name": {"value": "Crew Status"},
+  "shortDescription": "Ask how your builds, incidents and release blockers look right now.",
+  "fullDescription": "Crew Status answers questions about your engineering work: failing checks, open incidents and what blocks the next release.",
+  "examplePhrases": ["Alexa, how's my crew?", "Alexa, what's blocking the release?", "Alexa, are there open incidents?"],
+  "icons": {"light": {"72": "https://example.com/i72.png", "64": "https://example.com/i64.png", "88": "https://example.com/i88.png", "126": "https://example.com/i126.png", "180": "https://example.com/i180.png", "241": "https://example.com/i241.png"}},
+  "carouselImages": ["https://example.com/c600x900.png"],
+  "integrations": [{"type": "MCP", "endpoints": {"default": {"type": "HTTPS", "uri": "https://mcp.example.com/mcp"}}}]
+}
