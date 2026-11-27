@@ -16,6 +16,14 @@ alexa-addon-preflight:
   should_not_trigger:
     - "Write an Alexa skill using the old ASK SDK"
     - "Deploy the CDK stack"
+echo-show-widget-review:
+  should_trigger:
+    - "Review my Alexa+ widget for Echo Show"
+    - "Why is my add-on's card blank on Echo Show 15?"
+    - "Check this ui:// widget before I run the Local Inspector"
+  should_not_trigger:
+    - "Make the website's dark mode look better"
+    - "Review the Fire TV home screen"
 bee-to-spec:
   should_trigger:
     - "Spec this conversation from my Bee this morning"

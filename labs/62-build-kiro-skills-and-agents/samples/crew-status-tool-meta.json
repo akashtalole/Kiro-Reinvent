@@ -1,0 +1,11 @@
+{
+  "name": "crew_status",
+  "description": "Builds, failing checks and open incidents for the user's team, newest first.",
+  "inputSchema": { "type": "object", "properties": { "team": { "type": "string" } }, "additionalProperties": false },
+  "_meta": {
+    "ui": {
+      "resourceUri": "ui://crew-status/widget-a3f9c12b.html",
+      "csp": { "connectDomains": [], "resourceDomains": [] }
+    }
+  }
+}

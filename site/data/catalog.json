@@ -402,6 +402,11 @@
         "title": "Routing evals for skills",
         "text": "Keep prompts that should and shouldn't trigger each skill, measure routing precision and recall, and fix descriptions instead of bodies when skills misfire.",
         "lab": "62"
+      },
+      {
+        "title": "Alexa+ on a screen: Echo Show widgets",
+        "text": "Give an Alexa+ add-on a List, Carousel, Card or Map on Echo Show with a single-file MCP Apps widget that keeps speech and screen in sync, linted on every save and checked in the Local Inspector.",
+        "lab": "62"
       }
     ],
     "crew": [

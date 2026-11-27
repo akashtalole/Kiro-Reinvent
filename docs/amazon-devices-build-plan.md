@@ -2,7 +2,7 @@
 
 A plan for building projects on the four Amazon device tracks (**Alexa+**, **Bee**, **Ring** and **Fire TV**) with Kiro IDE for interactive building and Kiro Crew for everything that should keep running while you're away. For each track it gives the hard rules, idea options with one recommended pick, the architecture, the exact runtime hook that satisfies the "imported and actually called" rule, a demo script and risks. A shared Kiro setup and a timeline cover all four.
 
-> Facts about each platform come from the official docs read on 27 Nov 2026 (links in [Sources](#sources)). Items marked **unverified** need checking before you rely on them. The ideas and architectures are proposals.
+> This plan also covers **Echo Show** visuals for Alexa+ add-ons (section 3). Facts about each platform come from the official docs read on 27 Nov 2026 (links in [Sources](#sources)). Items marked **unverified** need checking before you rely on them. The ideas and architectures are proposals.
 
 ## 1. The rules, in one table
 
@@ -109,6 +109,44 @@ flowchart LR
   - an agent built with Strands Agents on Bedrock that calls the **same MCP server**.
 
   The repo then contains the simulation's source and the demo labels it as simulated.
+
+### Echo Show: visual Alexa+ add-ons
+
+Echo Show is where an Alexa+ add-on gets a screen.
+- If a tool declares a `ui://` resource in `_meta.ui.resourceUri`, Alexa+ renders that **single-file HTML widget** (MCP Apps) on the device.
+- Without one, the tool is **data-only**: Alexa renders it with native components, or by voice on devices without a screen.
+
+| Rule | Detail |
+| --- | --- |
+| Runtime | Sandboxed, opaque-origin iframe. The MCP Apps **postMessage bridge** is the only channel to the host. No `window.parent`, cookies or `localStorage`. External domains must be declared in `_meta.ui.csp` (`connectDomains`, `resourceDomains`) |
+| Device info | `hostContext` (`deviceClass`, `maxWidth`, `maxHeight`, `displayMode`, `safeAreaInsets`, `theme`…). Read it at render time and again on `host-context-changed`. `deviceClass` is authoritative |
+| Canvas | Author at **768×480** and apply one root scale. Echo Show 8 and 15 render at 1280×800 (`zoom: 1.667`) |
+| Patterns | **List, Carousel, Card, Map** only. Carousel: 3–5 items, first item within **500 ms**. Map: compact by default (map + 3 ranked results) |
+| Look | Type tokens 48…8 px. Light and dark both tested. Readable at ~3 ft, essentials at ~10 ft. Must work with VoiceView |
+| Parity | Speech and screen never contradict. Visuals update with each voice turn. Anything critical on screen is also available by voice. Tapping does what the voice equivalent does |
+| Speed | Results within **3 s** (send an interim message if slower) |
+| Test | **Local Inspector** (`addon-local-inspector <mcp-url>`) renders the widget in Echo Show 8/15, mobile and voice-only frames and writes a certification verdict. Then verify on a real Echo Show |
+
+**Echo Show ideas**
+
+| # | Idea | Pattern | Why it's interesting |
+| --- | --- | --- | --- |
+| **S1 (recommended)** | **Crew status on the office Echo Show 15.** "Alexa, how's my crew?" speaks the summary and shows a List of failing checks and incidents. "Show me the checkout failure" opens a Card | List → Card | Same MCP server as A1, plus one widget. Sample in [Lab 62](../labs/62-build-kiro-skills-and-agents/README.md) |
+| S2 | **Today's visitors.** A Carousel of the day's doorbell events with snapshot thumbnails | Carousel | Pairs with Ring R1. The first item must arrive within 500 ms, so thumbnails come from a cache |
+| S3 | **Morning brief from Bee** on the kitchen Echo Show: yesterday's todos and today's plan from Bee daily summaries | List | Pairs with Bee. The widget only shows what the user asked for |
+| S4 | **EV chargers or pharmacies near me**, as a compact Map with 3 ranked results | Map | Exercises the Map pattern. The developer supplies the map |
+| S5 | **Step-by-step recipe or repair guide**, one Card per step with timers, advanced by voice ("next step") | Card | Shows voice and touch parity on every step |
+
+**How Kiro helps:**
+- The [`echo-show-widget-review`](../labs/62-build-kiro-skills-and-agents/.kiro/skills/echo-show-widget-review/SKILL.md) skill and its `check_widget.py` lint every widget on save. A Kiro hook can run it, and Kiro Crew can run it nightly as a zero-token script job.
+- The `alexa-addon-builder` agent runs `alexa-addon-preflight` and then the Local Inspector before asking to deploy.
+
+**Demo:**
+1. Ask on an Echo Show 15.
+2. The List appears while Alexa speaks the same summary.
+3. Tap a row: the Card opens and Alexa reads it.
+4. Say "next" to move on, showing the voice path matches the touch path.
+5. Finish on a voice-only Echo, which gets the same answer by speech.
 
 ## 4. Bee track
 
@@ -257,7 +295,12 @@ A Kiro **Stop hook** runs `proof/check.py`, which fails the session if:
 
 ## Sources
 
-- **Alexa+:**
+- **Alexa+ and Echo Show:**
+  - [Design guide: layout and rendering](https://developer.amazon.com/docs/alexaplus/add-ons/mcp-addon-layout-and-rendering)
+  - [Visual foundations](https://developer.amazon.com/docs/alexaplus/add-ons/mcp-addon-visual-foundations)
+  - [Components and patterns](https://developer.amazon.com/docs/alexaplus/add-ons/mcp-addon-components-and-patterns)
+  - [Functional requirements](https://developer.amazon.com/docs/alexaplus/add-ons/functional-requirements.html)
+  - [Local Inspector](https://developer.amazon.com/docs/alexaplus/add-ons/mcp-toolkit-local-inspector)
   - [MCP Toolkit overview](https://developer.amazon.com/docs/alexaplus/add-ons/mcp-toolkit-overview)
   - [MCP QuickStart](https://developer.amazon.com/docs/alexaplus/add-ons/mcp-toolkit-quickstart)
   - [MCP authentication](https://developer.amazon.com/docs/alexaplus/add-ons/mcp-toolkit-authentication.html)
