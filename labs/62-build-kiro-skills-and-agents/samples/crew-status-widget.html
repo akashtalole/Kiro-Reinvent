@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=768, initial-scale=1">
+<title>Crew status</title>
+<style>
+  /* Authored at the 768x480 base canvas; one root scale is applied from hostContext. */
+  :root { --bg: #FFFFFF; --inner: #FFFFFF; --fg: #1B2028; --muted: #5B6573; --bad: #B3261E; --ok: #1E7B3A; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #14181E; --inner: #1B2028; --fg: #F2F4F7; --muted: #A7B0BC; --bad: #FF8A80; --ok: #7BD88F; } }
+  :root[data-theme="dark"] { --bg: #14181E; --inner: #1B2028; --fg: #F2F4F7; --muted: #A7B0BC; --bad: #FF8A80; --ok: #7BD88F; }
+  :root[data-theme="light"] { --bg: #FFFFFF; --inner: #FFFFFF; --fg: #1B2028; --muted: #5B6573; --bad: #B3261E; --ok: #1E7B3A; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: system-ui, sans-serif; }
+  #root { width: 768px; height: 480px; box-sizing: border-box; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+  h1 { font-size: 32px; margin: 0; }
+  .sub { font-size: 18px; color: var(--muted); margin: 0; }
+  ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+  li { background: var(--inner); border-radius: 12px; padding: 16px; display: flex; justify-content: space-between; font-size: 24px; }
+  .bad { color: var(--bad); } .ok { color: var(--ok); }
+</style>
+</head>
+<body>
+<main id="root" role="main" aria-label="Crew status">
+  <h1 id="title">Crew status</h1>
+  <p class="sub" id="sub">Waiting for data…</p>
+  <ul id="list" role="list" aria-label="Builds and incidents"></ul>
+</main>
+<script>
+  // Single-file MCP Apps widget for an Alexa+ add-on. The postMessage bridge is the only channel to the host.
+  // Exact bridge method names follow the Alexa+ MCP Apps docs (ui/notifications/*); this sample matches on suffixes.
+  var BASE_W = 768, BASE_H = 480;
+  function applyHostContext(hostContext) {
+    if (!hostContext) return;
+    var w = hostContext.maxWidth || BASE_W;
+    // deviceClass is authoritative; Echo Show 8/15 render at 1280x800 (scale 1.667).
+    var scale = /echo.?show.?(8|15)/i.test(hostContext.deviceClass || "") ? 1.667 : Math.max(1, w / BASE_W);
+    document.documentElement.style.zoom = String(scale);
+    if (hostContext.theme) document.documentElement.setAttribute("data-theme", hostContext.theme);
+  }
+  function render(data) {
+    if (!data) return;
+    document.getElementById("sub").textContent = data.summary || "";
+    var list = document.getElementById("list");
+    list.innerHTML = "";
+    (data.items || []).slice(0, 5).forEach(function (it) {
+      var li = document.createElement("li");
+      li.setAttribute("role", "listitem");
+      var name = document.createElement("span"); name.textContent = it.name;
+      var st = document.createElement("span"); st.textContent = it.status; st.className = it.status === "failing" ? "bad" : "ok";
+      li.appendChild(name); li.appendChild(st); list.appendChild(li);
+    });
+  }
+  window.addEventListener("message", function (event) {
+    var msg = event.data || {};
+    var method = String(msg.method || "");
+    var params = msg.params || {};
+    if (params.hostContext) applyHostContext(params.hostContext);
+    if (/host-context-changed$/.test(method)) applyHostContext(params.hostContext || params);
+    if (/tool-result$/.test(method)) render((params.structuredContent) || params.result || params);
+  });
+</script>
+</body>
+</html>

@@ -252,7 +252,7 @@ a.card:hover { text-decoration: none; transform: translateY(-2px); box-shadow: v
 .md table { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; font-size: 14.5px; margin: 1em 0; }
 .md th, .md td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; vertical-align: top; }
 .md th { background: var(--bg-sunk); }
-.md img { border-radius: var(--radius-sm); }
+.md img { border-radius: var(--radius-sm); max-width: 100%; height: auto; }
 .md .mermaid { background: var(--bg-elev); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; text-align: center; overflow-x: auto; }
 .copy-btn {
   position: absolute; top: 8px; right: 8px; font: 12px var(--font); padding: 3px 8px; border-radius: 6px; cursor: pointer;
@@ -398,3 +398,4 @@ dialog.search li small { color: var(--fg-faint); margin-left: auto; font-size: 1
 .guide-section { padding-top: 28px; scroll-margin-top: 80px; }
 .guide-jump { margin-top: 18px; }
 .guide-jump a.chip:hover { text-decoration: none; background: var(--accent-soft); }
+.md { min-width: 0; }

@@ -1,6 +1,6 @@
 # Ideas: skills and custom agents to build for Kiro
 
-A catalogue of 36 skills and custom agents worth building, how to decide which form each idea should take, a design recipe, and how to test and ship them. Seven of the ideas are already built and tested in [Lab 62](../labs/62-build-kiro-skills-and-agents/README.md): the four device skills and three device agents marked **(built)**.
+A catalogue of 39 skills and custom agents worth building, how to decide which form each idea should take, a design recipe, and how to test and ship them. Eight of the ideas are already built and tested in [Lab 62](../labs/62-build-kiro-skills-and-agents/README.md): the five device skills and three device agents marked **(built)**.
 
 ## 1. Pick the right form first
 
@@ -36,6 +36,9 @@ Legend: **S** skill · **A** custom agent · **P** power · **H** hook.
 | `alexa-addon-preflight` **(built)** | S | Validate `addon.json` limits and probe the MCP endpoint (401 with no `WWW-Authenticate`) before `alexa-ai deploy` | Runs before every deploy; deploy itself is `ask` |
 | `bee-to-spec` **(built)** | S | Bee conversation → EARS `requirements.md` with transcript citations → a Bee todo | Only conversations the user points at; asks before writing to Bee |
 | `vega-tv-ui-review` **(built)** | S | 10-foot UI and D-pad review, plus a remote-only walkthrough on the Vega Virtual Device | Doesn't guess platform APIs; uses Amazon's docs |
+| `echo-show-widget-review` **(built)** | S | Lint an Alexa+ widget for Echo Show (sandbox rules, hostContext, 768×480 canvas, type tokens, light/dark, CSP, versioned `ui://` URI) and check that speech and screen match | Static checks first; the Local Inspector and a real device have the final say |
+| `echo-show-widget-builder` | A | Builds List, Carousel, Card and Map widgets from a tool's data, runs the widget review and the Local Inspector | Can write only `widgets/`; deploy is `ask` |
+| `voice-visual-parity` | S | Compares each tool's spoken text with what its widget shows and flags contradictions or screen-only facts | Read-only |
 | `alexa-latency-budget` | S | Measure each MCP tool's p95 latency against the 500 ms rule and propose caching | Read-only against production |
 | `ring-event-replayer` | S | Turn real webhook captures into signed, anonymised test fixtures | Strips account IDs and URLs |
 | `bee-privacy-filter` | S | Remove bystander speech and personal data from transcripts before any model call | Runs before every Bee-derived prompt |
