@@ -20,7 +20,7 @@
   // mark the nav item before site.js builds the header
   (function () {
     var d = new URLSearchParams(location.search).get("doc") || "landscape";
-    var GUIDES = ["amazon-devices-build-plan", "frontier-engineering-teams", "kiro-features-in-this-repo", "kiro-ide-cli-internals", "kiro-crew-internals", "landscape", "architecture-patterns", "aws-mcp-catalog", "setup", "troubleshooting", "authoring", "advanced-scenarios"];
+    var GUIDES = ["kiro-skills-and-agents-ideas", "amazon-devices-build-plan", "frontier-engineering-teams", "kiro-features-in-this-repo", "kiro-ide-cli-internals", "kiro-crew-internals", "landscape", "architecture-patterns", "aws-mcp-catalog", "setup", "troubleshooting", "authoring", "advanced-scenarios"];
     document.body.setAttribute("data-page", d === "kiro-in-the-field" ? "field" : d === "ai-first-saas-playbook" ? "aifirst" : GUIDES.indexOf(d) >= 0 ? "guides" : d);
   })();
 </script>

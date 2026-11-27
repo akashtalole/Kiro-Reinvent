@@ -28,7 +28,8 @@
         "15",
         "40",
         "41",
-        "42"
+        "42",
+        "62"
       ]
     },
     {
@@ -274,6 +275,11 @@
         "title": "Runbooks the agent actually reads",
         "text": "Ingest runbooks and ADRs into the local knowledge library and get cited answers; corrections become lessons for every later session.",
         "lab": "60"
+      },
+      {
+        "title": "Skills that carry platform rules",
+        "text": "Package each platform's easy-to-break rules (signed Ring webhooks, Alexa+ add-on limits, Bee citations, 10-foot TV UI) as skills with scripts that load only when relevant, and lint them on every save.",
+        "lab": "62"
       }
     ],
     "emerging": [
@@ -391,6 +397,11 @@
         "title": "Rollback-first production verifier",
         "text": "After every deploy an agent compares SLOs and business metrics, rolls back on doubt, and files the root cause as the factory's next task.",
         "lab": "56"
+      },
+      {
+        "title": "Routing evals for skills",
+        "text": "Keep prompts that should and shouldn't trigger each skill, measure routing precision and recall, and fix descriptions instead of bodies when skills misfire.",
+        "lab": "62"
       }
     ],
     "crew": [

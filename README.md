@@ -56,6 +56,7 @@ Every lab is a folder with a README (scenario, diagram, steps, verify, clean up)
 | [09](labs/09-mcp-servers-in-kiro/README.md) | [MCP servers in Kiro](labs/09-mcp-servers-in-kiro/README.md) | Beginner | 30 min |
 | [40](labs/40-kiro-cli-persistent-memory/README.md) | [Field pattern: long-term memory for Kiro CLI with AgentCore Memory](labs/40-kiro-cli-persistent-memory/README.md) | Intermediate | 45 min |
 | [41](labs/41-domain-skills-at-scale/README.md) | [Field pattern: domain skills at scale — coordinator, specialists, A/B evals](labs/41-domain-skills-at-scale/README.md) | Advanced | 60 min |
+| [62](labs/62-build-kiro-skills-and-agents/README.md) | [Build Kiro skills and custom agents — an Amazon devices starter pack](labs/62-build-kiro-skills-and-agents/README.md) | Intermediate | 60 min |
 
 ### Automate & scale
 
